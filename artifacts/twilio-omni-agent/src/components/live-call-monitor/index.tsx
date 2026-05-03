@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   Phone, PhoneOff, RefreshCw, Mic, ArrowRightLeft,
   Clock, ArrowDown, ArrowUp, AlertCircle, Radio,
-  History, ChevronDown
+  History, ChevronDown, Link, Copy, Check
 } from "lucide-react";
 
 interface ActiveCall {
@@ -68,6 +68,48 @@ function StatusDot({ status }: { status: string }) {
       status === "failed" || status === "busy" ? "bg-red-400" :
       "bg-muted-foreground/40"
     )} />
+  );
+}
+
+function WebhookSetup() {
+  const [copied, setCopied] = useState(false);
+  const domain = window.location.hostname;
+  const url = `https://${domain}/api/twilio/calls/status-callback`;
+
+  const copy = () => {
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+
+  return (
+    <div className="mb-3 rounded-lg border border-rose-500/20 bg-rose-500/5 p-2.5">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <Link className="w-3 h-3 text-rose-400" />
+        <span className="text-[10px] font-semibold text-rose-400 uppercase tracking-wide font-mono">Webhook URL</span>
+        <span className="text-[9px] text-muted-foreground ml-1">— paste into Twilio console</span>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <code className="flex-1 text-[9px] font-mono text-foreground/80 bg-[#151518] border border-border rounded px-2 py-1 truncate">
+          {url}
+        </code>
+        <button onClick={copy}
+          className={cn(
+            "flex items-center gap-1 px-2 py-1 rounded border text-[9px] font-mono transition-colors shrink-0",
+            copied
+              ? "border-green-500/40 bg-green-500/10 text-green-400"
+              : "border-border text-muted-foreground hover:text-foreground hover:bg-accent"
+          )}>
+          {copied ? <><Check className="w-3 h-3" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy</>}
+        </button>
+      </div>
+      <p className="text-[9px] text-muted-foreground/60 mt-1.5 leading-relaxed">
+        In Twilio Console → Phone Numbers → your number → Voice Configuration → set
+        <span className="text-muted-foreground"> "Status Callback URL"</span> to this URL.
+        Every completed call is automatically upserted into Cloudflare D1.
+      </p>
+    </div>
   );
 }
 
@@ -396,24 +438,28 @@ export function LiveCallMonitor() {
 
         {/* D1 LOGS tab */}
         {activeTab === "logs" && (
-          d1Logs.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
-              <AlertCircle className="w-6 h-6 mb-2 opacity-30" />
-              <p className="text-[11px]">No D1 logs yet</p>
-              <p className="text-[10px] text-muted-foreground/60 mt-1">Logs are written when calls are completed via webhook</p>
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {d1Logs.map((log, i) => (
-                <div key={i} className="flex items-center gap-2 px-2 py-1.5 bg-[#151518] border border-border rounded-md font-mono text-[10px]">
-                  <span className="text-muted-foreground">{log.sid?.slice(0, 10)}…</span>
-                  <span className="text-foreground">{log.from_number} → {log.to_number}</span>
-                  <span className={cn("px-1 py-0.5 rounded text-[9px] border", statusColor(log.status))}>{log.status}</span>
-                  <span className="ml-auto text-muted-foreground/60">{log.duration}s</span>
-                </div>
-              ))}
-            </div>
-          )
+          <>
+            <WebhookSetup />
+            {d1Logs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                <AlertCircle className="w-5 h-5 mb-2 opacity-30" />
+                <p className="text-[11px]">No D1 logs yet</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">Configure the webhook above — logs appear after first call</p>
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {d1Logs.map((log, i) => (
+                  <div key={i} className="flex items-center gap-2 px-2 py-1.5 bg-[#151518] border border-border rounded-md font-mono text-[10px]">
+                    <StatusDot status={log.status} />
+                    <span className="text-muted-foreground shrink-0">{log.sid?.slice(0, 10)}…</span>
+                    <span className="text-foreground truncate">{log.from_number} → {log.to_number}</span>
+                    <span className={cn("px-1 py-0.5 rounded text-[9px] border shrink-0", statusColor(log.status))}>{log.status}</span>
+                    <span className="ml-auto text-muted-foreground/60 shrink-0">{log.duration}s</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

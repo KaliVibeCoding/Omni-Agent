@@ -223,6 +223,66 @@ async function queryD1(sql: string, params: unknown[] = []) {
   return data?.result?.[0] ?? null;
 }
 
+// ─── Twilio Status Callback Webhook ───────────────────────────────────────────
+// Configure this URL in Twilio console → Phone Numbers → Status Callbacks
+// Also works as the TwiML app status callback.
+// Twilio sends application/x-www-form-urlencoded — Express urlencoded parser
+// is mounted at the root, so req.body fields are strings.
+
+router.post("/calls/status-callback", async (req, res, next) => {
+  try {
+    const {
+      CallSid,
+      CallStatus,
+      From,
+      To,
+      Direction,
+      Duration,
+      StartTime,
+      EndTime,
+      Price,
+      AccountSid,
+      ParentCallSid,
+    } = req.body as Record<string, string | undefined>;
+
+    if (!CallSid) {
+      res.status(400).send("Missing CallSid");
+      return;
+    }
+
+    // Map Twilio field names → our D1 schema
+    const sid       = CallSid;
+    const status    = CallStatus ?? "unknown";
+    const from      = From ?? null;
+    const to        = To ?? null;
+    const direction = Direction ?? null;
+    const duration  = Duration ? parseInt(Duration, 10) : 0;
+    const startTime = StartTime ?? null;
+    const endTime   = EndTime ?? null;
+    const price     = Price ?? null;
+    const now       = new Date().toISOString();
+
+    req.log.info({ sid, status, from, to, direction, duration }, "Twilio status callback received");
+
+    await queryD1(
+      `INSERT INTO call_logs
+         (sid, from_number, to_number, status, direction, duration, start_time, end_time, price, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(sid) DO UPDATE SET
+         status    = excluded.status,
+         duration  = excluded.duration,
+         end_time  = excluded.end_time,
+         price     = excluded.price`,
+      [sid, from, to, status, direction, duration, startTime, endTime, price, now]
+    );
+
+    // Twilio expects a 200 (TwiML or empty body)
+    res.status(200).set("Content-Type", "text/xml").send("<Response/>");
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/calls/log", async (req, res, next) => {
   try {
     const { sid, from, to, status, direction, duration, startTime, endTime, price } = req.body;
