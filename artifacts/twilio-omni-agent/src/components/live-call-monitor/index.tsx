@@ -5,8 +5,13 @@ import { cn } from "@/lib/utils";
 import {
   Phone, PhoneOff, RefreshCw, Mic, ArrowRightLeft,
   Clock, ArrowDown, ArrowUp, AlertCircle, Radio,
-  History, ChevronDown, Link, Copy, Check
+  History, ChevronDown, Link, Copy, Check, BarChart2,
+  TrendingUp, DollarSign, PhoneCall, CheckCircle2
 } from "lucide-react";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
 
 interface ActiveCall {
   sid: string;
@@ -213,14 +218,62 @@ function TransferDialog({ call, onClose, onSent }: TransferDialogProps) {
   );
 }
 
-type ActiveTab = "live" | "recent" | "logs";
+interface AnalyticsData {
+  days: number;
+  daily: Array<{ day: string; total_calls: number; completed: number; failed: number; avg_duration: number; day_cost: number }>;
+  statuses: Array<{ status: string; count: number }>;
+  summary: { total_calls: number; completed: number; avg_duration: number; max_duration: number; total_cost: number };
+  directions: Array<{ direction: string; count: number }>;
+  topCallers: Array<{ from_number: string; count: number; total_duration: number }>;
+}
+
+type ActiveTab = "live" | "recent" | "logs" | "analytics";
 type Dialog = { type: "whisper" | "transfer"; call: ActiveCall } | null;
+
+const STATUS_COLORS: Record<string, string> = {
+  completed: "#22c55e",
+  failed: "#ef4444",
+  busy: "#f97316",
+  "no-answer": "#f87171",
+  queued: "#3b82f6",
+  "in-progress": "#10b981",
+  ringing: "#eab308",
+  unknown: "#6b7280",
+};
+
+const PIE_COLORS = ["#22c55e", "#ef4444", "#f97316", "#3b82f6", "#eab308", "#a855f7", "#6b7280"];
+
+function fmtDur(secs: number | null | undefined): string {
+  if (!secs) return "—";
+  const m = Math.floor(secs / 60);
+  const s = Math.round(secs % 60);
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+function fmtDay(day: string): string {
+  const d = new Date(day + "T00:00:00Z");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+}
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-[#18181b] border border-border rounded-md px-2.5 py-2 text-[10px] font-mono shadow-xl">
+      <p className="text-muted-foreground mb-1">{label}</p>
+      {payload.map((p: any, i: number) => (
+        <p key={i} style={{ color: p.color ?? p.fill }}>{p.name}: <span className="text-foreground">{p.value}</span></p>
+      ))}
+    </div>
+  );
+};
 
 export function LiveCallMonitor() {
   const [activeTab, setActiveTab] = useState<ActiveTab>("live");
   const [activeCalls, setActiveCalls] = useState<ActiveCall[]>([]);
   const [recentCalls, setRecentCalls] = useState<RecentCall[]>([]);
   const [d1Logs, setD1Logs] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsDays, setAnalyticsDays] = useState(7);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -253,11 +306,20 @@ export function LiveCallMonitor() {
     } finally { setLoading(false); }
   }, []);
 
+  const fetchAnalytics = useCallback(async (days = analyticsDays) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${BASE}/calls/analytics?days=${days}`);
+      if (resp.ok) { setAnalytics(await resp.json()); setLastRefresh(new Date()); }
+    } finally { setLoading(false); }
+  }, [analyticsDays]);
+
   const refresh = useCallback(() => {
     if (activeTab === "live") fetchActive();
     else if (activeTab === "recent") fetchRecent();
-    else fetchD1Logs();
-  }, [activeTab, fetchActive, fetchRecent, fetchD1Logs]);
+    else if (activeTab === "logs") fetchD1Logs();
+    else fetchAnalytics();
+  }, [activeTab, fetchActive, fetchRecent, fetchD1Logs, fetchAnalytics]);
 
   // Auto-refresh live tab every 5s
   useEffect(() => {
@@ -306,14 +368,15 @@ export function LiveCallMonitor() {
       )}
 
       {/* Tabs + controls */}
-      <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0">
-        {(["live", "recent", "logs"] as const).map(tab => (
+      <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 flex-wrap">
+        {(["live", "recent", "logs", "analytics"] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className={cn("px-2.5 py-1 rounded-md font-mono capitalize transition-colors text-[10px]",
               activeTab === tab ? "bg-primary/20 text-primary border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
             {tab === "live" && <><span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5", activeCalls.length > 0 ? "bg-green-400 animate-pulse" : "bg-muted-foreground/40")} />Live ({activeCalls.length})</>}
-            {tab === "recent" && `Recent`}
-            {tab === "logs" && `D1 Logs`}
+            {tab === "recent" && "Recent"}
+            {tab === "logs" && "D1 Logs"}
+            {tab === "analytics" && <><BarChart2 className="w-3 h-3 inline mr-1" />Analytics</>}
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
@@ -434,6 +497,138 @@ export function LiveCallMonitor() {
               ))}
             </div>
           )
+        )}
+
+        {/* ANALYTICS tab */}
+        {activeTab === "analytics" && (
+          <div className="space-y-3">
+            {/* Day-range picker */}
+            <div className="flex items-center gap-1.5">
+              <TrendingUp className="w-3 h-3 text-primary" />
+              <span className="text-[10px] font-mono text-muted-foreground">Last</span>
+              {[7, 14, 30].map(d => (
+                <button key={d} onClick={() => { setAnalyticsDays(d); fetchAnalytics(d); }}
+                  className={cn("px-2 py-0.5 rounded border text-[10px] font-mono transition-colors",
+                    analyticsDays === d
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border text-muted-foreground hover:text-foreground hover:bg-accent")}>
+                  {d}d
+                </button>
+              ))}
+            </div>
+
+            {!analytics ? (
+              <div className="flex items-center justify-center py-10 text-muted-foreground">
+                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                <span className="text-[11px]">Loading analytics…</span>
+              </div>
+            ) : (
+              <>
+                {/* KPI cards */}
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[
+                    { icon: <PhoneCall className="w-3.5 h-3.5" />, label: "Total Calls", value: analytics.summary.total_calls ?? 0, color: "text-primary" },
+                    { icon: <CheckCircle2 className="w-3.5 h-3.5" />, label: "Completed", value: analytics.summary.completed ?? 0, color: "text-green-400" },
+                    { icon: <Clock className="w-3.5 h-3.5" />, label: "Avg Duration", value: fmtDur(analytics.summary.avg_duration), color: "text-blue-400" },
+                    { icon: <DollarSign className="w-3.5 h-3.5" />, label: "Total Cost", value: `$${(analytics.summary.total_cost ?? 0).toFixed(4)}`, color: "text-yellow-400" },
+                  ].map(({ icon, label, value, color }) => (
+                    <div key={label} className="bg-[#151518] border border-border rounded-lg p-2 flex flex-col gap-0.5">
+                      <div className={cn("flex items-center gap-1", color)}>{icon}</div>
+                      <div className="text-[13px] font-bold font-mono text-foreground leading-tight">{value}</div>
+                      <div className="text-[9px] text-muted-foreground/70 font-mono">{label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Daily call volume bar chart */}
+                {analytics.daily.length > 0 && (
+                  <div className="bg-[#151518] border border-border rounded-lg p-2.5">
+                    <p className="text-[10px] font-mono text-muted-foreground mb-2">Daily Call Volume</p>
+                    <ResponsiveContainer width="100%" height={90}>
+                      <BarChart data={analytics.daily.map(d => ({ ...d, day: fmtDay(d.day) }))} barGap={2}>
+                        <XAxis dataKey="day" tick={{ fontSize: 9, fill: "#6b7280", fontFamily: "monospace" }} tickLine={false} axisLine={false} />
+                        <YAxis hide allowDecimals={false} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Bar dataKey="completed" name="Completed" stackId="a" fill="#22c55e" radius={[0,0,0,0]} maxBarSize={24} />
+                        <Bar dataKey="failed" name="Failed" stackId="a" fill="#ef4444" radius={[2,2,0,0]} maxBarSize={24} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-1.5">
+                  {/* Status breakdown pie */}
+                  {analytics.statuses.length > 0 && (
+                    <div className="bg-[#151518] border border-border rounded-lg p-2.5">
+                      <p className="text-[10px] font-mono text-muted-foreground mb-1.5">By Status</p>
+                      <ResponsiveContainer width="100%" height={100}>
+                        <PieChart>
+                          <Pie data={analytics.statuses} dataKey="count" nameKey="status"
+                            cx="50%" cy="50%" innerRadius={22} outerRadius={40} paddingAngle={2}>
+                            {analytics.statuses.map((entry, i) => (
+                              <Cell key={i} fill={STATUS_COLORS[entry.status] ?? PIE_COLORS[i % PIE_COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip content={<CustomTooltip />} />
+                          <Legend iconSize={6} iconType="circle"
+                            formatter={(val) => <span style={{ fontSize: 9, fontFamily: "monospace", color: "#9ca3af" }}>{val}</span>} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  )}
+
+                  {/* Direction split + top callers */}
+                  <div className="flex flex-col gap-1.5">
+                    {/* Direction */}
+                    {analytics.directions.length > 0 && (
+                      <div className="bg-[#151518] border border-border rounded-lg p-2">
+                        <p className="text-[9px] font-mono text-muted-foreground mb-1">Direction</p>
+                        {analytics.directions.map((d, i) => {
+                          const total = analytics.directions.reduce((s, x) => s + x.count, 0);
+                          const pct = total ? Math.round((d.count / total) * 100) : 0;
+                          return (
+                            <div key={i} className="mb-1">
+                              <div className="flex justify-between text-[9px] font-mono mb-0.5">
+                                <span className={d.direction === "inbound" ? "text-green-400" : "text-blue-400"}>
+                                  {d.direction === "inbound" ? "↙" : "↗"} {d.direction ?? "unknown"}
+                                </span>
+                                <span className="text-muted-foreground">{d.count} ({pct}%)</span>
+                              </div>
+                              <div className="h-1 rounded-full bg-border overflow-hidden">
+                                <div className="h-full rounded-full transition-all"
+                                  style={{ width: `${pct}%`, background: d.direction === "inbound" ? "#22c55e" : "#3b82f6" }} />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Top callers */}
+                    {analytics.topCallers.length > 0 && (
+                      <div className="bg-[#151518] border border-border rounded-lg p-2 flex-1">
+                        <p className="text-[9px] font-mono text-muted-foreground mb-1">Top Callers</p>
+                        {analytics.topCallers.map((c, i) => (
+                          <div key={i} className="flex items-center justify-between text-[9px] font-mono py-0.5 border-b border-border/30 last:border-0">
+                            <span className="text-foreground/70 truncate">{c.from_number}</span>
+                            <span className="text-muted-foreground shrink-0 ml-1">{c.count}×</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {analytics.daily.length === 0 && analytics.statuses.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                    <BarChart2 className="w-6 h-6 mb-2 opacity-30" />
+                    <p className="text-[11px]">No call data for this period</p>
+                    <p className="text-[10px] text-muted-foreground/60 mt-1">Configure the D1 webhook so calls are logged automatically</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         )}
 
         {/* D1 LOGS tab */}

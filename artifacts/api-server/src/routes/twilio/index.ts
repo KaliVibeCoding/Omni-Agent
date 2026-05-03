@@ -283,6 +283,75 @@ router.post("/calls/status-callback", async (req, res, next) => {
   }
 });
 
+router.get("/calls/analytics", async (req, res, next) => {
+  try {
+    const days = parseInt((req.query["days"] as string) ?? "7", 10);
+
+    const [dailyRes, statusRes, summaryRes, directionRes, topRes] = await Promise.all([
+      // Daily call volume + total duration + cost for last N days
+      queryD1(
+        `SELECT
+           date(created_at) AS day,
+           COUNT(*) AS total_calls,
+           SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+           SUM(CASE WHEN status IN ('failed','busy','no-answer') THEN 1 ELSE 0 END) AS failed,
+           ROUND(AVG(CASE WHEN status = 'completed' THEN duration ELSE NULL END), 1) AS avg_duration,
+           ROUND(SUM(CAST(REPLACE(COALESCE(price,'0'), '-', '') AS REAL)), 4) AS day_cost
+         FROM call_logs
+         WHERE created_at >= datetime('now', '-${days} days')
+         GROUP BY day
+         ORDER BY day ASC`
+      ),
+      // Overall status breakdown
+      queryD1(
+        `SELECT status, COUNT(*) AS count
+         FROM call_logs
+         WHERE created_at >= datetime('now', '-${days} days')
+         GROUP BY status
+         ORDER BY count DESC`
+      ),
+      // Summary totals
+      queryD1(
+        `SELECT
+           COUNT(*) AS total_calls,
+           SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+           ROUND(AVG(CASE WHEN status = 'completed' THEN duration ELSE NULL END), 1) AS avg_duration,
+           MAX(duration) AS max_duration,
+           ROUND(SUM(CAST(REPLACE(COALESCE(price,'0'), '-', '') AS REAL)), 4) AS total_cost
+         FROM call_logs
+         WHERE created_at >= datetime('now', '-${days} days')`
+      ),
+      // Direction split
+      queryD1(
+        `SELECT direction, COUNT(*) AS count
+         FROM call_logs
+         WHERE created_at >= datetime('now', '-${days} days')
+         GROUP BY direction`
+      ),
+      // Top callers (from_number)
+      queryD1(
+        `SELECT from_number, COUNT(*) AS count, SUM(duration) AS total_duration
+         FROM call_logs
+         WHERE created_at >= datetime('now', '-${days} days') AND from_number IS NOT NULL
+         GROUP BY from_number
+         ORDER BY count DESC
+         LIMIT 5`
+      ),
+    ]);
+
+    res.json({
+      days,
+      daily:     dailyRes?.results     ?? [],
+      statuses:  statusRes?.results    ?? [],
+      summary:   summaryRes?.results?.[0] ?? {},
+      directions: directionRes?.results ?? [],
+      topCallers: topRes?.results      ?? [],
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/calls/log", async (req, res, next) => {
   try {
     const { sid, from, to, status, direction, duration, startTime, endTime, price } = req.body;
