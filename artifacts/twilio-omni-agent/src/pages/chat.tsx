@@ -22,6 +22,7 @@ import {
   useTwilioLookup,
 } from "@workspace/api-client-react";
 import { MarkdownRenderer } from "@/components/chat/markdown-renderer";
+import { WebhookTester } from "@/components/webhook-tester";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +30,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff,
   Volume2, VolumeX, ChevronDown, Phone, MessageCircle, Search,
-  Zap, Activity, X, Download, FileCode
+  Zap, Activity, X, Download, FileCode, Webhook
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +67,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-type Panel = "none" | "twilio";
+type Panel = "none" | "twilio" | "webhook";
 
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -462,8 +463,8 @@ export default function ChatPage() {
           </div>
         </ScrollArea>
 
-        {/* Twilio Tools Button */}
-        <div className="p-3 border-t border-border">
+        {/* Bottom Buttons */}
+        <div className="p-3 border-t border-border space-y-1.5">
           <Button
             variant="outline"
             onClick={() => setActivePanel(p => p === "twilio" ? "none" : "twilio")}
@@ -476,6 +477,19 @@ export default function ChatPage() {
           >
             <Activity className="w-3.5 h-3.5" />
             Twilio Live Tools
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "webhook" ? "none" : "webhook")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "webhook"
+                ? "bg-amber-500/10 border-amber-500/40 text-amber-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Webhook className="w-3.5 h-3.5" />
+            Webhook Tester
           </Button>
         </div>
       </div>
@@ -628,6 +642,25 @@ export default function ChatPage() {
                   )}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* Webhook Tester Panel */}
+        {activePanel === "webhook" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "22rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Webhook className="w-3.5 h-3.5 text-amber-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 font-mono">Webhook Tester</span>
+                <span className="text-[10px] text-muted-foreground">— simulate Twilio webhooks to any URL</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <WebhookTester />
             </div>
           </div>
         )}
