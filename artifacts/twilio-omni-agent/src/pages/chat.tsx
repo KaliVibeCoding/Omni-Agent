@@ -29,6 +29,12 @@ import { SmsCenter } from "@/components/sms-center";
 import { ContactsPanel } from "@/components/contacts-panel";
 import { NumberManager } from "@/components/number-manager";
 import { VoicemailPanel } from "@/components/voicemail-panel";
+import { QueuePanel } from "@/components/queue-panel";
+import { UsagePanel } from "@/components/usage-panel";
+import { AlertsPanel } from "@/components/alerts-panel";
+import { VerifyPanel } from "@/components/verify-panel";
+import { MessagingServicesPanel } from "@/components/messaging-services-panel";
+import { StudioPanel } from "@/components/studio-panel";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,7 +43,8 @@ import {
   Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff,
   Volume2, VolumeX, ChevronDown, Phone, MessageCircle, Search,
   Zap, Activity, X, Download, FileCode, Webhook, Code2, Radio,
-  MessageSquareDashed, Users, Hash, Voicemail,
+  MessageSquareDashed, Users, Hash, Voicemail, Layers, DollarSign,
+  AlertTriangle, ShieldCheck, Workflow,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -74,7 +81,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts" | "numbers" | "voicemail";
+type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts" | "numbers" | "voicemail" | "queues" | "usage" | "alerts" | "verify" | "messaging" | "studio";
 
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -576,6 +583,84 @@ export default function ChatPage() {
             <Voicemail className="w-3.5 h-3.5" />
             Voicemail
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "queues" ? "none" : "queues")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "queues"
+                ? "bg-sky-500/10 border-sky-500/40 text-sky-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            Call Queues
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "usage" ? "none" : "usage")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "usage"
+                ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            Usage & Billing
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "alerts" ? "none" : "alerts")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "alerts"
+                ? "bg-red-500/10 border-red-500/40 text-red-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" />
+            Alerts
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "verify" ? "none" : "verify")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "verify"
+                ? "bg-violet-500/10 border-violet-500/40 text-violet-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Verify / 2FA
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "messaging" ? "none" : "messaging")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "messaging"
+                ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquareDashed className="w-3.5 h-3.5" />
+            Messaging Services
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "studio" ? "none" : "studio")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "studio"
+                ? "bg-purple-500/10 border-purple-500/40 text-purple-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Workflow className="w-3.5 h-3.5" />
+            Studio Flows
+          </Button>
         </div>
       </div>
 
@@ -803,6 +888,120 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 overflow-hidden">
               <VoicemailPanel />
+            </div>
+          </div>
+        )}
+
+        {/* Call Queues Panel */}
+        {activePanel === "queues" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Layers className="w-3.5 h-3.5 text-sky-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-sky-400 font-mono">Call Queues</span>
+                <span className="text-[10px] text-muted-foreground">— queue depth, wait times &amp; member list</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <QueuePanel />
+            </div>
+          </div>
+        )}
+
+        {/* Usage & Billing Panel */}
+        {activePanel === "usage" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-400 font-mono">Usage & Billing</span>
+                <span className="text-[10px] text-muted-foreground">— costs by resource · today / month / all time</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <UsagePanel />
+            </div>
+          </div>
+        )}
+
+        {/* Alerts Panel */}
+        {activePanel === "alerts" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-red-400 font-mono">Alerts</span>
+                <span className="text-[10px] text-muted-foreground">— errors, warnings &amp; webhook failures</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <AlertsPanel />
+            </div>
+          </div>
+        )}
+
+        {/* Verify / 2FA Panel */}
+        {activePanel === "verify" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-violet-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-violet-400 font-mono">Verify / 2FA</span>
+                <span className="text-[10px] text-muted-foreground">— send &amp; check verification codes via SMS / call / email</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <VerifyPanel />
+            </div>
+          </div>
+        )}
+
+        {/* Messaging Services Panel */}
+        {activePanel === "messaging" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <MessageSquareDashed className="w-3.5 h-3.5 text-indigo-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400 font-mono">Messaging Services</span>
+                <span className="text-[10px] text-muted-foreground">— sender pools, webhooks &amp; smart encoding</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <MessagingServicesPanel />
+            </div>
+          </div>
+        )}
+
+        {/* Studio Flows Panel */}
+        {activePanel === "studio" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Workflow className="w-3.5 h-3.5 text-purple-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-purple-400 font-mono">Studio Flows</span>
+                <span className="text-[10px] text-muted-foreground">— view flows, executions &amp; trigger runs</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <StudioPanel />
             </div>
           </div>
         )}

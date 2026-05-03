@@ -796,5 +796,333 @@ router.post("/voicemails/sms-reply", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── Call Queues ──────────────────────────────────────────────────────────────
+
+router.get("/queues", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const queues = await client.queues.list({ limit: 50 });
+    res.json(queues.map(q => ({
+      sid: q.sid,
+      friendlyName: q.friendlyName,
+      currentSize: q.currentSize,
+      maxSize: q.maxSize,
+      averageWaitTime: q.averageWaitTime,
+      dateCreated: q.dateCreated,
+      dateUpdated: q.dateUpdated,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/queues/:sid/members", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const members = await client.queues(req.params["sid"]).members.list({ limit: 50 });
+    res.json(members.map(m => ({
+      callSid: m.callSid,
+      dateEnqueued: m.dateEnqueued,
+      position: m.position,
+      waitTime: m.waitTime,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.delete("/queues/:queueSid/members/:callSid", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { queueSid, callSid } = req.params;
+    await client.queues(queueSid).members(callSid).update({ url: "http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical", method: "GET" });
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/queues", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { friendlyName, maxSize } = req.body as { friendlyName: string; maxSize?: number };
+    if (!friendlyName) { res.status(400).json({ error: "friendlyName required" }); return; }
+    const q = await client.queues.create({ friendlyName, maxSize: maxSize ?? 100 });
+    res.json({ sid: q.sid, friendlyName: q.friendlyName });
+  } catch (err) { next(err); }
+});
+
+router.delete("/queues/:sid", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    await client.queues(req.params["sid"]).remove();
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+// ─── Usage & Billing ──────────────────────────────────────────────────────────
+
+router.get("/usage", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { startDate, endDate, category } = req.query as Record<string, string>;
+    const params: Record<string, unknown> = { limit: 100 };
+    if (startDate) params["startDate"] = new Date(startDate);
+    if (endDate) params["endDate"] = new Date(endDate);
+    if (category) params["category"] = category as never;
+    const records = await client.usage.records.list(params as never);
+    res.json(records.map(r => ({
+      category: r.category,
+      description: r.description,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      count: r.count,
+      countUnit: r.countUnit,
+      usage: r.usage,
+      usageUnit: r.usageUnit,
+      price: r.price,
+      priceUnit: r.priceUnit,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/usage/today", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const records = await client.usage.records.today.list({ limit: 100 });
+    res.json(records.map(r => ({
+      category: r.category,
+      description: r.description,
+      count: r.count,
+      countUnit: r.countUnit,
+      usage: r.usage,
+      usageUnit: r.usageUnit,
+      price: r.price,
+      priceUnit: r.priceUnit,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/usage/thismonth", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const records = await client.usage.records.thisMonth.list({ limit: 100 });
+    res.json(records.map(r => ({
+      category: r.category,
+      description: r.description,
+      count: r.count,
+      countUnit: r.countUnit,
+      usage: r.usage,
+      usageUnit: r.usageUnit,
+      price: r.price,
+      priceUnit: r.priceUnit,
+    })));
+  } catch (err) { next(err); }
+});
+
+// ─── Alerts ───────────────────────────────────────────────────────────────────
+
+router.get("/alerts", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { logLevel, startDate, endDate } = req.query as Record<string, string>;
+    const params: Record<string, unknown> = { pageSize: 50 };
+    if (logLevel) params["logLevel"] = logLevel;
+    if (startDate) params["startDate"] = new Date(startDate);
+    if (endDate) params["endDate"] = new Date(endDate);
+    const alerts = await client.monitor.alerts.list(params as never);
+    res.json(alerts.map(a => ({
+      sid: a.sid,
+      logLevel: a.logLevel,
+      errorCode: a.errorCode,
+      alertText: a.alertText,
+      requestUrl: a.requestUrl,
+      requestMethod: a.requestMethod,
+      responseBody: a.responseBody,
+      responseStatusCode: a.responseStatusCode,
+      dateCreated: a.dateCreated,
+      serviceSid: a.serviceSid,
+      resourceSid: a.resourceSid,
+    })));
+  } catch (err) { next(err); }
+});
+
+// ─── Verify (2FA) ─────────────────────────────────────────────────────────────
+
+router.get("/verify/services", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const services = await client.verify.v2.services.list({ limit: 20 });
+    res.json(services.map(s => ({
+      sid: s.sid,
+      friendlyName: s.friendlyName,
+      codeLength: s.codeLength,
+      lookupEnabled: s.lookupEnabled,
+      psd2Enabled: s.psd2Enabled,
+      dateCreated: s.dateCreated,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.post("/verify/services", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { friendlyName, codeLength } = req.body as { friendlyName: string; codeLength?: number };
+    if (!friendlyName) { res.status(400).json({ error: "friendlyName required" }); return; }
+    const svc = await client.verify.v2.services.create({ friendlyName, codeLength: codeLength ?? 6 });
+    res.json({ sid: svc.sid, friendlyName: svc.friendlyName });
+  } catch (err) { next(err); }
+});
+
+router.post("/verify/send", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { serviceSid, to, channel } = req.body as { serviceSid: string; to: string; channel: string };
+    if (!serviceSid || !to || !channel) { res.status(400).json({ error: "serviceSid, to, channel required" }); return; }
+    const verification = await client.verify.v2.services(serviceSid).verifications.create({ to, channel });
+    res.json({ sid: verification.sid, status: verification.status, to: verification.to, channel: verification.channel });
+  } catch (err) { next(err); }
+});
+
+router.post("/verify/check", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { serviceSid, to, code } = req.body as { serviceSid: string; to: string; code: string };
+    if (!serviceSid || !to || !code) { res.status(400).json({ error: "serviceSid, to, code required" }); return; }
+    const check = await client.verify.v2.services(serviceSid).verificationChecks.create({ to, code });
+    res.json({ status: check.status, valid: check.valid, to: check.to });
+  } catch (err) { next(err); }
+});
+
+// ─── Messaging Services ───────────────────────────────────────────────────────
+
+router.get("/messaging-services", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const services = await client.messaging.v1.services.list({ limit: 20 });
+    res.json(services.map(s => ({
+      sid: s.sid,
+      friendlyName: s.friendlyName,
+      inboundRequestUrl: s.inboundRequestUrl,
+      inboundMethod: s.inboundMethod,
+      fallbackUrl: s.fallbackUrl,
+      fallbackMethod: s.fallbackMethod,
+      statusCallback: s.statusCallback,
+      useInboundWebhookOnNumber: s.useInboundWebhookOnNumber,
+      stickySession: s.stickySession,
+      mmsConverter: s.mmsConverter,
+      smartEncoding: s.smartEncoding,
+      validityPeriod: s.validityPeriod,
+      dateCreated: s.dateCreated,
+      dateUpdated: s.dateUpdated,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.put("/messaging-services/:sid", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const updates = req.body as Record<string, unknown>;
+    const svc = await client.messaging.v1.services(req.params["sid"]).update(updates as never);
+    res.json({ sid: svc.sid, friendlyName: svc.friendlyName });
+  } catch (err) { next(err); }
+});
+
+router.get("/messaging-services/:sid/phone-numbers", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const numbers = await client.messaging.v1.services(req.params["sid"]).phoneNumbers.list({ limit: 50 });
+    res.json(numbers.map(n => ({ sid: n.sid, phoneNumber: n.phoneNumber, countryCode: n.countryCode })));
+  } catch (err) { next(err); }
+});
+
+// ─── Studio Flows ─────────────────────────────────────────────────────────────
+
+router.get("/studio/flows", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const flows = await client.studio.v2.flows.list({ limit: 20 });
+    res.json(flows.map(f => ({
+      sid: f.sid,
+      friendlyName: f.friendlyName,
+      status: f.status,
+      revision: f.revision,
+      dateCreated: f.dateCreated,
+      dateUpdated: f.dateUpdated,
+      webhookUrl: f.webhookUrl,
+      commitMessage: f.commitMessage,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/studio/flows/:sid/executions", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const execs = await client.studio.v2.flows(req.params["sid"]).executions.list({ limit: 20 });
+    res.json(execs.map(e => ({
+      sid: e.sid,
+      status: e.status,
+      dateCreated: e.dateCreated,
+      dateUpdated: e.dateUpdated,
+      context: e.context,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.post("/studio/flows/:sid/executions", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { to, from, parameters } = req.body as { to: string; from: string; parameters?: Record<string, unknown> };
+    if (!to || !from) { res.status(400).json({ error: "to and from required" }); return; }
+    const exec = await client.studio.v2.flows(req.params["sid"]).executions.create({ to, from, parameters });
+    res.json({ sid: exec.sid, status: exec.status });
+  } catch (err) { next(err); }
+});
+
+// ─── TaskRouter ───────────────────────────────────────────────────────────────
+
+router.get("/taskrouter/workspaces", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const workspaces = await client.taskrouter.v1.workspaces.list({ limit: 10 });
+    res.json(workspaces.map(w => ({
+      sid: w.sid,
+      friendlyName: w.friendlyName,
+      defaultActivityName: w.defaultActivityName,
+      timeoutActivityName: w.timeoutActivityName,
+      dateCreated: w.dateCreated,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/taskrouter/workspaces/:sid/tasks", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const tasks = await client.taskrouter.v1.workspaces(req.params["sid"]).tasks.list({ limit: 50 });
+    res.json(tasks.map(t => ({
+      sid: t.sid,
+      friendlyName: t.friendlyName,
+      assignmentStatus: t.assignmentStatus,
+      priority: t.priority,
+      age: t.age,
+      taskQueueFriendlyName: t.taskQueueFriendlyName,
+      workerName: t.workerName,
+      dateCreated: t.dateCreated,
+      attributes: t.attributes,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/taskrouter/workspaces/:sid/workers", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const workers = await client.taskrouter.v1.workspaces(req.params["sid"]).workers.list({ limit: 50 });
+    res.json(workers.map(w => ({
+      sid: w.sid,
+      friendlyName: w.friendlyName,
+      activityName: w.activityName,
+      available: w.available,
+      dateCreated: w.dateCreated,
+      dateStatusChanged: w.dateStatusChanged,
+      attributes: w.attributes,
+    })));
+  } catch (err) { next(err); }
+});
+
 export default router;
+
 
