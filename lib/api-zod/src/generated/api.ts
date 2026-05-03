@@ -75,3 +75,158 @@ export const SendAnthropicMessageParams = zod.object({
 export const SendAnthropicMessageBody = zod.object({
   content: zod.string(),
 });
+
+/**
+ * @summary List all OpenRouter conversations
+ */
+export const ListOpenrouterConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListOpenrouterConversationsResponse = zod.array(
+  ListOpenrouterConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new OpenRouter conversation
+ */
+export const CreateOpenrouterConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get an OpenRouter conversation with messages
+ */
+export const GetOpenrouterConversationParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+export const GetOpenrouterConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.enum(["user", "assistant"]),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete an OpenRouter conversation
+ */
+export const DeleteOpenrouterConversationParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+/**
+ * @summary Send a message to an OpenRouter model and stream the response
+ */
+export const SendOpenrouterMessageParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+export const SendOpenrouterMessageBody = zod.object({
+  content: zod.string(),
+  model: zod
+    .string()
+    .describe("OpenRouter model ID e.g. moonshotai\/kimi-k2.6"),
+});
+
+/**
+ * @summary List Twilio phone numbers on account
+ */
+export const ListTwilioPhoneNumbersResponseItem = zod.object({
+  sid: zod.string(),
+  phoneNumber: zod.string(),
+  friendlyName: zod.string(),
+  capabilities: zod.object({
+    voice: zod.boolean(),
+    sms: zod.boolean(),
+    mms: zod.boolean(),
+  }),
+});
+export const ListTwilioPhoneNumbersResponse = zod.array(
+  ListTwilioPhoneNumbersResponseItem,
+);
+
+/**
+ * @summary Send an SMS message via Twilio
+ */
+export const SendTwilioSmsBody = zod.object({
+  to: zod.string(),
+  from: zod.string(),
+  body: zod.string(),
+});
+
+export const SendTwilioSmsResponse = zod.object({
+  sid: zod.string(),
+  status: zod.string(),
+  to: zod.string(),
+  from: zod.string(),
+  body: zod.string(),
+});
+
+/**
+ * @summary Make an outbound phone call via Twilio
+ */
+export const MakeTwilioCallBody = zod.object({
+  to: zod.string(),
+  from: zod.string(),
+  twiml: zod.string(),
+});
+
+export const MakeTwilioCallResponse = zod.object({
+  sid: zod.string(),
+  status: zod.string(),
+  to: zod.string(),
+  from: zod.string(),
+});
+
+/**
+ * @summary Generate a Twilio Voice AccessToken for browser SDK
+ */
+export const GetTwilioVoiceTokenBody = zod.object({
+  identity: zod.string(),
+});
+
+export const GetTwilioVoiceTokenResponse = zod.object({
+  token: zod.string(),
+  identity: zod.string(),
+  ttl: zod.number(),
+});
+
+/**
+ * @summary Look up a phone number via Twilio Lookup API
+ */
+export const TwilioLookupBody = zod.object({
+  phoneNumber: zod.string(),
+  fields: zod.array(zod.string()).optional(),
+});
+
+export const TwilioLookupResponse = zod.object({
+  phoneNumber: zod.string(),
+  nationalFormat: zod.string(),
+  countryCode: zod.string(),
+  valid: zod.boolean(),
+  lineTypeIntelligence: zod.object({}).passthrough().nullish(),
+  callerName: zod.object({}).passthrough().nullish(),
+});
+
+/**
+ * @summary Get Twilio account info and balance
+ */
+export const GetTwilioAccountResponse = zod.object({
+  sid: zod.string(),
+  friendlyName: zod.string(),
+  status: zod.string(),
+  balance: zod.string(),
+  currency: zod.string(),
+});

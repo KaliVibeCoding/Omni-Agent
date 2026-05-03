@@ -21,7 +21,18 @@ import type {
   ConversationWithMessages,
   CreateConversationBody,
   HealthStatus,
+  LookupBody,
+  LookupResponse,
+  MakeCallBody,
+  MakeCallResponse,
   SendAnthropicMessageBody,
+  SendOpenrouterMessageBody,
+  SendSmsBody,
+  SendSmsResponse,
+  TwilioAccountInfo,
+  TwilioPhoneNumber,
+  VoiceTokenBody,
+  VoiceTokenResponse,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -532,3 +543,932 @@ export const useSendAnthropicMessage = <
 > => {
   return useMutation(getSendAnthropicMessageMutationOptions(options));
 };
+
+/**
+ * @summary List all OpenRouter conversations
+ */
+export const getListOpenrouterConversationsUrl = () => {
+  return `/api/openrouter/conversations`;
+};
+
+export const listOpenrouterConversations = async (
+  options?: RequestInit,
+): Promise<Conversation[]> => {
+  return customFetch<Conversation[]>(getListOpenrouterConversationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListOpenrouterConversationsQueryKey = () => {
+  return [`/api/openrouter/conversations`] as const;
+};
+
+export const getListOpenrouterConversationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listOpenrouterConversations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenrouterConversations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListOpenrouterConversationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listOpenrouterConversations>>
+  > = ({ signal }) =>
+    listOpenrouterConversations({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenrouterConversations>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListOpenrouterConversationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listOpenrouterConversations>>
+>;
+export type ListOpenrouterConversationsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all OpenRouter conversations
+ */
+
+export function useListOpenrouterConversations<
+  TData = Awaited<ReturnType<typeof listOpenrouterConversations>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listOpenrouterConversations>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListOpenrouterConversationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new OpenRouter conversation
+ */
+export const getCreateOpenrouterConversationUrl = () => {
+  return `/api/openrouter/conversations`;
+};
+
+export const createOpenrouterConversation = async (
+  createConversationBody: CreateConversationBody,
+  options?: RequestInit,
+): Promise<Conversation> => {
+  return customFetch<Conversation>(getCreateOpenrouterConversationUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createConversationBody),
+  });
+};
+
+export const getCreateOpenrouterConversationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createOpenrouterConversation>>,
+    TError,
+    { data: BodyType<CreateConversationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createOpenrouterConversation>>,
+  TError,
+  { data: BodyType<CreateConversationBody> },
+  TContext
+> => {
+  const mutationKey = ["createOpenrouterConversation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createOpenrouterConversation>>,
+    { data: BodyType<CreateConversationBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createOpenrouterConversation(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateOpenrouterConversationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createOpenrouterConversation>>
+>;
+export type CreateOpenrouterConversationMutationBody =
+  BodyType<CreateConversationBody>;
+export type CreateOpenrouterConversationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new OpenRouter conversation
+ */
+export const useCreateOpenrouterConversation = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createOpenrouterConversation>>,
+    TError,
+    { data: BodyType<CreateConversationBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createOpenrouterConversation>>,
+  TError,
+  { data: BodyType<CreateConversationBody> },
+  TContext
+> => {
+  return useMutation(getCreateOpenrouterConversationMutationOptions(options));
+};
+
+/**
+ * @summary Get an OpenRouter conversation with messages
+ */
+export const getGetOpenrouterConversationUrl = (conversationId: number) => {
+  return `/api/openrouter/conversations/${conversationId}`;
+};
+
+export const getOpenrouterConversation = async (
+  conversationId: number,
+  options?: RequestInit,
+): Promise<ConversationWithMessages> => {
+  return customFetch<ConversationWithMessages>(
+    getGetOpenrouterConversationUrl(conversationId),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetOpenrouterConversationQueryKey = (
+  conversationId: number,
+) => {
+  return [`/api/openrouter/conversations/${conversationId}`] as const;
+};
+
+export const getGetOpenrouterConversationQueryOptions = <
+  TData = Awaited<ReturnType<typeof getOpenrouterConversation>>,
+  TError = ErrorType<void>,
+>(
+  conversationId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOpenrouterConversation>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ??
+    getGetOpenrouterConversationQueryKey(conversationId);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getOpenrouterConversation>>
+  > = ({ signal }) =>
+    getOpenrouterConversation(conversationId, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!conversationId,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getOpenrouterConversation>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetOpenrouterConversationQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getOpenrouterConversation>>
+>;
+export type GetOpenrouterConversationQueryError = ErrorType<void>;
+
+/**
+ * @summary Get an OpenRouter conversation with messages
+ */
+
+export function useGetOpenrouterConversation<
+  TData = Awaited<ReturnType<typeof getOpenrouterConversation>>,
+  TError = ErrorType<void>,
+>(
+  conversationId: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getOpenrouterConversation>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetOpenrouterConversationQueryOptions(
+    conversationId,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Delete an OpenRouter conversation
+ */
+export const getDeleteOpenrouterConversationUrl = (conversationId: number) => {
+  return `/api/openrouter/conversations/${conversationId}`;
+};
+
+export const deleteOpenrouterConversation = async (
+  conversationId: number,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteOpenrouterConversationUrl(conversationId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteOpenrouterConversationMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteOpenrouterConversation>>,
+    TError,
+    { conversationId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteOpenrouterConversation>>,
+  TError,
+  { conversationId: number },
+  TContext
+> => {
+  const mutationKey = ["deleteOpenrouterConversation"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteOpenrouterConversation>>,
+    { conversationId: number }
+  > = (props) => {
+    const { conversationId } = props ?? {};
+
+    return deleteOpenrouterConversation(conversationId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteOpenrouterConversationMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteOpenrouterConversation>>
+>;
+
+export type DeleteOpenrouterConversationMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete an OpenRouter conversation
+ */
+export const useDeleteOpenrouterConversation = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteOpenrouterConversation>>,
+    TError,
+    { conversationId: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteOpenrouterConversation>>,
+  TError,
+  { conversationId: number },
+  TContext
+> => {
+  return useMutation(getDeleteOpenrouterConversationMutationOptions(options));
+};
+
+/**
+ * @summary Send a message to an OpenRouter model and stream the response
+ */
+export const getSendOpenrouterMessageUrl = (conversationId: number) => {
+  return `/api/openrouter/conversations/${conversationId}/messages`;
+};
+
+export const sendOpenrouterMessage = async (
+  conversationId: number,
+  sendOpenrouterMessageBody: SendOpenrouterMessageBody,
+  options?: RequestInit,
+): Promise<string> => {
+  return customFetch<string>(getSendOpenrouterMessageUrl(conversationId), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(sendOpenrouterMessageBody),
+  });
+};
+
+export const getSendOpenrouterMessageMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendOpenrouterMessage>>,
+    TError,
+    { conversationId: number; data: BodyType<SendOpenrouterMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendOpenrouterMessage>>,
+  TError,
+  { conversationId: number; data: BodyType<SendOpenrouterMessageBody> },
+  TContext
+> => {
+  const mutationKey = ["sendOpenrouterMessage"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendOpenrouterMessage>>,
+    { conversationId: number; data: BodyType<SendOpenrouterMessageBody> }
+  > = (props) => {
+    const { conversationId, data } = props ?? {};
+
+    return sendOpenrouterMessage(conversationId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendOpenrouterMessageMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendOpenrouterMessage>>
+>;
+export type SendOpenrouterMessageMutationBody =
+  BodyType<SendOpenrouterMessageBody>;
+export type SendOpenrouterMessageMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Send a message to an OpenRouter model and stream the response
+ */
+export const useSendOpenrouterMessage = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendOpenrouterMessage>>,
+    TError,
+    { conversationId: number; data: BodyType<SendOpenrouterMessageBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof sendOpenrouterMessage>>,
+  TError,
+  { conversationId: number; data: BodyType<SendOpenrouterMessageBody> },
+  TContext
+> => {
+  return useMutation(getSendOpenrouterMessageMutationOptions(options));
+};
+
+/**
+ * @summary List Twilio phone numbers on account
+ */
+export const getListTwilioPhoneNumbersUrl = () => {
+  return `/api/twilio/phone-numbers`;
+};
+
+export const listTwilioPhoneNumbers = async (
+  options?: RequestInit,
+): Promise<TwilioPhoneNumber[]> => {
+  return customFetch<TwilioPhoneNumber[]>(getListTwilioPhoneNumbersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTwilioPhoneNumbersQueryKey = () => {
+  return [`/api/twilio/phone-numbers`] as const;
+};
+
+export const getListTwilioPhoneNumbersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTwilioPhoneNumbers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTwilioPhoneNumbers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListTwilioPhoneNumbersQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listTwilioPhoneNumbers>>
+  > = ({ signal }) => listTwilioPhoneNumbers({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTwilioPhoneNumbers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTwilioPhoneNumbersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTwilioPhoneNumbers>>
+>;
+export type ListTwilioPhoneNumbersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List Twilio phone numbers on account
+ */
+
+export function useListTwilioPhoneNumbers<
+  TData = Awaited<ReturnType<typeof listTwilioPhoneNumbers>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTwilioPhoneNumbers>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTwilioPhoneNumbersQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Send an SMS message via Twilio
+ */
+export const getSendTwilioSmsUrl = () => {
+  return `/api/twilio/send-sms`;
+};
+
+export const sendTwilioSms = async (
+  sendSmsBody: SendSmsBody,
+  options?: RequestInit,
+): Promise<SendSmsResponse> => {
+  return customFetch<SendSmsResponse>(getSendTwilioSmsUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(sendSmsBody),
+  });
+};
+
+export const getSendTwilioSmsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendTwilioSms>>,
+    TError,
+    { data: BodyType<SendSmsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof sendTwilioSms>>,
+  TError,
+  { data: BodyType<SendSmsBody> },
+  TContext
+> => {
+  const mutationKey = ["sendTwilioSms"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof sendTwilioSms>>,
+    { data: BodyType<SendSmsBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return sendTwilioSms(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SendTwilioSmsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof sendTwilioSms>>
+>;
+export type SendTwilioSmsMutationBody = BodyType<SendSmsBody>;
+export type SendTwilioSmsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Send an SMS message via Twilio
+ */
+export const useSendTwilioSms = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof sendTwilioSms>>,
+    TError,
+    { data: BodyType<SendSmsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof sendTwilioSms>>,
+  TError,
+  { data: BodyType<SendSmsBody> },
+  TContext
+> => {
+  return useMutation(getSendTwilioSmsMutationOptions(options));
+};
+
+/**
+ * @summary Make an outbound phone call via Twilio
+ */
+export const getMakeTwilioCallUrl = () => {
+  return `/api/twilio/make-call`;
+};
+
+export const makeTwilioCall = async (
+  makeCallBody: MakeCallBody,
+  options?: RequestInit,
+): Promise<MakeCallResponse> => {
+  return customFetch<MakeCallResponse>(getMakeTwilioCallUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(makeCallBody),
+  });
+};
+
+export const getMakeTwilioCallMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof makeTwilioCall>>,
+    TError,
+    { data: BodyType<MakeCallBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof makeTwilioCall>>,
+  TError,
+  { data: BodyType<MakeCallBody> },
+  TContext
+> => {
+  const mutationKey = ["makeTwilioCall"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof makeTwilioCall>>,
+    { data: BodyType<MakeCallBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return makeTwilioCall(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MakeTwilioCallMutationResult = NonNullable<
+  Awaited<ReturnType<typeof makeTwilioCall>>
+>;
+export type MakeTwilioCallMutationBody = BodyType<MakeCallBody>;
+export type MakeTwilioCallMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Make an outbound phone call via Twilio
+ */
+export const useMakeTwilioCall = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof makeTwilioCall>>,
+    TError,
+    { data: BodyType<MakeCallBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof makeTwilioCall>>,
+  TError,
+  { data: BodyType<MakeCallBody> },
+  TContext
+> => {
+  return useMutation(getMakeTwilioCallMutationOptions(options));
+};
+
+/**
+ * @summary Generate a Twilio Voice AccessToken for browser SDK
+ */
+export const getGetTwilioVoiceTokenUrl = () => {
+  return `/api/twilio/voice-token`;
+};
+
+export const getTwilioVoiceToken = async (
+  voiceTokenBody: VoiceTokenBody,
+  options?: RequestInit,
+): Promise<VoiceTokenResponse> => {
+  return customFetch<VoiceTokenResponse>(getGetTwilioVoiceTokenUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(voiceTokenBody),
+  });
+};
+
+export const getGetTwilioVoiceTokenMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof getTwilioVoiceToken>>,
+    TError,
+    { data: BodyType<VoiceTokenBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof getTwilioVoiceToken>>,
+  TError,
+  { data: BodyType<VoiceTokenBody> },
+  TContext
+> => {
+  const mutationKey = ["getTwilioVoiceToken"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof getTwilioVoiceToken>>,
+    { data: BodyType<VoiceTokenBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return getTwilioVoiceToken(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type GetTwilioVoiceTokenMutationResult = NonNullable<
+  Awaited<ReturnType<typeof getTwilioVoiceToken>>
+>;
+export type GetTwilioVoiceTokenMutationBody = BodyType<VoiceTokenBody>;
+export type GetTwilioVoiceTokenMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Generate a Twilio Voice AccessToken for browser SDK
+ */
+export const useGetTwilioVoiceToken = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof getTwilioVoiceToken>>,
+    TError,
+    { data: BodyType<VoiceTokenBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof getTwilioVoiceToken>>,
+  TError,
+  { data: BodyType<VoiceTokenBody> },
+  TContext
+> => {
+  return useMutation(getGetTwilioVoiceTokenMutationOptions(options));
+};
+
+/**
+ * @summary Look up a phone number via Twilio Lookup API
+ */
+export const getTwilioLookupUrl = () => {
+  return `/api/twilio/lookup`;
+};
+
+export const twilioLookup = async (
+  lookupBody: LookupBody,
+  options?: RequestInit,
+): Promise<LookupResponse> => {
+  return customFetch<LookupResponse>(getTwilioLookupUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(lookupBody),
+  });
+};
+
+export const getTwilioLookupMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof twilioLookup>>,
+    TError,
+    { data: BodyType<LookupBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof twilioLookup>>,
+  TError,
+  { data: BodyType<LookupBody> },
+  TContext
+> => {
+  const mutationKey = ["twilioLookup"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof twilioLookup>>,
+    { data: BodyType<LookupBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return twilioLookup(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type TwilioLookupMutationResult = NonNullable<
+  Awaited<ReturnType<typeof twilioLookup>>
+>;
+export type TwilioLookupMutationBody = BodyType<LookupBody>;
+export type TwilioLookupMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Look up a phone number via Twilio Lookup API
+ */
+export const useTwilioLookup = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof twilioLookup>>,
+    TError,
+    { data: BodyType<LookupBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof twilioLookup>>,
+  TError,
+  { data: BodyType<LookupBody> },
+  TContext
+> => {
+  return useMutation(getTwilioLookupMutationOptions(options));
+};
+
+/**
+ * @summary Get Twilio account info and balance
+ */
+export const getGetTwilioAccountUrl = () => {
+  return `/api/twilio/account`;
+};
+
+export const getTwilioAccount = async (
+  options?: RequestInit,
+): Promise<TwilioAccountInfo> => {
+  return customFetch<TwilioAccountInfo>(getGetTwilioAccountUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTwilioAccountQueryKey = () => {
+  return [`/api/twilio/account`] as const;
+};
+
+export const getGetTwilioAccountQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTwilioAccount>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTwilioAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTwilioAccountQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getTwilioAccount>>
+  > = ({ signal }) => getTwilioAccount({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTwilioAccount>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTwilioAccountQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTwilioAccount>>
+>;
+export type GetTwilioAccountQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get Twilio account info and balance
+ */
+
+export function useGetTwilioAccount<
+  TData = Awaited<ReturnType<typeof getTwilioAccount>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getTwilioAccount>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTwilioAccountQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}

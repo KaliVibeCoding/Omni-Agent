@@ -12,6 +12,10 @@ tags:
     description: Health operations
   - name: anthropic
     description: Anthropic AI chat operations
+  - name: openrouter
+    description: OpenRouter multi-model chat operations
+  - name: twilio
+    description: Twilio operations
 paths:
   /healthz:
     get:
@@ -118,6 +122,201 @@ paths:
               schema:
                 type: string
 
+  /openrouter/conversations:
+    get:
+      operationId: listOpenrouterConversations
+      tags: [openrouter]
+      summary: List all OpenRouter conversations
+      responses:
+        "200":
+          description: List of conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Conversation"
+    post:
+      operationId: createOpenrouterConversation
+      tags: [openrouter]
+      summary: Create a new OpenRouter conversation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateConversationBody"
+      responses:
+        "201":
+          description: Created conversation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Conversation"
+
+  /openrouter/conversations/{conversationId}:
+    get:
+      operationId: getOpenrouterConversation
+      tags: [openrouter]
+      summary: Get an OpenRouter conversation with messages
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationWithMessages"
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteOpenrouterConversation
+      tags: [openrouter]
+      summary: Delete an OpenRouter conversation
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /openrouter/conversations/{conversationId}/messages:
+    post:
+      operationId: sendOpenrouterMessage
+      tags: [openrouter]
+      summary: Send a message to an OpenRouter model and stream the response
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendOpenrouterMessageBody"
+      responses:
+        "200":
+          description: SSE stream of response chunks
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /twilio/phone-numbers:
+    get:
+      operationId: listTwilioPhoneNumbers
+      tags: [twilio]
+      summary: List Twilio phone numbers on account
+      responses:
+        "200":
+          description: List of phone numbers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TwilioPhoneNumber"
+
+  /twilio/send-sms:
+    post:
+      operationId: sendTwilioSms
+      tags: [twilio]
+      summary: Send an SMS message via Twilio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendSmsBody"
+      responses:
+        "200":
+          description: SMS sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SendSmsResponse"
+
+  /twilio/make-call:
+    post:
+      operationId: makeTwilioCall
+      tags: [twilio]
+      summary: Make an outbound phone call via Twilio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MakeCallBody"
+      responses:
+        "200":
+          description: Call initiated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MakeCallResponse"
+
+  /twilio/voice-token:
+    post:
+      operationId: getTwilioVoiceToken
+      tags: [twilio]
+      summary: Generate a Twilio Voice AccessToken for browser SDK
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VoiceTokenBody"
+      responses:
+        "200":
+          description: AccessToken JWT
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VoiceTokenResponse"
+
+  /twilio/lookup:
+    post:
+      operationId: twilioLookup
+      tags: [twilio]
+      summary: Look up a phone number via Twilio Lookup API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LookupBody"
+      responses:
+        "200":
+          description: Lookup result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LookupResponse"
+
+  /twilio/account:
+    get:
+      operationId: getTwilioAccount
+      tags: [twilio]
+      summary: Get Twilio account info and balance
+      responses:
+        "200":
+          description: Account info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TwilioAccountInfo"
+
 components:
   schemas:
     HealthStatus:
@@ -208,3 +407,149 @@ components:
           type: string
       required:
         - content
+
+    SendOpenrouterMessageBody:
+      type: object
+      properties:
+        content:
+          type: string
+        model:
+          type: string
+          description: "OpenRouter model ID e.g. moonshotai/kimi-k2.6"
+      required:
+        - content
+        - model
+
+    TwilioPhoneNumber:
+      type: object
+      properties:
+        sid:
+          type: string
+        phoneNumber:
+          type: string
+        friendlyName:
+          type: string
+        capabilities:
+          type: object
+          properties:
+            voice:
+              type: boolean
+            sms:
+              type: boolean
+            mms:
+              type: boolean
+          required: [voice, sms, mms]
+      required: [sid, phoneNumber, friendlyName, capabilities]
+
+    SendSmsBody:
+      type: object
+      properties:
+        to:
+          type: string
+        from:
+          type: string
+        body:
+          type: string
+      required: [to, from, body]
+
+    SendSmsResponse:
+      type: object
+      properties:
+        sid:
+          type: string
+        status:
+          type: string
+        to:
+          type: string
+        from:
+          type: string
+        body:
+          type: string
+      required: [sid, status, to, from, body]
+
+    MakeCallBody:
+      type: object
+      properties:
+        to:
+          type: string
+        from:
+          type: string
+        twiml:
+          type: string
+      required: [to, from, twiml]
+
+    MakeCallResponse:
+      type: object
+      properties:
+        sid:
+          type: string
+        status:
+          type: string
+        to:
+          type: string
+        from:
+          type: string
+      required: [sid, status, to, from]
+
+    VoiceTokenBody:
+      type: object
+      properties:
+        identity:
+          type: string
+      required: [identity]
+
+    VoiceTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        identity:
+          type: string
+        ttl:
+          type: integer
+      required: [token, identity, ttl]
+
+    LookupBody:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+        fields:
+          type: array
+          items:
+            type: string
+      required: [phoneNumber]
+
+    LookupResponse:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+        nationalFormat:
+          type: string
+        countryCode:
+          type: string
+        valid:
+          type: boolean
+        lineTypeIntelligence:
+          type: object
+          nullable: true
+        callerName:
+          type: object
+          nullable: true
+      required: [phoneNumber, nationalFormat, countryCode, valid]
+
+    TwilioAccountInfo:
+      type: object
+      properties:
+        sid:
+          type: string
+        friendlyName:
+          type: string
+        status:
+          type: string
+        balance:
+          type: string
+        currency:
+          type: string
+      required: [sid, friendlyName, status, balance, currency]

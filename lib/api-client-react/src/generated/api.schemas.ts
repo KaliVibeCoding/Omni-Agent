@@ -46,3 +46,87 @@ export interface CreateConversationBody {
 export interface SendAnthropicMessageBody {
   content: string;
 }
+
+export interface SendOpenrouterMessageBody {
+  content: string;
+  /** OpenRouter model ID e.g. moonshotai/kimi-k2.6 */
+  model: string;
+}
+
+export type TwilioPhoneNumberCapabilities = {
+  voice: boolean;
+  sms: boolean;
+  mms: boolean;
+};
+
+export interface TwilioPhoneNumber {
+  sid: string;
+  phoneNumber: string;
+  friendlyName: string;
+  capabilities: TwilioPhoneNumberCapabilities;
+}
+
+export interface SendSmsBody {
+  to: string;
+  from: string;
+  body: string;
+}
+
+export interface SendSmsResponse {
+  sid: string;
+  status: string;
+  to: string;
+  from: string;
+  body: string;
+}
+
+export interface MakeCallBody {
+  to: string;
+  from: string;
+  twiml: string;
+}
+
+export interface MakeCallResponse {
+  sid: string;
+  status: string;
+  to: string;
+  from: string;
+}
+
+export interface VoiceTokenBody {
+  identity: string;
+}
+
+export interface VoiceTokenResponse {
+  token: string;
+  identity: string;
+  ttl: number;
+}
+
+export interface LookupBody {
+  phoneNumber: string;
+  fields?: string[];
+}
+
+export type LookupResponseLineTypeIntelligence = {
+  [key: string]: unknown;
+} | null;
+
+export type LookupResponseCallerName = { [key: string]: unknown } | null;
+
+export interface LookupResponse {
+  phoneNumber: string;
+  nationalFormat: string;
+  countryCode: string;
+  valid: boolean;
+  lineTypeIntelligence?: LookupResponseLineTypeIntelligence;
+  callerName?: LookupResponseCallerName;
+}
+
+export interface TwilioAccountInfo {
+  sid: string;
+  friendlyName: string;
+  status: string;
+  balance: string;
+  currency: string;
+}
