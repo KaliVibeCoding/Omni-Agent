@@ -14,7 +14,7 @@ import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff } from "lucide-react";
+import { Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 declare global {
@@ -22,6 +22,24 @@ declare global {
     SpeechRecognition: typeof SpeechRecognition;
     webkitSpeechRecognition: typeof SpeechRecognition;
   }
+}
+
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/#{1,6}\s+/g, "")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\*([^*]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/_([^_]+)_/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^[-*+]\s+/gm, "")
+    .replace(/^\d+\.\s+/gm, "")
+    .replace(/^>\s+/gm, "")
+    .replace(/---+/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export default function ChatPage() {
@@ -35,6 +53,7 @@ export default function ChatPage() {
   const [isListening, setIsListening] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const [interimTranscript, setInterimTranscript] = useState("");
+  const [speakingMsgId, setSpeakingMsgId] = useState<number | null>(null);
 
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -66,6 +85,12 @@ export default function ChatPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [activeConversation?.messages, streamingMessage]);
+
+  // Stop TTS when conversation changes
+  useEffect(() => {
+    window.speechSynthesis?.cancel();
+    setSpeakingMsgId(null);
+  }, [activeId]);
 
   const stopListening = useCallback(() => {
     if (recognitionRef.current) {
@@ -111,10 +136,7 @@ export default function ChatPage() {
       }
     };
 
-    recognition.onerror = () => {
-      stopListening();
-    };
-
+    recognition.onerror = () => { stopListening(); };
     recognition.onend = () => {
       setIsListening(false);
       setInterimTranscript("");
@@ -126,12 +148,41 @@ export default function ChatPage() {
   }, [stopListening]);
 
   const toggleVoice = useCallback(() => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
+    if (isListening) { stopListening(); } else { startListening(); }
   }, [isListening, startListening, stopListening]);
+
+  const handleSpeak = useCallback((msgId: number, content: string) => {
+    if (!window.speechSynthesis) return;
+
+    if (speakingMsgId === msgId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgId(null);
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const plainText = stripMarkdown(content);
+    const utterance = new SpeechSynthesisUtterance(plainText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    const preferred = voices.find(v =>
+      v.name.includes("Google US English") ||
+      v.name.includes("Samantha") ||
+      v.name.includes("Alex") ||
+      (v.lang === "en-US" && !v.name.includes("("))
+    );
+    if (preferred) utterance.voice = preferred;
+
+    setSpeakingMsgId(msgId);
+    utterance.onend = () => setSpeakingMsgId(null);
+    utterance.onerror = () => setSpeakingMsgId(null);
+
+    window.speechSynthesis.speak(utterance);
+  }, [speakingMsgId]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (showSlashCommands) {
@@ -194,6 +245,8 @@ export default function ChatPage() {
     const content = input;
     setInput("");
     setShowSlashCommands(false);
+    window.speechSynthesis?.cancel();
+    setSpeakingMsgId(null);
 
     if (!conversationId) {
       try {
@@ -285,6 +338,8 @@ export default function ChatPage() {
     ? (input ? input + " " : "") + interimTranscript
     : input;
 
+  const ttsSupported = typeof window !== "undefined" && !!window.speechSynthesis;
+
   return (
     <div className="flex h-[100dvh] w-full bg-background text-foreground overflow-hidden font-sans dark">
       {/* Sidebar */}
@@ -326,7 +381,6 @@ export default function ChatPage() {
               conversations?.map((conv) => (
                 <div 
                   key={conv.id}
-                  data-testid={`conversation-item-${conv.id}`}
                   onClick={() => setActiveId(conv.id)}
                   className={cn(
                     "group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-sm transition-colors",
@@ -342,7 +396,6 @@ export default function ChatPage() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    data-testid={`button-delete-${conv.id}`}
                     className="w-6 h-6 opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-opacity"
                     onClick={(e) => handleDelete(conv.id, e)}
                   >
@@ -384,7 +437,6 @@ export default function ChatPage() {
               {activeConversation?.messages?.map((msg) => (
                 <div 
                   key={msg.id}
-                  data-testid={`message-${msg.role}-${msg.id}`}
                   className={cn(
                     "flex gap-4",
                     msg.role === "user" ? "justify-end" : "justify-start"
@@ -406,7 +458,35 @@ export default function ChatPage() {
                     {msg.role === "user" ? (
                       <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                     ) : (
-                      <MarkdownRenderer content={msg.content} />
+                      <>
+                        <MarkdownRenderer content={msg.content} />
+                        {ttsSupported && (
+                          <div className="mt-2 flex items-center gap-1">
+                            <button
+                              onClick={() => handleSpeak(msg.id, msg.content)}
+                              className={cn(
+                                "flex items-center gap-1.5 px-2 py-1 rounded text-[11px] font-mono transition-colors",
+                                speakingMsgId === msg.id
+                                  ? "text-primary bg-primary/10 border border-primary/30"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-accent border border-transparent"
+                              )}
+                              title={speakingMsgId === msg.id ? "Stop reading" : "Read aloud"}
+                            >
+                              {speakingMsgId === msg.id ? (
+                                <>
+                                  <VolumeX className="w-3 h-3" />
+                                  <span>Stop</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Volume2 className="w-3 h-3" />
+                                  <span>Read aloud</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -457,7 +537,6 @@ export default function ChatPage() {
               </div>
             )}
 
-            {/* Voice status indicator */}
             {isListening && (
               <div className="absolute bottom-full left-0 mb-2 flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-400 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
@@ -480,7 +559,6 @@ export default function ChatPage() {
                   isListening && interimTranscript ? "text-muted-foreground italic" : ""
                 )}
                 disabled={isStreaming}
-                data-testid="input-message"
               />
 
               <div className="flex items-center gap-1 absolute right-2">
@@ -490,7 +568,6 @@ export default function ChatPage() {
                     onClick={toggleVoice}
                     disabled={isStreaming}
                     size="icon"
-                    data-testid="button-voice"
                     className={cn(
                       "h-8 w-8 rounded-md transition-colors",
                       isListening
@@ -506,7 +583,6 @@ export default function ChatPage() {
                   onClick={handleSend}
                   disabled={!input.trim() || isStreaming}
                   size="icon"
-                  data-testid="button-send"
                   className="h-8 w-8 rounded-md bg-primary hover:bg-primary/90 transition-colors"
                 >
                   <Send className="w-4 h-4 text-white" />
