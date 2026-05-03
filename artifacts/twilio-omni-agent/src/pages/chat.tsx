@@ -28,6 +28,7 @@ import { LiveCallMonitor } from "@/components/live-call-monitor";
 import { SmsCenter } from "@/components/sms-center";
 import { ContactsPanel } from "@/components/contacts-panel";
 import { NumberManager } from "@/components/number-manager";
+import { VoicemailPanel } from "@/components/voicemail-panel";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,7 +37,7 @@ import {
   Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff,
   Volume2, VolumeX, ChevronDown, Phone, MessageCircle, Search,
   Zap, Activity, X, Download, FileCode, Webhook, Code2, Radio,
-  MessageSquareDashed, Users, Hash,
+  MessageSquareDashed, Users, Hash, Voicemail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -73,7 +74,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts" | "numbers";
+type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts" | "numbers" | "voicemail";
 
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -562,6 +563,19 @@ export default function ChatPage() {
             <Hash className="w-3.5 h-3.5" />
             Number Manager
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "voicemail" ? "none" : "voicemail")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "voicemail"
+                ? "bg-teal-500/10 border-teal-500/40 text-teal-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Voicemail className="w-3.5 h-3.5" />
+            Voicemail
+          </Button>
         </div>
       </div>
 
@@ -770,6 +784,25 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 overflow-hidden">
               <SmsCenter />
+            </div>
+          </div>
+        )}
+
+        {/* Voicemail Panel */}
+        {activePanel === "voicemail" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Voicemail className="w-3.5 h-3.5 text-teal-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-teal-400 font-mono">Voicemail</span>
+                <span className="text-[10px] text-muted-foreground">— transcriptions, audio playback &amp; SMS reply</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <VoicemailPanel />
             </div>
           </div>
         )}

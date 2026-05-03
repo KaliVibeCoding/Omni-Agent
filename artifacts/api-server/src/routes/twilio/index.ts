@@ -699,5 +699,102 @@ router.delete("/contacts/:id", async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// ─── Voicemails & Transcriptions ─────────────────────────────────────────────
+
+router.get("/voicemails", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const limit = Math.min(parseInt((req.query["limit"] as string) ?? "30", 10), 100);
+
+    // Fetch transcriptions (created from voicemail recordings)
+    const transcriptions = await client.transcriptions.list({ limit });
+
+    // For each transcription, get the recording metadata in parallel (batch of up to 10)
+    const enriched = await Promise.all(
+      transcriptions.map(async (t) => {
+        let recording: Record<string, unknown> | null = null;
+        try {
+          if (t.recordingSid) {
+            const rec = await client.recordings(t.recordingSid).fetch();
+            recording = {
+              sid: rec.sid,
+              duration: rec.duration,
+              dateCreated: rec.dateCreated,
+              callSid: rec.callSid,
+              streamUrl: `/api/twilio/recordings/${rec.sid}/stream`,
+            };
+          }
+        } catch {
+          // Recording may have been deleted; continue without it
+        }
+        return {
+          sid: t.sid,
+          status: t.status,
+          duration: t.duration,
+          transcriptionText: t.transcriptionText,
+          recordingSid: t.recordingSid,
+          dateCreated: t.dateCreated,
+          price: t.price,
+          priceUnit: t.priceUnit,
+          recording,
+        };
+      })
+    );
+    res.json(enriched);
+  } catch (err) { next(err); }
+});
+
+router.get("/voicemails/calls", async (req, res, next) => {
+  // Returns recent calls that have recordings (potential voicemails), with call-from info
+  try {
+    const client = getTwilioClient();
+    const limit = Math.min(parseInt((req.query["limit"] as string) ?? "20", 10), 50);
+    const recordings = await client.recordings.list({ limit });
+    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
+    res.json(recordings.map(r => ({
+      sid: r.sid,
+      callSid: r.callSid,
+      duration: r.duration,
+      status: r.status,
+      source: r.source,
+      dateCreated: r.dateCreated,
+      streamUrl: `/api/twilio/recordings/${r.sid}/stream`,
+      downloadUrl: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings/${r.sid}.mp3`,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.delete("/voicemails/:sid", async (req, res, next) => {
+  // Delete a transcription (and optionally its recording)
+  try {
+    const client = getTwilioClient();
+    const { sid } = req.params;
+    const deleteRecording = req.query["deleteRecording"] === "true";
+
+    // Fetch transcription to get recordingSid
+    let recordingSid: string | null = null;
+    try {
+      const t = await client.transcriptions(sid).fetch();
+      recordingSid = t.recordingSid;
+      await client.transcriptions(sid).remove();
+    } catch {}
+
+    if (deleteRecording && recordingSid) {
+      try { await client.recordings(recordingSid).remove(); } catch {}
+    }
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/voicemails/sms-reply", async (req, res, next) => {
+  try {
+    const { to, from, body } = req.body as { to: string; from: string; body: string };
+    if (!to || !from || !body) { res.status(400).json({ error: "to, from, body required" }); return; }
+    const client = getTwilioClient();
+    const msg = await client.messages.create({ to, from, body });
+    res.json({ sid: msg.sid, status: msg.status });
+  } catch (err) { next(err); }
+});
+
 export default router;
 
