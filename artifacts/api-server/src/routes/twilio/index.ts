@@ -116,6 +116,138 @@ router.post("/voice-token", async (req, res, next) => {
   }
 });
 
+// ─── Live Call Monitor ────────────────────────────────────────────────────────
+
+router.get("/calls/active", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const calls = await client.calls.list({ status: "in-progress", limit: 50 });
+    const ringing = await client.calls.list({ status: "ringing", limit: 20 });
+    const all = [...calls, ...ringing];
+    res.json(all.map(c => ({
+      sid: c.sid,
+      from: c.from,
+      to: c.to,
+      status: c.status,
+      direction: c.direction,
+      duration: c.duration,
+      startTime: c.startTime,
+      answeredBy: (c as any).answeredBy ?? null,
+      forwardedFrom: (c as any).forwardedFrom ?? null,
+      callerName: (c as any).callerName ?? null,
+      phoneNumberSid: (c as any).phoneNumberSid ?? null,
+    })));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/calls/recent", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const calls = await client.calls.list({ limit: 30 });
+    res.json(calls.map(c => ({
+      sid: c.sid,
+      from: c.from,
+      to: c.to,
+      status: c.status,
+      direction: c.direction,
+      duration: c.duration,
+      startTime: c.startTime,
+      endTime: (c as any).endTime ?? null,
+      price: (c as any).price ?? null,
+      priceUnit: (c as any).priceUnit ?? null,
+    })));
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/calls/:sid/whisper", async (req, res, next) => {
+  try {
+    const { sid } = req.params;
+    const { message = "You have a whispered message from your supervisor." } = req.body as { message?: string };
+    const client = getTwilioClient();
+    // Update the call with new TwiML that whispers to the agent leg
+    const twiml = `<Response><Say voice="Polly.Joanna-Neural">${message}</Say></Response>`;
+    const updated = await client.calls(sid).update({ twiml });
+    res.json({ sid: updated.sid, status: updated.status });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/calls/:sid/transfer", async (req, res, next) => {
+  try {
+    const { sid } = req.params;
+    const { queueName = "support", twimlUrl } = req.body as { queueName?: string; twimlUrl?: string };
+    const client = getTwilioClient();
+    const twiml = twimlUrl
+      ? undefined
+      : `<Response><Enqueue>${queueName}</Enqueue></Response>`;
+    const updated = await client.calls(sid).update(twimlUrl ? { url: twimlUrl } : { twiml: twiml! });
+    res.json({ sid: updated.sid, status: updated.status });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post("/calls/:sid/hangup", async (req, res, next) => {
+  try {
+    const { sid } = req.params;
+    const client = getTwilioClient();
+    const updated = await client.calls(sid).update({ status: "completed" });
+    res.json({ sid: updated.sid, status: updated.status });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── D1 Call Logs ─────────────────────────────────────────────────────────────
+
+async function queryD1(sql: string, params: unknown[] = []) {
+  const accountId = process.env["CLOUDFLARE_ACCOUNT_ID"];
+  const apiToken = process.env["CLOUDFLARE_API_TOKEN"];
+  const dbId = process.env["CLOUDFLARE_D1_DATABASE_ID"];
+  if (!accountId || !apiToken || !dbId) return null;
+  const resp = await fetch(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/d1/database/${dbId}/query`,
+    {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${apiToken}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ sql, params }),
+    }
+  );
+  if (!resp.ok) return null;
+  const data = await resp.json() as any;
+  return data?.result?.[0] ?? null;
+}
+
+router.post("/calls/log", async (req, res, next) => {
+  try {
+    const { sid, from, to, status, direction, duration, startTime, endTime, price } = req.body;
+    const result = await queryD1(
+      `INSERT OR REPLACE INTO call_logs (sid, from_number, to_number, status, direction, duration, start_time, end_time, price, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`,
+      [sid, from, to, status, direction, duration ?? 0, startTime ?? null, endTime ?? null, price ?? null]
+    );
+    res.json({ success: !!result });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get("/calls/logs", async (req, res, next) => {
+  try {
+    const result = await queryD1(
+      "SELECT * FROM call_logs ORDER BY created_at DESC LIMIT 100"
+    );
+    res.json(result?.results ?? []);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post("/lookup", async (req, res, next) => {
   try {
     const { phoneNumber, fields } = TwilioLookupBody.parse(req.body);
