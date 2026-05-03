@@ -6,4 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from "./conversation";
+export * from "./conversationWithMessages";
+export * from "./createConversationBody";
 export * from "./healthStatus";
+export * from "./message";
+export * from "./messageRole";
+export * from "./sendAnthropicMessageBody";

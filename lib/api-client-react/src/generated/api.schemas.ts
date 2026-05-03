@@ -8,3 +8,41 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface Conversation {
+  id: number;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type MessageRole = (typeof MessageRole)[keyof typeof MessageRole];
+
+export const MessageRole = {
+  user: "user",
+  assistant: "assistant",
+} as const;
+
+export interface Message {
+  id: number;
+  conversationId: number;
+  role: MessageRole;
+  content: string;
+  createdAt: string;
+}
+
+export interface ConversationWithMessages {
+  id: number;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: Message[];
+}
+
+export interface CreateConversationBody {
+  title: string;
+}
+
+export interface SendAnthropicMessageBody {
+  content: string;
+}

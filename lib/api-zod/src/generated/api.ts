@@ -14,3 +14,64 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary List all conversations
+ */
+export const ListConversationsResponseItem = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListConversationsResponse = zod.array(
+  ListConversationsResponseItem,
+);
+
+/**
+ * @summary Create a new conversation
+ */
+export const CreateConversationBody = zod.object({
+  title: zod.string(),
+});
+
+/**
+ * @summary Get a conversation with messages
+ */
+export const GetConversationParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+export const GetConversationResponse = zod.object({
+  id: zod.number(),
+  title: zod.string(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  messages: zod.array(
+    zod.object({
+      id: zod.number(),
+      conversationId: zod.number(),
+      role: zod.enum(["user", "assistant"]),
+      content: zod.string(),
+      createdAt: zod.coerce.date(),
+    }),
+  ),
+});
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteConversationParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+/**
+ * @summary Send a message and stream the response
+ */
+export const SendAnthropicMessageParams = zod.object({
+  conversationId: zod.coerce.number(),
+});
+
+export const SendAnthropicMessageBody = zod.object({
+  content: zod.string(),
+});
