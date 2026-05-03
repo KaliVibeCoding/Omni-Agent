@@ -55,15 +55,54 @@ router.get("/phone-numbers", async (req, res, next) => {
       sid: n.sid,
       phoneNumber: n.phoneNumber,
       friendlyName: n.friendlyName,
+      dateCreated: n.dateCreated,
       capabilities: {
         voice: n.capabilities.voice ?? false,
         sms: n.capabilities.sms ?? false,
         mms: n.capabilities.mms ?? false,
+        fax: (n.capabilities as any).fax ?? false,
       },
+      voiceUrl: (n as any).voiceUrl ?? null,
+      voiceMethod: (n as any).voiceMethod ?? null,
+      voiceFallbackUrl: (n as any).voiceFallbackUrl ?? null,
+      smsUrl: (n as any).smsUrl ?? null,
+      smsMethod: (n as any).smsMethod ?? null,
+      statusCallback: (n as any).statusCallback ?? null,
+      addressRequirements: (n as any).addressRequirements ?? null,
+      beta: (n as any).beta ?? false,
+      origin: (n as any).origin ?? null,
     })));
   } catch (err) {
     next(err);
   }
+});
+
+router.put("/phone-numbers/:sid", async (req, res, next) => {
+  try {
+    const { sid } = req.params;
+    const {
+      friendlyName, voiceUrl, voiceMethod, voiceFallbackUrl,
+      smsUrl, smsMethod, statusCallback,
+    } = req.body as Record<string, string | undefined>;
+    const client = getTwilioClient();
+    const updateParams: Record<string, string> = {};
+    if (friendlyName !== undefined) updateParams["friendlyName"] = friendlyName;
+    if (voiceUrl !== undefined) updateParams["voiceUrl"] = voiceUrl;
+    if (voiceMethod !== undefined) updateParams["voiceMethod"] = voiceMethod;
+    if (voiceFallbackUrl !== undefined) updateParams["voiceFallbackUrl"] = voiceFallbackUrl;
+    if (smsUrl !== undefined) updateParams["smsUrl"] = smsUrl;
+    if (smsMethod !== undefined) updateParams["smsMethod"] = smsMethod;
+    if (statusCallback !== undefined) updateParams["statusCallback"] = statusCallback;
+    const updated = await client.incomingPhoneNumbers(sid).update(updateParams as any);
+    res.json({
+      sid: updated.sid,
+      phoneNumber: updated.phoneNumber,
+      friendlyName: updated.friendlyName,
+      voiceUrl: (updated as any).voiceUrl ?? null,
+      smsUrl: (updated as any).smsUrl ?? null,
+      statusCallback: (updated as any).statusCallback ?? null,
+    });
+  } catch (err) { next(err); }
 });
 
 router.post("/send-sms", async (req, res, next) => {

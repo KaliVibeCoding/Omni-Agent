@@ -27,6 +27,7 @@ import { TwiMLBuilder } from "@/components/twiml-builder";
 import { LiveCallMonitor } from "@/components/live-call-monitor";
 import { SmsCenter } from "@/components/sms-center";
 import { ContactsPanel } from "@/components/contacts-panel";
+import { NumberManager } from "@/components/number-manager";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ import {
   Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff,
   Volume2, VolumeX, ChevronDown, Phone, MessageCircle, Search,
   Zap, Activity, X, Download, FileCode, Webhook, Code2, Radio,
-  MessageSquareDashed, Users,
+  MessageSquareDashed, Users, Hash,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -72,7 +73,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts";
+type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts" | "numbers";
 
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -548,6 +549,19 @@ export default function ChatPage() {
             <Users className="w-3.5 h-3.5" />
             Contacts
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "numbers" ? "none" : "numbers")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "numbers"
+                ? "bg-orange-500/10 border-orange-500/40 text-orange-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Hash className="w-3.5 h-3.5" />
+            Number Manager
+          </Button>
         </div>
       </div>
 
@@ -756,6 +770,25 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 overflow-hidden">
               <SmsCenter />
+            </div>
+          </div>
+        )}
+
+        {/* Number Manager Panel */}
+        {activePanel === "numbers" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Hash className="w-3.5 h-3.5 text-orange-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-orange-400 font-mono">Number Manager</span>
+                <span className="text-[10px] text-muted-foreground">— configure webhooks, capabilities &amp; friendly names</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <NumberManager />
             </div>
           </div>
         )}
