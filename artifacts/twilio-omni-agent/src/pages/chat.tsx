@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { 
   useListConversations, 
@@ -9,16 +9,21 @@ import {
   getGetConversationQueryKey,
   getSendAnthropicMessageUrl
 } from "@workspace/api-client-react";
-import { MessageRole, Conversation, Message } from "@workspace/api-client-react/src/generated/api.schemas";
 import { MarkdownRenderer } from "@/components/chat/markdown-renderer";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Trash2, MessageSquare, Plus, Send, Terminal } from "lucide-react";
+import { Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Make sure to wrap App in a theme provider that forces dark mode.
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
   const [input, setInput] = useState("");
@@ -27,13 +32,17 @@ export default function ChatPage() {
   const [showSlashCommands, setShowSlashCommands] = useState(false);
   const [slashFilter, setSlashFilter] = useState("");
   const [slashIndex, setSlashIndex] = useState(0);
+  const [isListening, setIsListening] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
+  const [interimTranscript, setInterimTranscript] = useState("");
 
   const queryClient = useQueryClient();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   const { data: conversations, isLoading: loadingConversations } = useListConversations();
-  const { data: activeConversation, isLoading: loadingActive } = useGetConversation(activeId!, {
+  const { data: activeConversation } = useGetConversation(activeId!, {
     query: {
       enabled: !!activeId,
       queryKey: getGetConversationQueryKey(activeId!)
@@ -43,17 +52,86 @@ export default function ChatPage() {
   const createConversation = useCreateConversation();
   const deleteConversation = useDeleteConversation();
 
-  // Scroll to bottom when messages change
+  useEffect(() => {
+    document.documentElement.classList.add("dark");
+  }, []);
+
+  useEffect(() => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setVoiceSupported(!!SpeechRecognitionAPI);
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [activeConversation?.messages, streamingMessage]);
 
-  useEffect(() => {
-    // Force dark mode on body
-    document.documentElement.classList.add("dark");
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    setIsListening(false);
+    setInterimTranscript("");
   }, []);
+
+  const startListening = useCallback(() => {
+    const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognitionAPI) return;
+
+    const recognition = new SpeechRecognitionAPI();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setInterimTranscript("");
+    };
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      let interim = "";
+      let final = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          final += transcript;
+        } else {
+          interim += transcript;
+        }
+      }
+
+      if (final) {
+        setInput((prev) => (prev + " " + final).trimStart());
+        setInterimTranscript("");
+      } else {
+        setInterimTranscript(interim);
+      }
+    };
+
+    recognition.onerror = () => {
+      stopListening();
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+      setInterimTranscript("");
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+  }, [stopListening]);
+
+  const toggleVoice = useCallback(() => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  }, [isListening, startListening, stopListening]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (showSlashCommands) {
@@ -109,6 +187,7 @@ export default function ChatPage() {
   ).slice(0, 10);
 
   const handleSend = async () => {
+    if (isListening) stopListening();
     if (!input.trim() || isStreaming) return;
     
     let conversationId = activeId;
@@ -129,7 +208,6 @@ export default function ChatPage() {
       }
     }
 
-    // Optimistic user message
     if (conversationId) {
       const qKey = getGetConversationQueryKey(conversationId);
       queryClient.setQueryData(qKey, (old: any) => {
@@ -163,10 +241,7 @@ export default function ChatPage() {
 
       while (!done && reader) {
         const { value, done: readerDone } = await reader.read();
-        if (readerDone) {
-          done = true;
-          break;
-        }
+        if (readerDone) { done = true; break; }
 
         const chunk = decoder.decode(value, { stream: true });
         const lines = chunk.split("\n\n");
@@ -183,14 +258,11 @@ export default function ChatPage() {
                 finalContent += data.content;
                 setStreamingMessage(finalContent);
               }
-            } catch (e) {
-              // ignore parse errors for partial chunks
-            }
+            } catch (_e) {}
           }
         }
       }
 
-      // Done streaming
       queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey() });
       queryClient.invalidateQueries({ queryKey: getGetConversationQueryKey(conversationId!) });
 
@@ -208,6 +280,10 @@ export default function ChatPage() {
     if (activeId === id) setActiveId(null);
     queryClient.invalidateQueries({ queryKey: getListConversationsQueryKey() });
   };
+
+  const displayInput = isListening && interimTranscript
+    ? (input ? input + " " : "") + interimTranscript
+    : input;
 
   return (
     <div className="flex h-[100dvh] w-full bg-background text-foreground overflow-hidden font-sans dark">
@@ -250,6 +326,7 @@ export default function ChatPage() {
               conversations?.map((conv) => (
                 <div 
                   key={conv.id}
+                  data-testid={`conversation-item-${conv.id}`}
                   onClick={() => setActiveId(conv.id)}
                   className={cn(
                     "group flex items-center justify-between px-3 py-2 rounded-md cursor-pointer text-sm transition-colors",
@@ -265,6 +342,7 @@ export default function ChatPage() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    data-testid={`button-delete-${conv.id}`}
                     className="w-6 h-6 opacity-0 group-hover:opacity-100 hover:text-destructive hover:bg-destructive/10 transition-opacity"
                     onClick={(e) => handleDelete(conv.id, e)}
                   >
@@ -288,13 +366,25 @@ export default function ChatPage() {
             <p className="text-muted-foreground max-w-md">
               A high-stakes AI assistant for Twilio engineering. Powered by Anthropic. Built for RJ Business Solutions.
             </p>
+            <div className="mt-6 flex flex-wrap gap-2 justify-center max-w-lg">
+              {["/twilio-voice-ivr", "/twilio-sms-2way", "/twilio-ai-assistant", "/twilio-conf-bridge"].map(cmd => (
+                <button
+                  key={cmd}
+                  onClick={() => { setInput(cmd + " "); inputRef.current?.focus(); }}
+                  className="px-3 py-1.5 bg-[#1a1a1e] border border-border rounded-md text-xs font-mono text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors"
+                >
+                  {cmd}
+                </button>
+              ))}
+            </div>
           </div>
         ) : (
           <div className="flex-1 overflow-y-auto p-4 md:p-8" ref={scrollRef}>
             <div className="max-w-3xl mx-auto space-y-8 pb-4">
-              {activeConversation?.messages?.map((msg, i) => (
+              {activeConversation?.messages?.map((msg) => (
                 <div 
-                  key={msg.id} 
+                  key={msg.id}
+                  data-testid={`message-${msg.role}-${msg.id}`}
                   className={cn(
                     "flex gap-4",
                     msg.role === "user" ? "justify-end" : "justify-start"
@@ -367,27 +457,64 @@ export default function ChatPage() {
               </div>
             )}
 
-            <div className="relative flex items-center bg-[#151518] rounded-xl border border-border shadow-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all">
+            {/* Voice status indicator */}
+            {isListening && (
+              <div className="absolute bottom-full left-0 mb-2 flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/30 rounded-lg text-xs text-red-400 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                Listening{interimTranscript ? `: ${interimTranscript}` : "..."}
+              </div>
+            )}
+
+            <div className={cn(
+              "relative flex items-center bg-[#151518] rounded-xl border shadow-sm focus-within:ring-1 focus-within:ring-primary focus-within:border-primary transition-all",
+              isListening ? "border-red-500/50 ring-1 ring-red-500/30" : "border-border"
+            )}>
               <Input 
                 ref={inputRef}
-                value={input}
+                value={displayInput}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Message Omni-Agent... (Type '/' for commands)"
-                className="w-full bg-transparent border-0 focus-visible:ring-0 shadow-none px-4 py-6 text-sm resize-none"
+                placeholder={isListening ? "Speak now..." : "Message Omni-Agent... (Type '/' for commands)"}
+                className={cn(
+                  "w-full bg-transparent border-0 focus-visible:ring-0 shadow-none px-4 py-6 text-sm resize-none",
+                  isListening && interimTranscript ? "text-muted-foreground italic" : ""
+                )}
                 disabled={isStreaming}
+                data-testid="input-message"
               />
-              <Button 
-                onClick={handleSend}
-                disabled={!input.trim() || isStreaming}
-                size="icon"
-                className="absolute right-2 h-8 w-8 rounded-md bg-primary hover:bg-primary/90 transition-colors"
-              >
-                <Send className="w-4 h-4 text-white" />
-              </Button>
+
+              <div className="flex items-center gap-1 absolute right-2">
+                {voiceSupported && (
+                  <Button
+                    type="button"
+                    onClick={toggleVoice}
+                    disabled={isStreaming}
+                    size="icon"
+                    data-testid="button-voice"
+                    className={cn(
+                      "h-8 w-8 rounded-md transition-colors",
+                      isListening
+                        ? "bg-red-500 hover:bg-red-600 text-white"
+                        : "bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground border border-transparent hover:border-border"
+                    )}
+                    title={isListening ? "Stop listening" : "Speak your message"}
+                  >
+                    {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  </Button>
+                )}
+                <Button 
+                  onClick={handleSend}
+                  disabled={!input.trim() || isStreaming}
+                  size="icon"
+                  data-testid="button-send"
+                  className="h-8 w-8 rounded-md bg-primary hover:bg-primary/90 transition-colors"
+                >
+                  <Send className="w-4 h-4 text-white" />
+                </Button>
+              </div>
             </div>
             <div className="text-center mt-2 text-[10px] text-muted-foreground font-mono">
-              Press Enter to execute, Shift+Enter for newline
+              Press Enter to execute, Shift+Enter for newline{voiceSupported ? ", Mic to speak" : ""}
             </div>
           </div>
         </div>
