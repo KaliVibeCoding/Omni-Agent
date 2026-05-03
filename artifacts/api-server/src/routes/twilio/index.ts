@@ -402,4 +402,263 @@ router.post("/lookup", async (req, res, next) => {
   }
 });
 
+// ─── SMS Routes ───────────────────────────────────────────────────────────────
+
+router.get("/sms/messages", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const limit = Math.min(parseInt((req.query["limit"] as string) ?? "50", 10), 200);
+    const to = req.query["to"] as string | undefined;
+    const from = req.query["from"] as string | undefined;
+    const opts: Record<string, unknown> = { limit };
+    if (to) opts["to"] = to;
+    if (from) opts["from"] = from;
+    const messages = await client.messages.list(opts as any);
+    res.json(messages.map(m => ({
+      sid: m.sid, body: m.body, from: m.from, to: m.to,
+      status: m.status, direction: m.direction,
+      dateSent: m.dateSent, price: m.price, priceUnit: m.priceUnit,
+      numSegments: m.numSegments, errorCode: m.errorCode,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.post("/sms/status-callback", async (req, res, next) => {
+  try {
+    const { MessageSid, MessageStatus, From, To, Body, NumSegments, Price, ErrorCode } =
+      req.body as Record<string, string | undefined>;
+    if (!MessageSid) { res.status(400).send("Missing MessageSid"); return; }
+    const now = new Date().toISOString();
+    req.log.info({ sid: MessageSid, status: MessageStatus }, "SMS status callback");
+    await queryD1(
+      `INSERT INTO sms_logs (sid, from_number, to_number, body, status, direction, num_segments, price, error_code, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(sid) DO UPDATE SET status = excluded.status, price = excluded.price, error_code = excluded.error_code`,
+      [MessageSid, From ?? null, To ?? null, Body ?? null, MessageStatus ?? null,
+       null, NumSegments ? parseInt(NumSegments, 10) : 1, Price ?? null, ErrorCode ?? null, now]
+    );
+    res.status(200).set("Content-Type", "text/xml").send("<Response/>");
+  } catch (err) { next(err); }
+});
+
+router.get("/sms/logs", async (req, res, next) => {
+  try {
+    const result = await queryD1("SELECT * FROM sms_logs ORDER BY created_at DESC LIMIT 100");
+    res.json(result?.results ?? []);
+  } catch (err) { next(err); }
+});
+
+router.get("/sms/analytics", async (req, res, next) => {
+  try {
+    const days = parseInt((req.query["days"] as string) ?? "7", 10);
+    const [dailyRes, statusRes, summaryRes, dirRes] = await Promise.all([
+      queryD1(`SELECT date(created_at) AS day, COUNT(*) AS total,
+                SUM(CASE WHEN status='delivered' THEN 1 ELSE 0 END) AS delivered,
+                ROUND(SUM(CAST(REPLACE(COALESCE(price,'0'),'-','') AS REAL)),4) AS day_cost
+               FROM sms_logs WHERE created_at >= datetime('now','-${days} days')
+               GROUP BY day ORDER BY day ASC`),
+      queryD1(`SELECT status, COUNT(*) AS count FROM sms_logs
+               WHERE created_at >= datetime('now','-${days} days') GROUP BY status ORDER BY count DESC`),
+      queryD1(`SELECT COUNT(*) AS total_messages,
+               SUM(CASE WHEN status='delivered' THEN 1 ELSE 0 END) AS delivered,
+               ROUND(SUM(CAST(REPLACE(COALESCE(price,'0'),'-','') AS REAL)),4) AS total_cost
+               FROM sms_logs WHERE created_at >= datetime('now','-${days} days')`),
+      queryD1(`SELECT direction, COUNT(*) AS count FROM sms_logs
+               WHERE created_at >= datetime('now','-${days} days') GROUP BY direction`),
+    ]);
+    res.json({
+      days,
+      daily: dailyRes?.results ?? [],
+      statuses: statusRes?.results ?? [],
+      summary: summaryRes?.results?.[0] ?? {},
+      directions: dirRes?.results ?? [],
+    });
+  } catch (err) { next(err); }
+});
+
+router.get("/sms/export", async (req, res, next) => {
+  try {
+    const result = await queryD1("SELECT * FROM sms_logs ORDER BY created_at DESC LIMIT 5000");
+    const rows = (result?.results ?? []) as Record<string, unknown>[];
+    const header = "sid,from_number,to_number,body,status,direction,num_segments,price,error_code,created_at";
+    const csv = [header, ...rows.map(r =>
+      [r["sid"],r["from_number"],r["to_number"],`"${String(r["body"]??'').replace(/"/g,'""')}"`,r["status"],r["direction"],r["num_segments"],r["price"],r["error_code"],r["created_at"]].join(",")
+    )].join("\n");
+    res.set("Content-Type","text/csv").set("Content-Disposition","attachment; filename=sms_logs.csv").send(csv);
+  } catch (err) { next(err); }
+});
+
+// ─── Call Export + Notes ──────────────────────────────────────────────────────
+
+router.get("/calls/export", async (req, res, next) => {
+  try {
+    const result = await queryD1("SELECT * FROM call_logs ORDER BY created_at DESC LIMIT 5000");
+    const rows = (result?.results ?? []) as Record<string, unknown>[];
+    const header = "sid,from_number,to_number,status,direction,duration,start_time,end_time,price,created_at,notes";
+    const csv = [header, ...rows.map(r =>
+      [r["sid"],r["from_number"],r["to_number"],r["status"],r["direction"],r["duration"],r["start_time"],r["end_time"],r["price"],r["created_at"],`"${String(r["notes"]??'').replace(/"/g,'""')}"`].join(",")
+    )].join("\n");
+    res.set("Content-Type","text/csv").set("Content-Disposition","attachment; filename=call_logs.csv").send(csv);
+  } catch (err) { next(err); }
+});
+
+router.post("/calls/:sid/note", async (req, res, next) => {
+  try {
+    const { note } = req.body as { note: string };
+    const { sid } = req.params;
+    await queryD1(
+      `INSERT INTO call_logs (sid, notes, created_at) VALUES (?, ?, datetime('now'))
+       ON CONFLICT(sid) DO UPDATE SET notes = excluded.notes`,
+      [sid, note]
+    );
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.post("/calls/outbound", async (req, res, next) => {
+  try {
+    const { to, from, twiml, url } = req.body as { to: string; from: string; twiml?: string; url?: string };
+    if (!to || !from) { res.status(400).json({ error: "to and from are required" }); return; }
+    const client = getTwilioClient();
+    const opts: Record<string, unknown> = { to, from };
+    if (url) opts["url"] = url;
+    else opts["twiml"] = twiml ?? `<Response><Say voice="Polly.Joanna-Neural">Hello from RJ Business Solutions. Please hold for the next available agent.</Say></Response>`;
+    const call = await client.calls.create(opts as any);
+    res.json({ sid: call.sid, status: call.status, to: call.to, from: call.from });
+  } catch (err) { next(err); }
+});
+
+// ─── Recordings ───────────────────────────────────────────────────────────────
+
+router.get("/recordings", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const callSid = req.query["callSid"] as string | undefined;
+    const limit = Math.min(parseInt((req.query["limit"] as string) ?? "25", 10), 100);
+    const opts: Record<string, unknown> = { limit };
+    if (callSid) opts["callSid"] = callSid;
+    const recordings = await client.recordings.list(opts as any);
+    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
+    res.json(recordings.map(r => ({
+      sid: r.sid, callSid: r.callSid, duration: r.duration,
+      status: r.status, source: r.source, dateCreated: r.dateCreated,
+      streamUrl: `/api/twilio/recordings/${r.sid}/stream`,
+      downloadUrl: `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings/${r.sid}.mp3`,
+    })));
+  } catch (err) { next(err); }
+});
+
+router.get("/recordings/:sid/stream", async (req, res, next) => {
+  try {
+    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
+    const authToken = process.env["TWILIO_AUTH_TOKEN"];
+    if (!accountSid || !authToken) { res.status(500).json({ error: "Missing credentials" }); return; }
+    const { sid } = req.params;
+    const recUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings/${sid}.mp3`;
+    const upstream = await fetch(recUrl, {
+      headers: { "Authorization": "Basic " + Buffer.from(`${accountSid}:${authToken}`).toString("base64") }
+    });
+    if (!upstream.ok) { res.status(upstream.status).json({ error: "Recording not found" }); return; }
+    res.set("Content-Type", "audio/mpeg");
+    const reader = upstream.body!.getReader();
+    const pump = async (): Promise<void> => {
+      const { done, value } = await reader.read();
+      if (done) { res.end(); return; }
+      res.write(value);
+      return pump();
+    };
+    await pump();
+  } catch (err) { next(err); }
+});
+
+// ─── Conferences ──────────────────────────────────────────────────────────────
+
+router.get("/conferences/active", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const conferences = await client.conferences.list({ status: "in-progress" as any, limit: 20 });
+    const withParticipants = await Promise.all(conferences.map(async conf => {
+      const participants = await client.conferences(conf.sid).participants.list({ limit: 20 });
+      return {
+        sid: conf.sid, friendlyName: conf.friendlyName, status: conf.status,
+        dateCreated: conf.dateCreated,
+        participants: participants.map(p => ({
+          callSid: p.callSid, muted: p.muted, hold: p.hold, coaching: p.coaching,
+        })),
+      };
+    }));
+    res.json(withParticipants);
+  } catch (err) { next(err); }
+});
+
+router.post("/conferences/:sid/end", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const updated = await client.conferences(req.params["sid"]).update({ status: "completed" as any });
+    res.json({ sid: updated.sid, status: updated.status });
+  } catch (err) { next(err); }
+});
+
+router.post("/conferences/:confSid/participants/:callSid/mute", async (req, res, next) => {
+  try {
+    const client = getTwilioClient();
+    const { confSid, callSid } = req.params;
+    const { muted = true } = req.body as { muted?: boolean };
+    const updated = await client.conferences(confSid!).participants(callSid!).update({ muted } as any);
+    res.json({ callSid: updated.callSid, muted: updated.muted });
+  } catch (err) { next(err); }
+});
+
+// ─── Contacts (D1) ───────────────────────────────────────────────────────────
+
+router.get("/contacts", async (req, res, next) => {
+  try {
+    const search = req.query["search"] as string | undefined;
+    let result;
+    if (search) {
+      const q = `%${search}%`;
+      result = await queryD1(
+        "SELECT * FROM contacts WHERE name LIKE ? OR phone LIKE ? OR email LIKE ? OR company LIKE ? ORDER BY name ASC LIMIT 100",
+        [q, q, q, q]
+      );
+    } else {
+      result = await queryD1("SELECT * FROM contacts ORDER BY name ASC LIMIT 200");
+    }
+    res.json(result?.results ?? []);
+  } catch (err) { next(err); }
+});
+
+router.post("/contacts", async (req, res, next) => {
+  try {
+    const { name, phone, email, company, notes, tags } = req.body as Record<string, string>;
+    if (!name) { res.status(400).json({ error: "name is required" }); return; }
+    const now = new Date().toISOString();
+    const result = await queryD1(
+      "INSERT INTO contacts (name, phone, email, company, notes, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING *",
+      [name, phone ?? null, email ?? null, company ?? null, notes ?? null, tags ?? null, now, now]
+    );
+    res.json(result?.results?.[0] ?? { success: true });
+  } catch (err) { next(err); }
+});
+
+router.put("/contacts/:id", async (req, res, next) => {
+  try {
+    const { name, phone, email, company, notes, tags } = req.body as Record<string, string>;
+    const now = new Date().toISOString();
+    await queryD1(
+      "UPDATE contacts SET name=?, phone=?, email=?, company=?, notes=?, tags=?, updated_at=? WHERE id=?",
+      [name, phone ?? null, email ?? null, company ?? null, notes ?? null, tags ?? null, now, req.params["id"]]
+    );
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
+router.delete("/contacts/:id", async (req, res, next) => {
+  try {
+    await queryD1("DELETE FROM contacts WHERE id=?", [req.params["id"]]);
+    res.json({ success: true });
+  } catch (err) { next(err); }
+});
+
 export default router;
+

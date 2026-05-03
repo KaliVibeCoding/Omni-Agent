@@ -25,6 +25,8 @@ import { MarkdownRenderer } from "@/components/chat/markdown-renderer";
 import { WebhookTester } from "@/components/webhook-tester";
 import { TwiMLBuilder } from "@/components/twiml-builder";
 import { LiveCallMonitor } from "@/components/live-call-monitor";
+import { SmsCenter } from "@/components/sms-center";
+import { ContactsPanel } from "@/components/contacts-panel";
 import { SLASH_COMMANDS } from "@/lib/slash-commands";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,7 +34,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Trash2, MessageSquare, Plus, Send, Terminal, Mic, MicOff,
   Volume2, VolumeX, ChevronDown, Phone, MessageCircle, Search,
-  Zap, Activity, X, Download, FileCode, Webhook, Code2, Radio
+  Zap, Activity, X, Download, FileCode, Webhook, Code2, Radio,
+  MessageSquareDashed, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +72,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls";
+type Panel = "none" | "twilio" | "webhook" | "twiml" | "calls" | "sms" | "contacts";
 
 export default function ChatPage() {
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -519,6 +522,32 @@ export default function ChatPage() {
             <Radio className="w-3.5 h-3.5" />
             Live Call Monitor
           </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "sms" ? "none" : "sms")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "sms"
+                ? "bg-blue-500/10 border-blue-500/40 text-blue-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquareDashed className="w-3.5 h-3.5" />
+            SMS Center
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setActivePanel(p => p === "contacts" ? "none" : "contacts")}
+            className={cn(
+              "w-full justify-start gap-2 text-xs transition-colors",
+              activePanel === "contacts"
+                ? "bg-violet-500/10 border-violet-500/40 text-violet-400"
+                : "border-border text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Contacts
+          </Button>
         </div>
       </div>
 
@@ -708,6 +737,44 @@ export default function ChatPage() {
             </div>
             <div className="flex-1 overflow-hidden">
               <LiveCallMonitor />
+            </div>
+          </div>
+        )}
+
+        {/* SMS Center Panel */}
+        {activePanel === "sms" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <MessageSquareDashed className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-blue-400 font-mono">SMS Center</span>
+                <span className="text-[10px] text-muted-foreground">— compose, inbox, D1 logs &amp; analytics</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <SmsCenter />
+            </div>
+          </div>
+        )}
+
+        {/* Contacts Panel */}
+        {activePanel === "contacts" && (
+          <div className="border-b border-border bg-[#0d0d0f] flex-shrink-0 flex flex-col" style={{ maxHeight: "32rem" }}>
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-violet-400" />
+                <span className="text-xs font-semibold uppercase tracking-wider text-violet-400 font-mono">Contacts</span>
+                <span className="text-[10px] text-muted-foreground">— search, add, edit &amp; tag contacts in D1</span>
+              </div>
+              <button onClick={() => setActivePanel("none")} className="text-muted-foreground hover:text-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <ContactsPanel />
             </div>
           </div>
         )}

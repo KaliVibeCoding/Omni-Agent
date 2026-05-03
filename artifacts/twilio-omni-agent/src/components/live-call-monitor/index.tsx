@@ -6,7 +6,9 @@ import {
   Phone, PhoneOff, RefreshCw, Mic, ArrowRightLeft,
   Clock, ArrowDown, ArrowUp, AlertCircle, Radio,
   History, ChevronDown, Link, Copy, Check, BarChart2,
-  TrendingUp, DollarSign, PhoneCall, CheckCircle2
+  TrendingUp, DollarSign, PhoneCall, CheckCircle2,
+  Play, Pause, Volume2, Users2, MicOff, Download,
+  PhoneCall as Dial, FileText,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
@@ -227,8 +229,92 @@ interface AnalyticsData {
   topCallers: Array<{ from_number: string; count: number; total_duration: number }>;
 }
 
-type ActiveTab = "live" | "recent" | "logs" | "analytics";
+interface Recording {
+  sid: string; callSid: string; duration: string;
+  status: string; source: string; dateCreated: string;
+  streamUrl: string; downloadUrl: string;
+}
+
+interface Conference {
+  sid: string; friendlyName: string; status: string; dateCreated: string;
+  participants: Array<{ callSid: string; muted: boolean; hold: boolean; coaching: boolean }>;
+}
+
+type ActiveTab = "live" | "recent" | "logs" | "analytics" | "recordings" | "conferences";
 type Dialog = { type: "whisper" | "transfer"; call: ActiveCall } | null;
+
+// ── Outbound Call Dialog ──────────────────────────────────────────────────────
+function OutboundDialog({ onClose }: { onClose: () => void }) {
+  const [to, setTo] = useState(""); const [from, setFrom] = useState("+18333827093");
+  const [calling, setCalling] = useState(false); const [result, setResult] = useState("");
+  const dial = async () => {
+    if (!to) return; setCalling(true); setResult("");
+    try {
+      const resp = await fetch(`${BASE}/calls/outbound`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to, from }),
+      });
+      const d = await resp.json();
+      if (resp.ok) setResult(`✓ Called ${to} — SID: ${d.sid}`);
+      else setResult(`✗ ${d.error ?? "Failed"}`);
+    } catch (e: any) { setResult(`✗ ${e.message}`); }
+    finally { setCalling(false); }
+  };
+  return (
+    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 rounded-md">
+      <div className="bg-[#1a1a1e] border border-border rounded-lg p-4 w-72 shadow-2xl">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2"><Dial className="w-4 h-4 text-green-400" /><span className="text-sm font-semibold">Outbound Call</span></div>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><PhoneOff className="w-3.5 h-3.5" /></button>
+        </div>
+        <label className="text-[9px] font-mono text-muted-foreground uppercase mb-1 block">To Number</label>
+        <Input value={to} onChange={e => setTo(e.target.value)} placeholder="+15550001111"
+          className="h-7 text-xs bg-[#151518] border-border mb-2 font-mono" />
+        <label className="text-[9px] font-mono text-muted-foreground uppercase mb-1 block">From</label>
+        <select value={from} onChange={e => setFrom(e.target.value)}
+          className="w-full h-7 text-xs bg-[#151518] border border-input rounded-md px-2 font-mono text-foreground mb-2">
+          <option value="+18333827093">+1 (833) 382-7093</option>
+          <option value="+18667524618">+1 (866) 752-4618</option>
+        </select>
+        {result && <p className={cn("text-[10px] font-mono mb-2", result.startsWith("✓") ? "text-green-400" : "text-red-400")}>{result}</p>}
+        <div className="flex gap-2">
+          <Button size="sm" onClick={dial} disabled={calling || !to}
+            className="flex-1 h-7 text-xs bg-green-600 hover:bg-green-700 text-white font-mono gap-1">
+            <Phone className="w-3 h-3" />{calling ? "Dialing…" : "Dial"}
+          </Button>
+          <Button size="sm" variant="outline" onClick={onClose} className="h-7 text-xs border-border">Cancel</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Note Dialog ───────────────────────────────────────────────────────────────
+function NoteDialog({ sid, onClose, onSaved }: { sid: string; onClose: () => void; onSaved: () => void }) {
+  const [note, setNote] = useState(""); const [saving, setSaving] = useState(false); const [err, setErr] = useState("");
+  const save = async () => {
+    if (!note.trim()) return; setSaving(true);
+    try {
+      const resp = await fetch(`${BASE}/calls/${sid}/note`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ note }) });
+      if (resp.ok) { onSaved(); } else setErr("Failed to save note");
+    } catch (e: any) { setErr(e.message); } finally { setSaving(false); }
+  };
+  return (
+    <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 rounded-md">
+      <div className="bg-[#1a1a1e] border border-border rounded-lg p-4 w-72 shadow-2xl">
+        <div className="flex items-center gap-2 mb-3"><FileText className="w-4 h-4 text-primary" /><span className="text-sm font-semibold">Add Note</span></div>
+        <p className="text-[10px] text-muted-foreground mb-2 font-mono">{sid.slice(0,14)}…</p>
+        <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Call notes…" rows={3}
+          className="w-full text-xs bg-[#151518] border border-input rounded-md px-2 py-1.5 font-mono text-foreground resize-none focus:outline-none focus:ring-1 focus:ring-ring mb-2" />
+        {err && <p className="text-[10px] text-red-400 mb-2">{err}</p>}
+        <div className="flex gap-2">
+          <Button size="sm" onClick={save} disabled={saving || !note.trim()} className="flex-1 h-7 text-xs bg-primary font-mono">{saving ? "Saving…" : "Save Note"}</Button>
+          <Button size="sm" variant="outline" onClick={onClose} className="h-7 text-xs border-border">Cancel</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const STATUS_COLORS: Record<string, string> = {
   completed: "#22c55e",
@@ -274,13 +360,20 @@ export function LiveCallMonitor() {
   const [d1Logs, setD1Logs] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [analyticsDays, setAnalyticsDays] = useState(7);
+  const [recordings, setRecordings] = useState<Recording[]>([]);
+  const [conferences, setConferences] = useState<Conference[]>([]);
+  const [playingSid, setPlayingSid] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [dialog, setDialog] = useState<Dialog>(null);
+  const [showOutbound, setShowOutbound] = useState(false);
+  const [noteForSid, setNoteForSid] = useState<string | null>(null);
   const [notification, setNotification] = useState("");
   const [hangingUp, setHangingUp] = useState<string | null>(null);
+  const [endingConf, setEndingConf] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const fetchActive = useCallback(async () => {
     setLoading(true);
@@ -314,12 +407,53 @@ export function LiveCallMonitor() {
     } finally { setLoading(false); }
   }, [analyticsDays]);
 
+  const fetchRecordings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${BASE}/recordings?limit=25`);
+      if (resp.ok) { setRecordings(await resp.json()); setLastRefresh(new Date()); }
+    } finally { setLoading(false); }
+  }, []);
+
+  const fetchConferences = useCallback(async () => {
+    setLoading(true);
+    try {
+      const resp = await fetch(`${BASE}/conferences/active`);
+      if (resp.ok) { setConferences(await resp.json()); setLastRefresh(new Date()); }
+    } finally { setLoading(false); }
+  }, []);
+
   const refresh = useCallback(() => {
     if (activeTab === "live") fetchActive();
     else if (activeTab === "recent") fetchRecent();
     else if (activeTab === "logs") fetchD1Logs();
-    else fetchAnalytics();
-  }, [activeTab, fetchActive, fetchRecent, fetchD1Logs, fetchAnalytics]);
+    else if (activeTab === "analytics") fetchAnalytics();
+    else if (activeTab === "recordings") fetchRecordings();
+    else if (activeTab === "conferences") fetchConferences();
+  }, [activeTab, fetchActive, fetchRecent, fetchD1Logs, fetchAnalytics, fetchRecordings, fetchConferences]);
+
+  const togglePlayback = (rec: Recording) => {
+    if (playingSid === rec.sid) {
+      audioRef.current?.pause();
+      setPlayingSid(null);
+    } else {
+      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+      const audio = new Audio(rec.streamUrl);
+      audioRef.current = audio;
+      audio.play().catch(() => {});
+      audio.onended = () => setPlayingSid(null);
+      setPlayingSid(rec.sid);
+    }
+  };
+
+  const endConference = async (sid: string) => {
+    setEndingConf(sid);
+    try {
+      await fetch(`${BASE}/conferences/${sid}/end`, { method: "POST" });
+      showNotif("Conference ended");
+      fetchConferences();
+    } finally { setEndingConf(null); }
+  };
 
   // Auto-refresh live tab every 5s
   useEffect(() => {
@@ -360,32 +494,42 @@ export function LiveCallMonitor() {
         </div>
       )}
 
-      {/* Dialog overlay */}
+      {/* Dialog overlays */}
       {dialog && (
         dialog.type === "whisper"
           ? <WhisperDialog call={dialog.call} onClose={() => setDialog(null)} onSent={() => { setDialog(null); showNotif("Whisper sent!"); }} />
           : <TransferDialog call={dialog.call} onClose={() => setDialog(null)} onSent={() => { setDialog(null); showNotif("Call transferred!"); fetchActive(); }} />
       )}
+      {showOutbound && <OutboundDialog onClose={() => setShowOutbound(false)} />}
+      {noteForSid && <NoteDialog sid={noteForSid} onClose={() => setNoteForSid(null)} onSaved={() => { setNoteForSid(null); showNotif("Note saved!"); fetchD1Logs(); }} />}
 
       {/* Tabs + controls */}
       <div className="flex items-center gap-1 px-3 pt-2 pb-1.5 shrink-0 flex-wrap">
-        {(["live", "recent", "logs", "analytics"] as const).map(tab => (
+        {(["live", "recent", "recordings", "conferences", "logs", "analytics"] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)}
-            className={cn("px-2.5 py-1 rounded-md font-mono capitalize transition-colors text-[10px]",
+            className={cn("px-2 py-1 rounded-md font-mono transition-colors text-[10px] flex items-center gap-1",
               activeTab === tab ? "bg-primary/20 text-primary border border-primary/30" : "text-muted-foreground hover:text-foreground hover:bg-accent")}>
-            {tab === "live" && <><span className={cn("inline-block w-1.5 h-1.5 rounded-full mr-1.5", activeCalls.length > 0 ? "bg-green-400 animate-pulse" : "bg-muted-foreground/40")} />Live ({activeCalls.length})</>}
+            {tab === "live" && <><span className={cn("w-1.5 h-1.5 rounded-full shrink-0", activeCalls.length > 0 ? "bg-green-400 animate-pulse" : "bg-muted-foreground/40")} />Live ({activeCalls.length})</>}
             {tab === "recent" && "Recent"}
+            {tab === "recordings" && <><Play className="w-2.5 h-2.5" />Recordings</>}
+            {tab === "conferences" && <><Users2 className="w-2.5 h-2.5" />Conf</>}
             {tab === "logs" && "D1 Logs"}
-            {tab === "analytics" && <><BarChart2 className="w-3 h-3 inline mr-1" />Analytics</>}
+            {tab === "analytics" && <><BarChart2 className="w-2.5 h-2.5" />Stats</>}
           </button>
         ))}
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1.5">
           {activeTab === "live" && (
-            <button onClick={() => setAutoRefresh(a => !a)}
-              className={cn("text-[10px] font-mono px-2 py-1 rounded border transition-colors",
-                autoRefresh ? "border-green-500/30 text-green-400 bg-green-500/5" : "border-border text-muted-foreground")}>
-              {autoRefresh ? "Auto" : "Manual"}
-            </button>
+            <>
+              <button onClick={() => setShowOutbound(true)}
+                className="flex items-center gap-1 px-2 py-1 rounded border border-green-500/30 bg-green-500/5 text-green-400 text-[9px] font-mono hover:bg-green-500/10 transition-colors">
+                <Phone className="w-3 h-3" />Dial
+              </button>
+              <button onClick={() => setAutoRefresh(a => !a)}
+                className={cn("text-[9px] font-mono px-1.5 py-1 rounded border transition-colors",
+                  autoRefresh ? "border-green-500/30 text-green-400 bg-green-500/5" : "border-border text-muted-foreground")}>
+                {autoRefresh ? "Auto" : "Manual"}
+              </button>
+            </>
           )}
           <button onClick={refresh} disabled={loading}
             className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-accent transition-colors">
@@ -446,7 +590,7 @@ export function LiveCallMonitor() {
                     </div>
                   </div>
                   {/* Actions */}
-                  <div className="flex gap-1.5 mt-2 pt-2 border-t border-border/50">
+                  <div className="flex gap-1.5 mt-2 pt-2 border-t border-border/50 flex-wrap">
                     <button onClick={() => setDialog({ type: "whisper", call })}
                       className="flex items-center gap-1 px-2 py-1 rounded border border-primary/30 bg-primary/5 text-primary text-[10px] font-mono hover:bg-primary/10 transition-colors">
                       <Mic className="w-3 h-3" /> Whisper
@@ -454,6 +598,10 @@ export function LiveCallMonitor() {
                     <button onClick={() => setDialog({ type: "transfer", call })}
                       className="flex items-center gap-1 px-2 py-1 rounded border border-yellow-500/30 bg-yellow-500/5 text-yellow-400 text-[10px] font-mono hover:bg-yellow-500/10 transition-colors">
                       <ArrowRightLeft className="w-3 h-3" /> Transfer
+                    </button>
+                    <button onClick={() => setNoteForSid(call.sid)}
+                      className="flex items-center gap-1 px-2 py-1 rounded border border-purple-500/30 bg-purple-500/5 text-purple-400 text-[10px] font-mono hover:bg-purple-500/10 transition-colors">
+                      <FileText className="w-3 h-3" /> Note
                     </button>
                     <button onClick={() => handleHangup(call)} disabled={hangingUp === call.sid}
                       className="flex items-center gap-1 px-2 py-1 rounded border border-red-500/30 bg-red-500/5 text-red-400 text-[10px] font-mono hover:bg-red-500/10 transition-colors ml-auto">
@@ -650,11 +798,129 @@ export function LiveCallMonitor() {
                     <span className="text-foreground truncate">{log.from_number} → {log.to_number}</span>
                     <span className={cn("px-1 py-0.5 rounded text-[9px] border shrink-0", statusColor(log.status))}>{log.status}</span>
                     <span className="ml-auto text-muted-foreground/60 shrink-0">{log.duration}s</span>
+                    <button onClick={() => setNoteForSid(log.sid)}
+                      className="p-0.5 text-muted-foreground/40 hover:text-purple-400 transition-colors">
+                      <FileText className="w-3 h-3" />
+                    </button>
                   </div>
                 ))}
               </div>
             )}
+            {d1Logs.length > 0 && (
+              <a href={`${BASE}/calls/export`} target="_blank" rel="noreferrer"
+                className="mt-2 flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground hover:text-foreground transition-colors">
+                <Download className="w-3 h-3" />Export CSV
+              </a>
+            )}
           </>
+        )}
+
+        {/* RECORDINGS tab */}
+        {activeTab === "recordings" && (
+          recordings.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <Play className="w-6 h-6 mb-2 opacity-30" />
+              <p className="text-[11px]">No recordings found</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">Recordings appear here after calls with recording enabled</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {recordings.map(rec => (
+                <div key={rec.sid} className="bg-[#151518] border border-border rounded-lg p-2.5">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="min-w-0">
+                      <div className="font-mono text-[10px] text-foreground">{rec.sid.slice(0, 16)}…</div>
+                      <div className="font-mono text-[9px] text-muted-foreground">
+                        Call: {rec.callSid?.slice(0, 14)}… · {rec.duration}s · {rec.source ?? "unknown"}
+                      </div>
+                      <div className="font-mono text-[9px] text-muted-foreground/60">
+                        {rec.dateCreated ? new Date(rec.dateCreated).toLocaleString() : "–"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        onClick={() => togglePlayback(rec)}
+                        className={cn(
+                          "flex items-center gap-1 px-2.5 py-1 rounded border text-[10px] font-mono transition-colors",
+                          playingSid === rec.sid
+                            ? "border-green-500/40 bg-green-500/10 text-green-400"
+                            : "border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+                        )}>
+                        {playingSid === rec.sid ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
+                        {playingSid === rec.sid ? "Pause" : "Play"}
+                      </button>
+                      <a href={rec.downloadUrl} target="_blank" rel="noreferrer"
+                        className="p-1 text-muted-foreground hover:text-foreground hover:bg-accent rounded transition-colors">
+                        <Download className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+                  {playingSid === rec.sid && (
+                    <div className="flex items-center gap-1.5 pt-1.5 border-t border-border/50">
+                      <Volume2 className="w-3 h-3 text-green-400 animate-pulse" />
+                      <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+                        <div className="h-full w-1/3 bg-green-400 rounded-full animate-pulse" />
+                      </div>
+                      <span className="text-[9px] font-mono text-green-400">Playing…</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {/* CONFERENCES tab */}
+        {activeTab === "conferences" && (
+          conferences.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
+              <Users2 className="w-6 h-6 mb-2 opacity-30" />
+              <p className="text-[11px]">No active conferences</p>
+              <p className="text-[10px] text-muted-foreground/60 mt-1">Active Twilio conferences appear here in real time</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {conferences.map(conf => (
+                <div key={conf.sid} className="bg-[#151518] border border-border rounded-lg p-2.5">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div>
+                      <div className="font-mono text-[11px] font-semibold text-foreground">{conf.friendlyName || "Conference"}</div>
+                      <div className="font-mono text-[9px] text-muted-foreground">{conf.sid.slice(0, 18)}…</div>
+                      <div className="font-mono text-[9px] text-muted-foreground/60">
+                        {conf.dateCreated ? new Date(conf.dateCreated).toLocaleString() : "–"}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-mono text-green-400 border border-green-500/30 bg-green-500/5 px-1.5 py-0.5 rounded">
+                        {conf.status}
+                      </span>
+                      <span className="text-[9px] font-mono text-muted-foreground border border-border px-1.5 py-0.5 rounded">
+                        {conf.participants.length} participant{conf.participants.length !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                  </div>
+                  {conf.participants.length > 0 && (
+                    <div className="space-y-0.5 mb-2">
+                      {conf.participants.map((p, i) => (
+                        <div key={i} className="flex items-center gap-2 text-[9px] font-mono px-1.5 py-1 bg-[#0f0f12] rounded border border-border/50">
+                          <span className="text-muted-foreground truncate">{p.callSid.slice(0, 16)}…</span>
+                          <div className="ml-auto flex items-center gap-1.5">
+                            {p.muted && <span className="text-yellow-400 flex items-center gap-0.5"><MicOff className="w-2.5 h-2.5" />muted</span>}
+                            {p.hold && <span className="text-blue-400">hold</span>}
+                            {p.coaching && <span className="text-purple-400">coaching</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <button onClick={() => endConference(conf.sid)} disabled={endingConf === conf.sid}
+                    className="flex items-center gap-1 px-2 py-1 rounded border border-red-500/30 bg-red-500/5 text-red-400 text-[10px] font-mono hover:bg-red-500/10 transition-colors">
+                    <PhoneOff className="w-3 h-3" />{endingConf === conf.sid ? "Ending…" : "End Conference"}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>
