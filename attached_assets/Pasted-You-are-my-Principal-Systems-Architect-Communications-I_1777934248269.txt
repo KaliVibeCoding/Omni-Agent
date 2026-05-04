@@ -1,0 +1,272 @@
+You are my Principal Systems Architect, Communications Infrastructure Engineer, and AI Agent Orchestrator.
+
+Mission:
+Build a production-grade, multi-tenant, omnichannel communications platform that rivals and extends Twilio OmniChannel Agent.
+
+This platform must:
+- Use Twilio as a base carrier (SMS, Voice, WhatsApp)
+- Add a superior orchestration layer
+- Integrate with Zapier, GoHighLevel, Stripe, CRMs, and APIs
+- Support campaigns, call centers, automation, AI agents
+- Provide a modern UI matching Twilio Omni Agent design language
+- Be scalable, modular, and white-label ready
+
+Do NOT build a toy.
+Build an enterprise-grade system.
+
+--------------------------------------------------
+🧠 CORE PLATFORM OBJECTIVES
+--------------------------------------------------
+
+1. Unified Communication Layer
+- SMS
+- Voice (inbound/outbound)
+- AI voice agents
+- Email
+- WhatsApp
+- Web chat widget
+- API-triggered communication
+
+2. Campaign Engine
+- Broadcast SMS/email
+- Drip sequences
+- Trigger-based automations
+- Smart segmentation
+- A/B testing
+- Compliance filters (TCPA, opt-in/out)
+
+3. Call Center System
+- Inbound routing (IVR)
+- Outbound dialer
+- Predictive dialing logic
+- Call recording + transcription
+- Agent dashboard
+- Queue management
+- Whisper, barge, transfer
+
+4. AI Communication Layer
+- AI SMS responders
+- AI voice agents (Twilio + TTS/STT)
+- Intent detection
+- Lead qualification flows
+- Appointment booking
+- CRM updates via AI
+
+5. Integration Engine
+- Zapier-compatible webhook system
+- Native GoHighLevel integration
+- Stripe integration
+- REST API + Webhooks
+- Event-driven architecture
+
+6. Monetization Layer
+- Stripe subscriptions
+- Usage-based billing (per SMS, call, AI usage)
+- Agency white-label pricing tiers
+
+--------------------------------------------------
+🎨 UI / UX REQUIREMENTS
+--------------------------------------------------
+
+Design must match Twilio Omni Agent style:
+
+- Dark mode default
+- Clean SaaS dashboard
+- Sidebar navigation
+- Chat-style messaging UI
+- Real-time updates (WebSockets)
+- Agent workspace view
+- Campaign builder UI (visual flow builder)
+- Call center dashboard
+
+Tech:
+- Next.js (App Router)
+- TypeScript
+- TailwindCSS
+- Framer Motion
+- Zustand or Redux
+- WebSocket (real-time updates)
+
+--------------------------------------------------
+⚙️ BACKEND ARCHITECTURE
+--------------------------------------------------
+
+Stack:
+- FastAPI (Python)
+- PostgreSQL (primary DB)
+- Redis (queues, caching)
+- Celery or RQ (background jobs)
+- WebSocket server (real-time updates)
+
+Modules:
+- Auth (JWT, RBAC, multi-tenant)
+- Messaging Service
+- Voice Service (Twilio)
+- Campaign Engine
+- Workflow Engine
+- AI Agent Service
+- Billing Service (Stripe)
+- Integration Service
+
+--------------------------------------------------
+🔌 INTEGRATIONS (CRITICAL)
+--------------------------------------------------
+
+1. Zapier Compatibility
+- Create webhook endpoints:
+  /api/webhooks/zapier/incoming
+  /api/webhooks/zapier/outgoing
+
+- Trigger events:
+  - New lead
+  - Message received
+  - Call completed
+  - Appointment booked
+
+2. GoHighLevel Integration
+- Sync contacts
+- Sync conversations
+- Push campaign events
+- Trigger workflows
+
+3. Stripe Integration
+- Subscription plans
+- Metered billing
+- Webhook handling:
+  - invoice.paid
+  - subscription.updated
+  - payment_failed
+
+4. Twilio Integration
+- SMS send/receive
+- Voice calls
+- Webhooks:
+  - inbound SMS
+  - call status
+  - recordings
+  - transcription
+
+--------------------------------------------------
+📡 API DESIGN
+--------------------------------------------------
+
+REST + WebSocket hybrid
+
+Core endpoints:
+
+/auth/*
+/users/*
+/tenants/*
+/contacts/*
+/messages/send
+/messages/history
+/calls/initiate
+/calls/history
+/campaigns/*
+/workflows/*
+/ai/respond
+/integrations/*
+/billing/*
+
+Webhooks:
+/webhooks/twilio
+/webhooks/stripe
+/webhooks/zapier
+/webhooks/ghl
+
+--------------------------------------------------
+🧠 AI AGENT SYSTEM
+--------------------------------------------------
+
+Build agents for:
+
+1. Lead Qualification Agent
+2. Customer Support Agent
+3. Appointment Setter Agent
+4. Collections / Follow-up Agent
+5. Credit Repair Assistant Agent
+
+Each agent must:
+- Accept structured input
+- Use memory (Redis or vector DB)
+- Respond via SMS/voice/email
+- Log all actions
+
+--------------------------------------------------
+📊 DATABASE SCHEMA (MINIMUM)
+--------------------------------------------------
+
+Tables:
+- users
+- tenants
+- contacts
+- conversations
+- messages
+- calls
+- campaigns
+- workflows
+- events
+- integrations
+- subscriptions
+- usage_logs
+- agent_logs
+
+--------------------------------------------------
+🔐 COMPLIANCE LAYER
+--------------------------------------------------
+
+- TCPA compliance (opt-in/out tracking)
+- Message logging
+- Audit logs
+- Consent storage
+- Rate limiting
+- DNC handling
+
+--------------------------------------------------
+🚀 DELIVERABLES
+--------------------------------------------------
+
+You must generate:
+
+1. Full repo structure
+2. Backend (FastAPI) code
+3. Frontend (Next.js) code
+4. Database schema + migrations
+5. Stripe integration code
+6. Twilio integration code
+7. Zapier webhook system
+8. GoHighLevel connector
+9. AI agent modules
+10. Docker setup
+11. .env template
+12. Deployment instructions
+13. API documentation (OpenAPI)
+
+--------------------------------------------------
+⚠️ BUILD RULES
+--------------------------------------------------
+
+- No placeholders
+- No pseudo code
+- Everything must run
+- Production-ready
+- Secure by default
+- Modular
+- Scalable
+
+--------------------------------------------------
+🎯 FINAL GOAL
+--------------------------------------------------
+
+Create a platform that:
+
+- Makes Twilio EASY to use
+- Automates 90% of communication
+- Integrates with everything
+- Works for agencies, call centers, SaaS companies
+- Can be white-labeled and sold
+
+This is not a demo.
+This is a real SaaS product.
+
+Start building now.
