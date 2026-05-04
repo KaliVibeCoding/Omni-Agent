@@ -5,6 +5,9 @@ import twilioRoutes from "./routes/twilio";
 import anthropicRoutes from "./routes/anthropic";
 import openrouterRoutes from "./routes/openrouter";
 import webhookTesterRoutes from "./routes/webhook-tester";
+import videoRoutes from "./routes/video";
+import conversationsRoutes from "./routes/twilio-conversations";
+import telehealthRoutes from "./routes/telehealth";
 
 export interface Env {
   DB: D1Database;
@@ -19,10 +22,13 @@ export interface Env {
 
 const app = new Hono<{ Bindings: Env }>();
 
-app.use("*", cors({ origin: "*", allowHeaders: ["Content-Type", "Authorization"], allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"] }));
+app.use("*", cors({ origin: "*", allowHeaders: ["Content-Type", "Authorization"], allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"] }));
 
 app.route("/api", healthRoutes);
 app.route("/api/twilio", twilioRoutes);
+app.route("/api/twilio/video", videoRoutes);
+app.route("/api/twilio/conv", conversationsRoutes);
+app.route("/api/twilio/telehealth", telehealthRoutes);
 app.route("/api/anthropic", anthropicRoutes);
 app.route("/api/openrouter", openrouterRoutes);
 app.route("/api/webhook-tester", webhookTesterRoutes);

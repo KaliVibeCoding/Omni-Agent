@@ -55,3 +55,46 @@ CREATE TABLE IF NOT EXISTS contacts (
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- ─── Telehealth Tables ────────────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS appointments (
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+  patient_name     TEXT    NOT NULL,
+  patient_phone    TEXT    NOT NULL,
+  patient_email    TEXT,
+  provider_name    TEXT,
+  appointment_time TEXT    NOT NULL,
+  status           TEXT    NOT NULL DEFAULT 'scheduled',
+  type             TEXT    NOT NULL DEFAULT 'telehealth',
+  notes            TEXT,
+  reminder_sent    INTEGER NOT NULL DEFAULT 0,
+  video_room_sid   TEXT,
+  created_at       TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at       TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS video_rooms (
+  sid              TEXT PRIMARY KEY,
+  unique_name      TEXT,
+  friendly_name    TEXT,
+  type             TEXT    DEFAULT 'go',
+  status           TEXT    DEFAULT 'in-progress',
+  patient_identity TEXT,
+  provider_identity TEXT,
+  appointment_id   INTEGER REFERENCES appointments(id),
+  duration         INTEGER DEFAULT 0,
+  date_created     TEXT,
+  date_completed   TEXT,
+  created_at       TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- ─── Indexes ──────────────────────────────────────────────────────────────────
+
+CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_call_logs_created ON call_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_sms_logs_created ON sms_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(name);
+CREATE INDEX IF NOT EXISTS idx_appointments_time ON appointments(appointment_time);
+CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
+CREATE INDEX IF NOT EXISTS idx_appointments_phone ON appointments(patient_phone);

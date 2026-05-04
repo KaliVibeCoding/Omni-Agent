@@ -284,9 +284,9 @@ twilioRoutes.post("/calls/:sid/note", async (c) => {
 
 twilioRoutes.post("/calls/:sid/whisper", async (c) => {
   const client = getTwilioClient(c.env);
-  const { queueName, twimlUrl } = await c.req.json<{ queueName?: string; twimlUrl?: string }>();
-  const twiml = twimlUrl ? undefined : `<Response><Enqueue>${queueName ?? "support"}</Enqueue></Response>`;
-  const updated = await client.calls(c.req.param("sid")).update(twimlUrl ? { url: twimlUrl } : { twiml: twiml! });
+  const { message = "You have a whispered message from your supervisor." } = await c.req.json<{ message?: string }>();
+  const twiml = `<Response><Say voice="Polly.Joanna-Neural">${message}</Say></Response>`;
+  const updated = await client.calls(c.req.param("sid")).update({ twiml });
   return c.json({ sid: updated.sid, status: updated.status });
 });
 
