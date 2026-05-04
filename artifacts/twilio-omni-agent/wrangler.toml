@@ -1,0 +1,9 @@
+name = "twilio-omni-agent"
+pages_build_output_dir = "dist/public"
+compatibility_date = "2025-01-01"
+
+# Build command: pnpm --filter @workspace/twilio-omni-agent run build
+# The Pages project must have CF_WORKER_URL set to your deployed Worker URL.
+
+# ── Pages Functions env vars (set in Cloudflare Dashboard) ────────────────────
+# CF_WORKER_URL = https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev

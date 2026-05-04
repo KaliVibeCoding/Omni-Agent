@@ -10,8 +10,8 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Node.js version**: 24
 - **Package manager**: pnpm
 - **TypeScript version**: 5.9
-- **API framework**: Express 5
-- **Database**: PostgreSQL + Drizzle ORM
+- **API framework (dev)**: Express 5 + Replit PostgreSQL + Drizzle ORM
+- **API framework (production/CF)**: Hono + Cloudflare D1 (SQLite)
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
@@ -23,6 +23,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
+- `pnpm --filter @workspace/cf-worker typecheck` — typecheck the Cloudflare Worker
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
 
@@ -50,8 +51,34 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 
 **Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui components, lucide icons, date-fns, dark theme CSS variables.
 
-### api-server (port 8080)
-Express API server with all Twilio routes at `/api/twilio/...`
+**Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
+
+### twilio-omni-agent (previewPath: `/twilio-omni-agent`)
+AI-powered Twilio Omni-Agent chat. React + Vite frontend.
+- Full conversation history with Anthropic and OpenRouter models
+- Streaming AI responses
+- Twilio expert system prompt (TWILIO OMNI-AGENT v3.0)
+
+**Cloudflare Pages deployment:** `artifacts/twilio-omni-agent/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
+
+### cf-worker (Cloudflare Worker — production API)
+Hono-based Cloudflare Worker replacing the Express API server for production.
+
+**Location:** `artifacts/cf-worker/`
+**Entry:** `artifacts/cf-worker/src/index.ts`
+
+**Routes:**
+- `GET /api/healthz` — health check
+- `GET|POST|PUT|DELETE /api/twilio/*` — all Twilio routes (identical to Express API)
+- `GET|POST|DELETE /api/anthropic/*` — Anthropic AI conversations with D1 storage
+- `GET|POST|DELETE /api/openrouter/*` — OpenRouter AI conversations with D1 storage
+- `POST /api/webhook-tester/send` — webhook proxy/tester
+
+**Database:** Cloudflare D1 (SQLite) via `artifacts/cf-worker/db/schema.sql`
+**Config:** `artifacts/cf-worker/wrangler.toml` (replace `YOUR_D1_DATABASE_ID`)
+
+### api-server (port 8080 — Replit dev server)
+Express API server for local development. Uses PostgreSQL + Drizzle.
 
 **Key route groups:**
 - `/api/twilio/account` — account info
@@ -67,7 +94,65 @@ Express API server with all Twilio routes at `/api/twilio/...`
 - `/api/twilio/studio/flows` — Studio
 - `/api/twilio/queues` — queues
 - `/api/twilio/conferences/active` — conferences
-- `/api/twilio/contacts` — local contacts (PostgreSQL)
+- `/api/twilio/contacts` — local contacts (PostgreSQL via Drizzle)
 - `/api/twilio/lookup` — number lookup
 
 **Credentials** stored as Replit secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER`.
+
+---
+
+## Cloudflare Deployment Guide
+
+### Step 1 — Install Wrangler globally (or use npx)
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+### Step 2 — Create the D1 database
+```bash
+cd artifacts/cf-worker
+wrangler d1 create twilio-platform
+# Copy the database_id output, paste into wrangler.toml replacing YOUR_D1_DATABASE_ID
+```
+
+### Step 3 — Apply D1 schema
+```bash
+wrangler d1 execute twilio-platform --file=db/schema.sql --remote
+```
+
+### Step 4 — Set Worker secrets
+```bash
+wrangler secret put TWILIO_ACCOUNT_SID
+wrangler secret put TWILIO_AUTH_TOKEN
+wrangler secret put TWILIO_API_KEY_SID
+wrangler secret put TWILIO_API_KEY_SECRET
+wrangler secret put TWILIO_PHONE_NUMBER
+wrangler secret put ANTHROPIC_API_KEY
+wrangler secret put OPENROUTER_API_KEY   # optional
+```
+
+### Step 5 — Deploy the Worker
+```bash
+wrangler deploy
+# Note the Worker URL: https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev
+```
+
+### Step 6 — Build and deploy the frontends (Cloudflare Pages)
+For each frontend, create a Pages project in the Cloudflare Dashboard:
+- **Build command:** `pnpm --filter @workspace/twilio-platform run build` (or twilio-omni-agent)
+- **Build output:** `artifacts/twilio-platform/dist/public` (or twilio-omni-agent)
+- **Root directory:** `/` (monorepo root)
+- **Environment variable:** `CF_WORKER_URL=https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev`
+
+Or use Wrangler Pages:
+```bash
+cd artifacts/twilio-platform
+wrangler pages deploy dist/public --project-name twilio-platform
+```
+
+### AI Clients — No Replit Proxy Required
+Both Anthropic and OpenRouter clients fall back to direct API keys:
+- `ANTHROPIC_API_KEY` — direct Anthropic access (no Replit proxy)
+- `OPENROUTER_API_KEY` — direct OpenRouter access at `https://openrouter.ai/api/v1`
+- Replit proxy env vars still work if present (`AI_INTEGRATIONS_*`)

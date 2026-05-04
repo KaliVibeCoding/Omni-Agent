@@ -1,0 +1,27 @@
+name = "twilio-platform-api"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# ── D1 Database ────────────────────────────────────────────────────────────────
+# Run: wrangler d1 create twilio-platform
+# Then replace database_id below with the output ID.
+[[d1_databases]]
+binding = "DB"
+database_name = "twilio-platform"
+database_id = "YOUR_D1_DATABASE_ID"
+
+# ── Secrets (set via CLI or Dashboard) ────────────────────────────────────────
+# wrangler secret put TWILIO_ACCOUNT_SID
+# wrangler secret put TWILIO_AUTH_TOKEN
+# wrangler secret put TWILIO_API_KEY_SID
+# wrangler secret put TWILIO_API_KEY_SECRET
+# wrangler secret put TWILIO_PHONE_NUMBER
+# wrangler secret put ANTHROPIC_API_KEY
+# wrangler secret put OPENROUTER_API_KEY
+
+[vars]
+# Non-secret vars can go here
