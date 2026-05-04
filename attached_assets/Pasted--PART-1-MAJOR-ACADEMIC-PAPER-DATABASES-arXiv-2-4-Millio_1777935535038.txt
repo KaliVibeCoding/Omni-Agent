@@ -1,0 +1,1271 @@
+## **📚 PART 1: MAJOR ACADEMIC PAPER DATABASES**
+
+
+### **arXiv - 2.4+ Million Papers**
+
+
+```json
+{
+   "arxiv": {
+       "main_site": "https://arxiv.org/",
+       "api_endpoint": "http://export.arxiv.org/api/query",
+       "bulk_access": "https://info.arxiv.org/help/bulk_data.html",
+       "oai_pmh": "http://export.arxiv.org/oai2",
+       "categories": {
+           "cs_AI": "http://export.arxiv.org/api/query?search_query=cat:cs.AI&max_results=10000",
+           "cs_LG": "http://export.arxiv.org/api/query?search_query=cat:cs.LG&max_results=10000",
+           "cs_CL": "http://export.arxiv.org/api/query?search_query=cat:cs.CL&max_results=10000",
+           "cs_CV": "http://export.arxiv.org/api/query?search_query=cat:cs.CV&max_results=10000",
+           "cs_NE": "http://export.arxiv.org/api/query?search_query=cat:cs.NE&max_results=10000",
+           "cs_RO": "http://export.arxiv.org/api/query?search_query=cat:cs.RO&max_results=10000",
+           "cs_SE": "http://export.arxiv.org/api/query?search_query=cat:cs.SE&max_results=10000",
+           "stat_ML": "http://export.arxiv.org/api/query?search_query=cat:stat.ML&max_results=10000"
+       },
+       "bulk_data_sources": {
+           "s3_bucket": "s3://arxiv/",
+           "kaggle": "https://www.kaggle.com/datasets/Cornell-University/arxiv",
+           "full_text": "https://info.arxiv.org/help/bulk_data_s3.html"
+       },
+       "example_queries": {
+           "all_ai": "http://export.arxiv.org/api/query?search_query=all:artificial+intelligence&start=0&max_results=10000",
+           "recent_ml": "http://export.arxiv.org/api/query?search_query=cat:cs.LG&sortBy=submittedDate&sortOrder=descending&max_results=1000",
+           "langchain": "http://export.arxiv.org/api/query?search_query=all:langchain&max_results=1000",
+           "rag": "http://export.arxiv.org/api/query?search_query=all:retrieval+augmented+generation&max_results=1000",
+           "transformers": "http://export.arxiv.org/api/query?search_query=all:transformer+architecture&max_results=5000"
+       }
+   }
+}
+```
+
+
+### **Semantic Scholar - 200+ Million Papers**
+
+
+```json
+{
+   "semantic_scholar": {
+       "main_site": "https://www.semanticscholar.org/",
+       "api_base": "https://api.semanticscholar.org/graph/v1",
+       "bulk_downloads": "https://api.semanticscholar.org/datasets/v1",
+       "endpoints": {
+           "search": "https://api.semanticscholar.org/graph/v1/paper/search?query={query}&fields=title,abstract,authors,year,citationCount,influentialCitationCount,url,openAccessPdf",
+           "bulk_search": "https://api.semanticscholar.org/graph/v1/paper/search/bulk",
+           "paper_details": "https://api.semanticscholar.org/graph/v1/paper/{paper_id}",
+           "author_papers": "https://api.semanticscholar.org/graph/v1/author/{author_id}/papers",
+           "recommendations": "https://api.semanticscholar.org/recommendations/v1/papers/"
+       },
+       "datasets": {
+           "full_corpus": "https://api.semanticscholar.org/datasets/v1/release/",
+           "papers": "https://api.semanticscholar.org/datasets/v1/release/latest/dataset/papers",
+           "authors": "https://api.semanticscholar.org/datasets/v1/release/latest/dataset/authors",
+           "citations": "https://api.semanticscholar.org/datasets/v1/release/latest/dataset/citations",
+           "abstracts": "https://api.semanticscholar.org/datasets/v1/release/latest/dataset/abstracts"
+       },
+       "example_searches": {
+           "machine_learning": "https://api.semanticscholar.org/graph/v1/paper/search?query=machine+learning&fields=title,abstract,year,citationCount&limit=1000",
+           "deep_learning": "https://api.semanticscholar.org/graph/v1/paper/search?query=deep+learning&fields=title,abstract,year,citationCount&limit=1000",
+           "nlp": "https://api.semanticscholar.org/graph/v1/paper/search?query=natural+language+processing&fields=title,abstract,year,citationCount&limit=1000",
+           "computer_vision": "https://api.semanticscholar.org/graph/v1/paper/search?query=computer+vision&fields=title,abstract,year,citationCount&limit=1000"
+       }
+   }
+}
+```
+
+
+### **PubMed Central - Medical & Life Sciences**
+
+
+```json
+{
+   "pubmed": {
+       "main_site": "https://pubmed.ncbi.nlm.nih.gov/",
+       "api_base": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/",
+       "endpoints": {
+           "search": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={query}&retmax=10000",
+           "fetch": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={ids}&retmode=xml",
+           "summary": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={ids}"
+       },
+       "pmc_open_access": {
+           "ftp": "ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/",
+           "oa_bulk": "https://ftp.ncbi.nlm.nih.gov/pub/pmc/oa_bulk/",
+           "api": "https://www.ncbi.nlm.nih.gov/pmc/tools/openftlist/"
+       }
+   }
+}
+```
+
+
+### **IEEE Xplore - Engineering & Technology**
+Api key qqhhwvg9nwsfzhk6gs5djh8v
+
+
+```json
+{
+   "ieee": {
+       "main_site": "https://ieeexplore.ieee.org/",
+       "api_base": "https://ieeexploreapi.ieee.org/api/v1",
+       "endpoints": {
+           "search": "https://ieeexploreapi.ieee.org/api/v1/search/articles",
+           "metadata": "https://ieeexploreapi.ieee.org/api/v1/search/articles?article_number={id}"
+       },
+       "note": "Requires API key from https://developer.ieee.org/"
+   }
+}
+```
+
+
+### **ACM Digital Library - Computer Science**
+
+
+```json
+{
+   "acm": {
+       "main_site": "https://dl.acm.org/",
+       "search": "https://dl.acm.org/action/doSearch",
+       "collections": {
+           "journals": "https://dl.acm.org/journals",
+           "proceedings": "https://dl.acm.org/proceedings",
+           "magazines": "https://dl.acm.org/magazines"
+       }
+   }
+}
+```
+
+
+### **DBLP - Computer Science Bibliography**
+
+
+```json
+{
+   "dblp": {
+       "main_site": "https://dblp.org/",
+       "api": "https://dblp.org/search/publ/api",
+       "endpoints": {
+           "search": "https://dblp.org/search/publ/api?q={query}&format=json&h=1000",
+           "author": "https://dblp.org/search/author/api?q={author}&format=json",
+           "venue": "https://dblp.org/search/venue/api?q={venue}&format=json"
+       },
+       "bulk_data": {
+           "xml_dump": "https://dblp.org/xml/",
+           "complete_db": "https://dblp.org/xml/dblp.xml.gz"
+       }
+   }
+}
+```
+
+
+### **OpenAlex - Open Bibliographic Database**
+
+
+```json
+{
+   "openalex": {
+       "main_site": "https://openalex.org/",
+       "api_base": "https://api.openalex.org",
+       "docs": "https://docs.openalex.org/",
+       "endpoints": {
+           "works": "https://api.openalex.org/works?search={query}",
+           "authors": "https://api.openalex.org/authors?search={query}",
+           "sources": "https://api.openalex.org/sources?search={query}",
+           "institutions": "https://api.openalex.org/institutions",
+           "concepts": "https://api.openalex.org/concepts"
+       },
+       "bulk_data": {
+           "snapshot": "https://openalex.org/snapshot",
+           "s3_bucket": "s3://openalex"
+       },
+       "features": {
+           "free_api": true,
+           "no_rate_limits": true,
+           "250M_papers": true,
+           "open_source": true
+       }
+   }
+}
+```
+
+
+---
+
+
+## **🤖 PART 2: MACHINE LEARNING SPECIFIC RESOURCES**
+
+
+### **Papers with Code - ML Research with Implementations**
+
+
+```json
+{
+   "papers_with_code": {
+       "main_site": "https://paperswithcode.com/",
+       "api": "https://paperswithcode.com/api/v1/",
+       "endpoints": {
+           "papers": "https://paperswithcode.com/api/v1/papers/",
+           "repositories": "https://paperswithcode.com/api/v1/repositories/",
+           "datasets": "https://paperswithcode.com/api/v1/datasets/",
+           "methods": "https://paperswithcode.com/api/v1/methods/",
+           "sota": "https://paperswithcode.com/api/v1/sota/"
+       },
+       "popular_topics": {
+           "computer_vision": "https://paperswithcode.com/area/computer-vision",
+           "nlp": "https://paperswithcode.com/area/natural-language-processing",
+           "speech": "https://paperswithcode.com/area/speech",
+           "rl": "https://paperswithcode.com/area/playing-games",
+           "graphs": "https://paperswithcode.com/area/graphs",
+           "time_series": "https://paperswithcode.com/area/time-series"
+       },
+       "latest": {
+           "trending": "https://paperswithcode.com/greatest",
+           "latest_papers": "https://paperswithcode.com/latest",
+           "sota_updates": "https://paperswithcode.com/sota"
+       }
+   }
+}
+```
+
+
+### **Hugging Face Papers**
+
+
+```json
+{
+   "huggingface_papers": {
+       "main_site": "https://huggingface.co/papers",
+       "api": "https://huggingface.co/api/",
+       "endpoints": {
+           "daily_papers": "https://huggingface.co/papers",
+           "models": "https://huggingface.co/api/models",
+           "datasets": "https://huggingface.co/api/datasets"
+       },
+       "collections": {
+           "transformers": "https://huggingface.co/docs/transformers",
+           "diffusers": "https://huggingface.co/docs/diffusers",
+           "tokenizers": "https://huggingface.co/docs/tokenizers"
+       }
+   }
+}
+```
+
+
+### **MLCommons - ML Benchmarks & Papers**
+
+
+```json
+{
+   "mlcommons": {
+       "main_site": "https://mlcommons.org/",
+       "benchmarks": "https://mlcommons.org/en/training-normal-11/",
+       "datasets": "https://mlcommons.org/en/datasets/",
+       "github": "https://github.com/mlcommons"
+   }
+}
+```
+
+
+---
+
+
+## **🗄️ PART 3: RESEARCH DATA REPOSITORIES**
+
+
+### **Zenodo - General Research Repository**
+
+
+```json
+{
+   "zenodo": {
+       "main_site": "https://zenodo.org/",
+       "api": "https://zenodo.org/api/",
+       "endpoints": {
+           "search": "https://zenodo.org/api/records/?q={query}&size=1000",
+           "communities": "https://zenodo.org/api/communities/",
+           "deposits": "https://zenodo.org/api/deposit/depositions"
+       },
+       "features": {
+           "50M_records": true,
+           "open_access": true,
+           "doi_minting": true,
+           "unlimited_storage": true
+       }
+   }
+}
+```
+
+
+### **Figshare - Research Outputs**
+
+
+```json
+{
+   "figshare": {
+       "main_site": "https://figshare.com/",
+       "api": "https://docs.figshare.com/",
+       "endpoints": {
+           "search": "https://api.figshare.com/v2/articles/search",
+           "public_articles": "https://api.figshare.com/v2/articles",
+           "categories": "https://api.figshare.com/v2/categories"
+       }
+   }
+}
+```
+
+
+### **Dataverse - Research Data**
+
+
+```json
+{
+   "dataverse": {
+       "main_site": "https://dataverse.org/",
+       "harvard": "https://dataverse.harvard.edu/",
+       "api": "https://guides.dataverse.org/en/latest/api/",
+       "endpoints": {
+           "search": "https://dataverse.harvard.edu/api/search?q={query}",
+           "datasets": "https://dataverse.harvard.edu/api/datasets/"
+       }
+   }
+}
+```
+
+
+### **Open Science Framework (OSF)**
+
+
+```json
+{
+   "osf": {
+       "main_site": "https://osf.io/",
+       "api": "https://developer.osf.io/",
+       "endpoints": {
+           "search": "https://api.osf.io/v2/search/",
+           "nodes": "https://api.osf.io/v2/nodes/",
+           "preprints": "https://api.osf.io/v2/preprints/"
+       }
+   }
+}
+```
+
+
+---
+
+
+## **📊 PART 4: MACHINE LEARNING DATASETS**
+
+
+### **Kaggle - 50,
+000+ Datasets**
+
+
+```json
+{
+   "kaggle": {
+       "main_site": "https://www.kaggle.com/",
+       "datasets": "https://www.kaggle.com/datasets",
+       "api": "https://github.com/Kaggle/kaggle-api",
+       "api_usage": {
+           "install": "pip install kaggle",
+           "authenticate": "~/.kaggle/kaggle.json",
+           "list_datasets": "kaggle datasets list",
+           "download": "kaggle datasets download -d {dataset-name}"
+       },
+       "popular_datasets": {
+           "imagenet": "https://www.kaggle.com/c/imagenet-object-localization-challenge",
+           "coco": "https://www.kaggle.com/datasets/awsaf49/coco-2017-dataset",
+           "mnist": "https://www.kaggle.com/datasets/hojjatk/mnist-dataset",
+           "cifar10": "https://www.kaggle.com/datasets/cifar10",
+           "imdb": "https://www.kaggle.com/datasets/lakshmi25npathi/imdb-dataset-of-50k-movie-reviews"
+       },
+       "competitions": "https://www.kaggle.com/competitions",
+       "notebooks": "https://www.kaggle.com/code"
+   }
+}
+```
+
+
+### **UCI Machine Learning Repository**
+
+
+```json
+{
+   "uci_ml": {
+       "main_site": "https://archive.ics.uci.edu/ml/",
+       "datasets": "https://archive.ics.uci.edu/ml/datasets.php",
+       "api": "https://archive.ics.uci.edu/ml/machine-learning-databases/",
+       "popular_datasets": {
+           "iris": "https://archive.ics.uci.edu/ml/datasets/iris",
+           "wine": "https://archive.ics.uci.edu/ml/datasets/wine",
+           "breast_cancer": "https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+%28Diagnostic%29",
+           "adult": "https://archive.ics.uci.edu/ml/datasets/adult",
+           "heart_disease": "https://archive.ics.uci.edu/ml/datasets/heart+disease"
+       }
+   }
+}
+```
+
+
+### **Google Dataset Search**
+
+
+```json
+{
+   "google_dataset_search": {
+       "main_site": "https://datasetsearch.research.google.com/",
+       "indexed_datasets": "25M+",
+       "note": "Web interface only, no public API"
+   }
+}
+```
+
+
+### **OpenML - 20,
+000+ Datasets**
+
+
+```json
+{
+   "openml": {
+       "main_site": "https://www.openml.org/",
+       "api": "https://www.openml.org/apis",
+       "endpoints": {
+           "datasets": "https://www.openml.org/api/v1/json/data/list",
+           "tasks": "https://www.openml.org/api/v1/json/task/list",
+           "flows": "https://www.openml.org/api/v1/json/flow/list",
+           "runs": "https://www.openml.org/api/v1/json/run/list"
+       },
+       "python_api": {
+           "install": "pip install openml",
+           "list_datasets": "openml.datasets.list_datasets()",
+           "get_dataset": "openml.datasets.get_dataset(dataset_id)"
+       }
+   }
+}
+```
+
+
+### **TensorFlow Datasets**
+
+
+```json
+{
+   "tensorflow_datasets": {
+       "main_site": "https://www.tensorflow.org/datasets",
+       "catalog": "https://www.tensorflow.org/datasets/catalog/overview",
+       "github": "https://github.com/tensorflow/datasets",
+       "usage": {
+           "install": "pip install tensorflow-datasets",
+           "load": "import tensorflow_datasets as tfds"
+       },
+       "categories": {
+           "audio": "https://www.tensorflow.org/datasets/catalog/overview#audio",
+           "image": "https://www.tensorflow.org/datasets/catalog/overview#image",
+           "text": "https://www.tensorflow.org/datasets/catalog/overview#text",
+           "video": "https://www.tensorflow.org/datasets/catalog/overview#video"
+       }
+   }
+}
+```
+
+
+### **AWS Open Data Registry**
+
+
+```json
+{
+   "aws_open_data": {
+       "main_site": "https://registry.opendata.aws/",
+       "datasets": "https://registry.opendata.aws/datasets/",
+       "popular": {
+           "common_crawl": "https://registry.opendata.aws/commoncrawl/",
+           "genome": "https://registry.opendata.aws/1000-genomes/",
+           "satellite": "https://registry.opendata.aws/sentinel-2/",
+           "weather": "https://registry.opendata.aws/noaa-ghcn/"
+       }
+   }
+}
+```
+
+
+---
+
+
+## **🧠 PART 5: SPECIALIZED ML/AI RESOURCES**
+
+
+### **NLP Datasets & Resources**
+
+
+```json
+{
+   "nlp_resources": {
+       "common_crawl": {
+           "main_site": "https://commoncrawl.org/",
+           "data_access": "https://commoncrawl.org/the-data/get-started/",
+           "s3_bucket": "s3://commoncrawl/"
+       },
+       "the_pile": {
+           "main_site": "https://pile.eleuther.ai/",
+           "download": "https://the-eye.eu/public/AI/pile/",
+           "size": "825 GB"
+       },
+       "c4": {
+           "name": "Colossal Clean Crawled Corpus",
+           "huggingface": "https://huggingface.co/datasets/c4",
+           "size": "750 GB"
+       },
+       "wikipedia": {
+           "dumps": "https://dumps.wikimedia.org/",
+           "latest": "https://dumps.wikimedia.org/enwiki/latest/",
+           "huggingface": "https://huggingface.co/datasets/wikipedia"
+       },
+       "bookcorpus": {
+           "huggingface": "https://huggingface.co/datasets/bookcorpus"
+       },
+       "gutenberg": {
+           "main_site": "https://www.gutenberg.org/",
+           "api": "https://gutendex.com/"
+       }
+   }
+}
+```
+
+
+### **Computer Vision Datasets**
+
+
+```json
+{
+   "cv_datasets": {
+       "imagenet": {
+           "main_site": "https://www.image-net.org/",
+           "download": "https://www.image-net.org/download.php",
+           "kaggle": "https://www.kaggle.com/c/imagenet-object-localization-challenge"
+       },
+       "coco": {
+           "main_site": "https://cocodataset.org/",
+           "download": "https://cocodataset.org/#download",
+           "api": "https://github.com/cocodataset/cocoapi"
+       },
+       "open_images": {
+           "main_site": "https://storage.googleapis.com/openimages/web/index.html",
+           "download": "https://storage.googleapis.com/openimages/web/download.html",
+           "size": "9M images"
+       },
+       "cifar": {
+           "cifar10": "https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz",
+           "cifar100": "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
+       },
+       "celeba": {
+           "main_site": "http://mmlab.ie.cuhk.edu.hk/projects/CelebA.html",
+           "kaggle": "https://www.kaggle.com/datasets/jessicali9530/celeba-dataset"
+       },
+       "voc": {
+           "main_site": "http://host.robots.ox.ac.uk/pascal/VOC/",
+           "download": "http://host.robots.ox.ac.uk/pascal/VOC/voc2012/"
+       }
+   }
+}
+```
+
+
+### **Audio/Speech Datasets**
+
+
+```json
+{
+   "audio_datasets": {
+       "librispeech": {
+           "main_site": "https://www.openslr.org/12",
+           "download": "https://www.openslr.org/resources/12/"
+       },
+       "common_voice": {
+           "main_site": "https://commonvoice.mozilla.org/",
+           "download": "https://commonvoice.mozilla.org/en/datasets"
+       },
+       "voxceleb": {
+           "main_site": "https://www.robots.ox.ac.uk/~vgg/data/voxceleb/",
+           "voxceleb1": "https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox1.html",
+           "voxceleb2": "https://www.robots.ox.ac.uk/~vgg/data/voxceleb/vox2.html"
+       }
+   }
+}
+```
+
+
+### **Reinforcement Learning**
+
+
+```json
+{
+   "rl_resources": {
+       "openai_gym": {
+           "main_site": "https://gym.openai.com/",
+           "github": "https://github.com/openai/gym",
+           "docs": "https://www.gymlibrary.dev/"
+       },
+       "atari": {
+           "ale": "https://github.com/mgbellemare/Arcade-Learning-Environment",
+           "roms": "https://github.com/openai/atari-py"
+       },
+       "dm_control": {
+           "github": "https://github.com/deepmind/dm_control",
+           "paper": "https://arxiv.org/abs/1801.00690"
+       }
+   }
+}
+```
+
+
+---
+
+
+## **🔬 PART 6: PREPRINT SERVERS**
+
+
+### **arXiv** (Already covered above)
+
+
+### **bioRxiv - Biology Preprints**
+
+
+```json
+{
+   "biorxiv": {
+       "main_site": "https://www.biorxiv.org/",
+       "api": "https://api.biorxiv.org/",
+       "endpoints": {
+           "details": "https://api.biorxiv.org/details/{server}/{doi}",
+           "collection": "https://api.biorxiv.org/collection/{collection}",
+           "publisher": "https://api.biorxiv.org/publisher/{publisher}/{date}"
+       }
+   }
+}
+```
+
+
+### **medRxiv - Medical Preprints**
+
+
+```json
+{
+   "medrxiv": {
+       "main_site": "https://www.medrxiv.org/",
+       "api": "https://api.biorxiv.org/",
+       "note": "Uses same API as bioRxiv"
+   }
+}
+```
+
+
+### **SSRN - Social Sciences**
+
+
+```json
+{
+   "ssrn": {
+       "main_site": "https://www.ssrn.com/",
+       "search": "https://papers.ssrn.com/sol3/DisplayAbstractSearch.cfm"
+   }
+}
+```
+
+
+---
+
+
+## **📖 PART 7: OPEN ACCESS JOURNALS & PUBLISHERS**
+
+
+### **PLOS (Public Library of Science)**
+
+
+```json
+{
+   "plos": {
+       "main_site": "https://plos.org/",
+       "api": "https://api.plos.org/",
+       "journals": {
+           "plos_one": "https://journals.plos.org/plosone/",
+           "plos_biology": "https://journals.plos.org/plosbiology/",
+           "plos_medicine": "https://journals.plos.org/plosmedicine/",
+           "plos_computational_biology": "https://journals.plos.org/ploscompbiol/"
+       },
+       "search": "https://api.plos.org/search?q={query}"
+   }
+}
+```
+
+
+### **arXiv** (Open Access)
+
+
+### **MDPI - Multidisciplinary Digital Publishing Institute**
+
+
+```json
+{
+   "mdpi": {
+       "main_site": "https://www.mdpi.com/",
+       "journals": "https://www.mdpi.com/about/journals",
+       "api": "https://www.mdpi.com/about/openaccess"
+   }
+}
+```
+
+
+### **Frontiers**
+
+
+```json
+{
+   "frontiers": {
+       "main_site": "https://www.frontiersin.org/",
+       "journals": "https://www.frontiersin.org/journals"
+   }
+}
+```
+
+
+---
+
+
+## **🛠️ PART 8: RESEARCH TOOLS & AGGREGATORS**
+
+
+### **Google Scholar**
+
+
+```json
+{
+   "google_scholar": {
+       "main_site": "https://scholar.google.com/",
+       "scraping_tools": {
+           "scholarly": "https://github.com/scholarly-python-package/scholarly",
+           "serpapi": "https://serpapi.com/google-scholar-api"
+       },
+       "note": "No official API, use third-party tools"
+   }
+}
+```
+
+
+### **Microsoft Academic Graph (Retired, use OpenAlex)**
+
+
+```json
+{
+   "microsoft_academic": {
+       "status": "Retired December 2021",
+       "successor": "OpenAlex (https://openalex.org/)"
+   }
+}
+```
+
+
+### **Dimensions**
+
+
+```json
+{
+   "dimensions": {
+       "main_site": "https://www.dimensions.ai/",
+       "api": "https://docs.dimensions.ai/dsl/",
+       "free_tier": "Limited access to API"
+   }
+}
+```
+
+
+### **Web of Science**
+
+
+```json
+{
+   "web_of_science": {
+       "main_site": "https://www.webofscience.com/",
+       "api": "https://developer.clarivate.com/apis/wos",
+       "note": "Requires institutional access or subscription"
+   }
+}
+```
+
+
+### **Scopus**
+
+
+```json
+{
+   "scopus": {
+       "main_site": "https://www.scopus.com/",
+       "api": "https://dev.elsevier.com/",
+       "note": "Requires API key and institutional access"
+   }
+}
+```
+
+
+---
+
+
+## **🤖 PART 9: AUTOMATED SCRAPING SCRIPT**
+
+
+### **Universal Academic Paper Scraper**
+
+
+```python
+# universal_academic_scraper.py
+
+
+import requests
+import xml.etree.ElementTree as ET
+from typing import List, Dict
+import time
+import json
+from concurrent.futures import ThreadPoolExecutor
+import os
+
+
+class UniversalAcademicScraper: """
+   Scrape all major academic databases for papers
+   """
+  
+   def __init__(self):
+       self.session = requests.Session()
+       self.results = {
+   "arxiv": [],
+   "semantic_scholar": [],
+   "pubmed": [],
+   "openalex": [],
+   "papers_with_code": []
+}
+  
+   def scrape_arxiv(self, query: str, max_results: int = 10000): """
+       Scrape arXiv for papers
+       """
+      
+       print(f"🔍 Scraping arXiv for: {query}")
+      
+       base_url = "http://export.arxiv.org/api/query"
+       params = {
+   "search_query": f"all:{query}",
+   "start": 0,
+   "max_results": max_results,
+   "sortBy": "submittedDate",
+   "sortOrder": "descending"
+}
+      
+       response = self.session.get(base_url, params=params)
+      
+       # Parse XML
+       root = ET.fromstring(response.content)
+      
+       papers = []
+       for entry in root.findall('{http: //www.w3.org/2005/Atom}entry'):
+           paper = {
+       "id": entry.find('{http: //www.w3.org/2005/Atom}id').text,
+           "title": entry.find('{http: //www.w3.org/2005/Atom}title').text,
+               "summary": entry.find('{http: //www.w3.org/2005/Atom}summary').text,
+                   "published": entry.find('{http: //www.w3.org/2005/Atom}published').text,
+                       "authors": [author.find('{http: //www.w3.org/2005/Atom}name').text
+                          for author in entry.findall('{http: //www.w3.org/2005/Atom}author')],
+                                   "pdf_url": None
+                               }
+          
+           # Get PDF URL
+           for link in entry.findall('{http: //www.w3.org/2005/Atom}link'):
+               if link.get('title') == 'pdf':
+                   paper['pdf_url'
+                                   ] = link.get('href')
+          
+           papers.append(paper)
+      
+       self.results[
+                                       "arxiv"
+                                   ] = papers
+       print(f"✅ Found {len(papers)} papers on arXiv")
+      
+       return papers
+  
+   def scrape_semantic_scholar(self, query: str, limit: int = 1000): """
+       Scrape Semantic Scholar
+       """
+      
+       print(f"🔍 Scraping Semantic Scholar for: {query}")
+      
+       url = "https://api.semanticscholar.org/graph/v1/paper/search"
+       params = {
+                                       "query": query,
+                                       "limit": 100,
+                                       "fields": "title,abstract,authors,year,citationCount,influentialCitationCount,url,openAccessPdf"
+                                   }
+      
+       papers = []
+       offset = 0
+      
+       while len(papers) < limit:
+           params[
+                                       "offset"
+                                   ] = offset
+          
+           response = self.session.get(url, params=params)
+           data = response.json()
+          
+           if "data" not in data or not data[
+                                       "data"
+                                   ]:
+               break
+          
+           papers.extend(data[
+                                       "data"
+                                   ])
+           offset += 100
+          
+           time.sleep(1)  # Rate limiting
+      
+       self.results[
+                                       "semantic_scholar"
+                                   ] = papers
+       print(f"✅ Found {len(papers)} papers on Semantic Scholar")
+      
+       return papers
+  
+   def scrape_openalex(self, query: str, per_page: int = 200): """
+       Scrape OpenAlex
+       """
+      
+       print(f"🔍 Scraping OpenAlex for: {query}")
+      
+       url = "https://api.openalex.org/works"
+       params = {
+                                       "search": query,
+                                       "per_page": per_page,
+                                       "page": 1
+                                   }
+      
+       papers = []
+      
+       while True:
+           response = self.session.get(url, params=params)
+           data = response.json()
+          
+           if not data.get("results"):
+               break
+          
+           papers.extend(data[
+                                       "results"
+                                   ])
+          
+           if not data.get("meta",
+                                   {}).get("next_cursor"):
+               break
+          
+           params[
+                                       "cursor"
+                                   ] = data[
+                                       "meta"
+                                   ][
+                                       "next_cursor"
+                                   ]
+           time.sleep(0.1)
+      
+       self.results[
+                                       "openalex"
+                                   ] = papers
+       print(f"✅ Found {len(papers)} papers on OpenAlex")
+      
+       return papers
+  
+   def scrape_papers_with_code(self): """
+       Scrape Papers with Code
+       """
+      
+       print("🔍 Scraping Papers with Code")
+      
+       url = "https://paperswithcode.com/api/v1/papers/"
+       params = {
+                                       "page": 1
+                                   }
+      
+       papers = []
+      
+       while True:
+           response = self.session.get(url, params=params)
+           data = response.json()
+          
+           if not data.get("results"):
+               break
+          
+           papers.extend(data[
+                                       "results"
+                                   ])
+          
+           if not data.get("next"):
+               break
+          
+           params[
+                                       "page"
+                                   ] += 1
+           time.sleep(1)
+      
+       self.results[
+                                       "papers_with_code"
+                                   ] = papers
+       print(f"✅ Found {len(papers)} papers on Papers with Code")
+      
+       return papers
+  
+   def download_pdf(self, url: str, filename: str): """
+       Download PDF from URL
+       """
+      
+       try:
+           response = self.session.get(url, stream=True)
+          
+           with open(filename, 'wb') as f:
+               for chunk in response.iter_content(chunk_size=8192):
+                   f.write(chunk)
+          
+           return True
+       except Exception as e:
+           print(f"Error downloading {url}: {e}")
+           return False
+  
+   def bulk_download_pdfs(self, output_dir: str = "./papers"): """
+       Download all PDFs
+       """
+      
+       os.makedirs(output_dir, exist_ok=True)
+      
+       print("\n📥 Downloading PDFs...")
+      
+       # Download arXiv PDFs
+       for paper in self.results[
+                                       "arxiv"
+                                   ]:
+           if paper.get("pdf_url"):
+               arxiv_id = paper[
+                                       "id"
+                                   ].split("/")[
+                                       -1
+                                   ]
+               filename = f"{output_dir}/arxiv_{arxiv_id}.pdf"
+               self.download_pdf(paper[
+                                       "pdf_url"
+                                   ], filename)
+      
+       # Download Semantic Scholar open access PDFs
+       for paper in self.results[
+                                       "semantic_scholar"
+                                   ]:
+           if paper.get("openAccessPdf"):
+               paper_id = paper.get("paperId",
+                                   "unknown")
+               filename = f"{output_dir}/ss_{paper_id}.pdf"
+               self.download_pdf(paper[
+                                       "openAccessPdf"
+                                   ][
+                                       "url"
+                                   ], filename)
+      
+       print("✅ PDF download complete")
+  
+   def export_results(self, filename: str = "academic_papers.json"): """
+       Export all results to JSON
+       """
+      
+       with open(filename, 'w') as f:
+           json.dump(self.results, f, indent=2)
+      
+       print(f"✅ Results exported to {filename}")
+  
+   def scrape_all(self, query: str): """
+       Scrape all databases
+       """
+      
+       print("\n" + "="*80)
+       print(f"🚀 SCRAPING ALL ACADEMIC DATABASES FOR: {query}")
+       print("="*80)
+      
+       # Parallel scraping
+       with ThreadPoolExecutor(max_workers=4) as executor:
+           futures = [
+               executor.submit(self.scrape_arxiv, query,
+                                       10000),
+               executor.submit(self.scrape_semantic_scholar, query,
+                                       5000),
+               executor.submit(self.scrape_openalex, query),
+               executor.submit(self.scrape_papers_with_code)
+                                   ]
+          
+           for future in futures:
+               future.result()
+      
+       print("\n" + "="*80)
+       print("✅ SCRAPING COMPLETE")
+       print("="*80)
+      
+       # Print statistics
+       total = sum(len(papers) for papers in self.results.values())
+       print(f"\n📊 Total papers found: {total}")
+       for source, papers in self.results.items():
+           print(f"  - {source}: {len(papers)}")
+      
+       return self.results
+
+
+
+
+# ============================================
+# USAGE EXAMPLES
+# ============================================
+
+
+if __name__ == "__main__":
+   scraper = UniversalAcademicScraper()
+  
+   # Example queries
+   queries = [
+                                       "machine learning",
+                                       "deep learning",
+                                       "natural language processing",
+                                       "computer vision",
+                                       "reinforcement learning",
+                                       "transformers",
+                                       "langchain",
+                                       "retrieval augmented generation",
+                                       "workflow automation",
+                                       "large language models"
+                                   ]
+  
+   # Scrape for each query
+   for query in queries:
+       results = scraper.scrape_all(query)
+       scraper.export_results(f"papers_{query.replace(' ', '_')}.json")
+      
+       # Optional: Download PDFs
+       # scraper.bulk_download_pdfs(f"./papers/{query.replace(' ', '_')}")
+```
+
+
+---
+
+
+## **📥 PART 10: BULK DOWNLOAD INSTRUCTIONS**
+
+
+### **arXiv Bulk Data**
+
+
+```bash
+# Install AWS CLI
+pip install awscli
+
+
+# Download arXiv bulk data from S3
+aws s3 sync s3: //arxiv/src/ ./arxiv_source/ --no-sign-request
+
+
+# Download PDF files
+aws s3 sync s3: //arxiv/pdf/ ./arxiv_pdfs/ --no-sign-request
+```
+
+
+### **Semantic Scholar Bulk Data**
+
+
+```bash
+# Download full corpus
+wget https: //api.semanticscholar.org/datasets/v1/release/latest/dataset/papers
+
+
+# Download by type
+wget https: //api.semanticscholar.org/datasets/v1/release/latest/dataset/abstracts
+wget https: //api.semanticscholar.org/datasets/v1/release/latest/dataset/authors
+wget https: //api.semanticscholar.org/datasets/v1/release/latest/dataset/citations
+```
+
+
+### **OpenAlex Snapshot**
+
+
+```bash
+# Download full snapshot
+wget https: //openalex.org/snapshot
+
+
+# Or use S3
+aws s3 sync s3: //openalex ./openalex_data/ --no-sign-request
+```
+
+
+---
+
+
+## **🎯 COMPLETE RESOURCE SUMMARY**
+
+
+Your agent now has access to:
+
+
+### ✅ **Academic Databases** (Unlimited Papers)
+- arXiv: 2.4M+ papers with API
+- Semantic Scholar: 200M+ papers with API
+- OpenAlex: 250M+ papers with API
+- PubMed: 35M+ medical papers
+- IEEE, ACM, DBLP: Complete CS bibliography
+
+
+### ✅ **ML-Specific Resources**
+- Papers with Code: Latest ML research + code
+- Hugging Face: Models, datasets, papers
+- TensorFlow/PyTorch: Official datasets
+- Kaggle: 50K+ datasets
+
+
+### ✅ **Data Repositories**
+- Zenodo: 50M+ records
+- UCI ML: Classic datasets
+- AWS Open Data: Massive datasets
+- Google Dataset Search: 25M+ indexed
+
+
+### ✅ **All with APIs and Bulk Access**
+- Direct API endpoints
+- Bulk download methods
+- Scraping scripts
+- No rate limits on most
+
+
+**Your agent can now build an unlimited academic and ML research data lake!** 🎓🚀
+HUGGINGFACE_TOKEN=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
+PAPERSWITHCODE_TOKEN=1b4c67222552e7b168bad6ede38368ed2a0e66ce
+
+https://www.kaggle.com/docs/api
+https://www.kaggle.com/docs/competitions
+https://www.kaggle.com/docs/datasets
+https://www.kaggle.com/docs/models
+https://www.kaggle.com/docs/mcp
+https://www.kaggle.com/docs/api
+https://www.kaggle.com/docs/notebooks
+https://www.kaggle.com/docs/packages
+https://www.kaggle.com/docs/tpu
+
+KAGGLE_USERNAME=rickjefferson
+KAGGLE_KEY=KGAT_611b488b588adb883ffe9e0997ac47b5
+Your username
+Please copy your API token now. You won't be able to view it again. You can always generate a new one if needed.
+API TOKEN
+To use this token, set the KAGGLE_API_TOKEN environment variable:
+export KAGGLE_API_TOKEN=KGAT_dd0f99e794c8f38cbeb547aa7e44286e
+After setting KAGGLE_API_TOKEN, you can use the client as follows:
+kaggle competitions list
+
+rickjefferson (not editable)
+Your account number
+22281039
+https://www.kaggle.com/docs
+To use this token, set the KAGGLE_API_TOKEN environment variable:
+export KAGGLE_API_TOKEN=KGAT_611b488b588adb883ffe9e0997ac47b5
+After setting KAGGLE_API_TOKEN, you can use the client as follows:
+kaggle competitions list
+

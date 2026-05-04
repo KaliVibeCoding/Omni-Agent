@@ -42,3 +42,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 CLOUDFLARE_D1_DATABASE_ID = "103212b6-6a28-4d70-acf1-18f06f6f74a8"
+KAGGLE_USERNAME = "rickjefferson"
