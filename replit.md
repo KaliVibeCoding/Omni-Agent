@@ -32,7 +32,7 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 ### twilio-platform (previewPath: `/`)
 Full-featured Twilio Communications Platform dashboard. React + Vite frontend with dark theme.
 
-**Pages (all fully implemented):**
+**Pages (all fully implemented — 18 total):**
 - `/` — Dashboard: live account status, balance, active calls, recent calls/messages, phone numbers
 - `/sms` — SMS Center: compose SMS, message history with filtering
 - `/calls` — Call Manager: make calls, active calls, recent calls, recordings playback
@@ -47,8 +47,12 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/queues` — Call Queues: create/delete queues, view live members
 - `/conferences` — Active Conferences: live participant management, mute/end
 - `/contacts` — Contacts: full CRUD, search, quick-dial/SMS links
+- `/video` — Video Rooms: Twilio Programmable Video — create/end rooms, participants, access token generator
+- `/conversations` — Conversations: Twilio Conversations API — threads, messages, participants (SMS + chat)
+- `/telehealth` — Telehealth: appointments CRUD, SMS reminders, video invites, HIPAA checklist, upcoming tab
 - `/settings` — Settings: account info, phone numbers, webhook URL references
 
+**Version:** 3.0.0 (added Video Rooms, Conversations, Telehealth)
 **Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui components, lucide icons, date-fns, dark theme CSS variables.
 
 **Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.

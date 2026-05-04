@@ -4,6 +4,9 @@ import anthropicRouter from "./anthropic";
 import openrouterRouter from "./openrouter";
 import twilioRouter from "./twilio";
 import webhookTesterRouter from "./webhook-tester";
+import videoRouter from "./video";
+import twilioConversationsRouter from "./twilio-conversations";
+import telehealthRouter from "./telehealth";
 
 const router: IRouter = Router();
 
@@ -11,6 +14,9 @@ router.use(healthRouter);
 router.use("/anthropic", anthropicRouter);
 router.use("/openrouter", openrouterRouter);
 router.use("/twilio", twilioRouter);
+router.use("/twilio/video", videoRouter);
+router.use("/twilio/conv", twilioConversationsRouter);
+router.use("/twilio/telehealth", telehealthRouter);
 router.use("/webhook-tester", webhookTesterRouter);
 
 export default router;

@@ -290,6 +290,43 @@ twilioRoutes.post("/calls/:sid/whisper", async (c) => {
   return c.json({ sid: updated.sid, status: updated.status });
 });
 
+twilioRoutes.get("/calls/active", async (c) => {
+  const client = getTwilioClient(c.env);
+  const [inProgress, ringing] = await Promise.all([
+    client.calls.list({ status: "in-progress" as any, limit: 50 }),
+    client.calls.list({ status: "ringing" as any, limit: 20 }),
+  ]);
+  const all = [...inProgress, ...ringing];
+  return c.json(all.map((call: any) => ({
+    sid: call.sid, from: call.from, to: call.to, status: call.status,
+    direction: call.direction, duration: call.duration, startTime: call.startTime,
+    answeredBy: call.answeredBy ?? null, callerName: call.callerName ?? null,
+    forwardedFrom: call.forwardedFrom ?? null, phoneNumberSid: call.phoneNumberSid ?? null,
+  })));
+});
+
+twilioRoutes.get("/calls/recent", async (c) => {
+  const client = getTwilioClient(c.env);
+  const limit = Math.min(parseInt(c.req.query("limit") ?? "30", 10), 100);
+  const calls = await client.calls.list({ limit });
+  return c.json(calls.map((call: any) => ({
+    sid: call.sid, from: call.from, to: call.to, status: call.status,
+    direction: call.direction, duration: call.duration,
+    startTime: call.startTime, endTime: call.endTime ?? null,
+    price: call.price ?? null, priceUnit: call.priceUnit ?? null,
+  })));
+});
+
+twilioRoutes.post("/calls/:sid/transfer", async (c) => {
+  const client = getTwilioClient(c.env);
+  const { queueName, twimlUrl } = await c.req.json<{ queueName?: string; twimlUrl?: string }>();
+  const twiml = `<Response><Enqueue>${queueName ?? "support"}</Enqueue></Response>`;
+  const updated = await client.calls(c.req.param("sid")).update(
+    twimlUrl ? { url: twimlUrl } : { twiml }
+  );
+  return c.json({ sid: updated.sid, status: updated.status });
+});
+
 twilioRoutes.post("/calls/:sid/hangup", async (c) => {
   const client = getTwilioClient(c.env);
   const updated = await client.calls(c.req.param("sid")).update({ status: "completed" });

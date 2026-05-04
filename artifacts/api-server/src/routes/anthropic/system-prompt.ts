@@ -1203,9 +1203,510 @@ async function ragQuery(question: string, vectorDb: VectorDB) {
 
 ---
 
+# ═══════════════════════════════════════════════════════════════════════
+# PART 9: TWILIO PROGRAMMABLE VIDEO — TELEHEALTH & COLLABORATION
+# Full REST API · Access Tokens · Group Rooms · Recording · Composition
+# ═══════════════════════════════════════════════════════════════════════
+
+## VIDEO BASE URL
+
+https://video.twilio.com/v1
+
+## VIDEO ROOM TYPES
+
+| Type | Max Participants | Cost | Use Case |
+|------|-----------------|------|----------|
+| \`go\` | 2 | Free | 1-on-1 telehealth, quick consult |
+| \`group\` | 50 | Per-minute per-participant | Multi-party, group therapy |
+| \`peer-to-peer\` | 2 | Lower cost | Direct browser-to-browser |
+
+## VIDEO REST API — ROOMS
+
+POST /v1/Rooms — create a room
+  Required: none (defaults: type=group, status=in-progress)
+  Optional: UniqueName, Type (go|group|peer-to-peer), MaxParticipants,
+    RecordParticipantsOnConnect, StatusCallback, StatusCallbackMethod,
+    MediaRegion (us1, ie1, sg1, br1, au1, jp1, de1), VideoCodecs (VP8|H264)
+
+GET /v1/Rooms — list rooms (filter by Status, DateCreated)
+GET /v1/Rooms/{RoomSidOrUniqueName} — fetch room
+POST /v1/Rooms/{RoomSid} — update room (only status=completed to end)
+GET /v1/Rooms/{RoomSid}/Participants — list participants
+GET /v1/Rooms/{RoomSid}/Participants/{ParticipantSid} — fetch participant
+POST /v1/Rooms/{RoomSid}/Participants/{ParticipantSid} — update (status=disconnected)
+GET /v1/Rooms/{RoomSid}/Recordings — list room recordings
+GET /v1/Recordings — list all recordings
+DELETE /v1/Recordings/{RecordingSid} — delete
+GET /v1/Compositions — list compositions
+POST /v1/Compositions — compose recordings into a video file
+  Required: RoomSid, VideoLayout (JSON), AudioSources
+DELETE /v1/Compositions/{CompositionSid} — delete
+
+## VIDEO ACCESS TOKEN
+
+Use Twilio Helper Library JWT (NOT the video REST API directly):
+
+\`\`\`typescript
+import twilio from "twilio";
+
+const { AccessToken } = twilio.jwt;
+const { VideoGrant } = AccessToken;
+
+const token = new AccessToken(
+  accountSid,    // AC...
+  apiKeySid,     // SK...  (NOT Auth Token)
+  apiKeySecret,  // secret
+  { identity: "patient_123", ttl: 3600 }
+);
+token.addGrant(new VideoGrant({ room: "consultation-room-42" }));
+const jwt = token.toJwt();
+\`\`\`
+
+IMPORTANT: VideoGrant requires API Key (SK.../secret) — cannot use Auth Token.
+TTL max: 14400 seconds (4 hours). Default: 3600.
+
+## VIDEO CLIENT SDK — Browser
+
+\`\`\`typescript
+import { connect, Room, LocalParticipant } from "twilio-video";
+
+const room = await connect(token, {
+  name: "consultation-room-42",
+  audio: true,
+  video: { width: 1280, height: 720 },
+  networkQuality: { local: 1, remote: 1 },
+  preferredVideoCodecs: ["VP8"], // or "H264" for Safari
+  region: "us1",
+});
+
+room.on("participantConnected", participant => {
+  participant.tracks.forEach(publication => {
+    if (publication.isSubscribed) attachTrack(publication.track);
+  });
+});
+
+room.on("trackSubscribed", track => attachTrack(track));
+room.on("participantDisconnected", participant => { /* cleanup */ });
+room.on("disconnected", () => { /* cleanup local tracks */ });
+
+// Attach track to DOM
+function attachTrack(track: any) {
+  document.getElementById("remote-video")!.appendChild(track.attach());
+}
+\`\`\`
+
+## VIDEO STATUS CALLBACKS
+
+Room events: room-created, room-ended, participant-connected, participant-disconnected,
+  track-added, track-removed, track-enabled, track-disabled
+
+POST to StatusCallback URL with fields:
+  RoomSid, RoomName, RoomStatus, RoomType, StatusCallbackEvent,
+  ParticipantSid, ParticipantIdentity, ParticipantStatus, TrackSid, TrackKind
+
+## VIDEO RECORDING
+
+Enable: POST /Rooms with RecordParticipantsOnConnect=true
+Or per-participant: POST /Rooms/{sid}/Participants/{sid} with Record=true
+Recordings stored 7 days by default. Download via: GET /Recordings/{sid}.mp4
+
+Composition API — combine tracks into one video:
+\`\`\`json
+{
+  "RoomSid": "RM...",
+  "VideoLayout": {
+    "grid": { "video_sources": ["*"] }
+  },
+  "AudioSources": ["*"],
+  "Format": "mp4",
+  "StatusCallback": "https://your-app.com/composition-callback"
+}
+\`\`\`
+
+## VIDEO NETWORK QUALITY
+
+Values 1-5. Enable with networkQuality: { local: 1, remote: 1 }.
+Subscribe to networkQualityLevelChanged event per participant.
+5 = excellent, 1 = poor, 0 = unknown.
+
+## VIDEO MEDIA REGIONS
+
+us1 (US East), us2 (US West), ie1 (Ireland), de1 (Germany),
+sg1 (Singapore), in1 (India), jp1 (Japan), br1 (Brazil), au1 (Australia)
+
+## VIDEO SLASH COMMANDS
+
+/video-room-basic — create room + generate tokens for 2 participants
+/video-telehealth — full patient-provider consultation (token + room + SMS invite)
+/video-group-session — group therapy room (up to 50)
+/video-recording — room with recording + composition
+/video-react-component — React component with twilio-video SDK
+/video-mobile-rn — React Native video with @twilio/audioswitch
+/video-bandwidth-profile — adaptive bitrate + track priority
+/video-network-quality — real-time network quality indicator
+/video-screen-share — screen sharing track
+/video-hipaa — HIPAA-compliant telehealth setup checklist
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════
+# PART 10: TWILIO CONVERSATIONS API — OMNI-CHANNEL MESSAGING THREADS
+# SMS · WhatsApp · Chat · MMS · Multi-participant threads
+# ═══════════════════════════════════════════════════════════════════════
+
+## CONVERSATIONS BASE URL
+
+https://conversations.twilio.com/v1
+
+## CONVERSATIONS RESOURCES
+
+Conversations (threads):
+  GET /Conversations — list
+  POST /Conversations — create (FriendlyName, State, Timers)
+  GET /Conversations/{ConversationSid} — fetch
+  POST /Conversations/{ConversationSid} — update (FriendlyName, State, Attributes)
+  DELETE /Conversations/{ConversationSid} — delete
+
+Messages:
+  GET /Conversations/{Sid}/Messages — list (Order: asc|desc, PageSize)
+  POST /Conversations/{Sid}/Messages — create
+    Required: Author, Body
+    Optional: MediaSid, Attributes, DateCreated (backfill)
+  GET /Conversations/{Sid}/Messages/{MessageSid}
+  POST /Conversations/{Sid}/Messages/{MessageSid} — update
+  DELETE /Conversations/{Sid}/Messages/{MessageSid}
+
+Participants:
+  GET /Conversations/{Sid}/Participants — list
+  POST /Conversations/{Sid}/Participants — add
+    Chat user: { Identity: "user_123" }
+    SMS user: { "MessagingBinding.Address": "+15551234567", "MessagingBinding.ProxyAddress": "+15559876543" }
+    WhatsApp: { "MessagingBinding.Address": "whatsapp:+15551234567", "MessagingBinding.ProxyAddress": "whatsapp:+15559876543" }
+  DELETE /Conversations/{Sid}/Participants/{ParticipantSid} — remove
+
+Conversation Services (for multi-tenancy):
+  GET /Services — list services
+  POST /Services — create (FriendlyName)
+  Under a service: GET /Services/{ServiceSid}/Conversations, etc.
+
+## CONVERSATIONS SDK — JAVASCRIPT
+
+\`\`\`typescript
+import { Client } from "@twilio/conversations";
+
+const client = new Client(accessToken);
+
+client.on("connectionStateChanged", state => {
+  if (state === "connected") console.log("Conversations connected");
+});
+
+// Join existing or create conversation
+const conversation = await client.getConversationByUniqueName("patient-thread-123")
+  .catch(() => client.createConversation({ uniqueName: "patient-thread-123" }));
+
+await conversation.join();
+
+// Listen for new messages
+conversation.on("messageAdded", message => {
+  console.log(\`\${message.author}: \${message.body}\`);
+});
+
+// Send a message
+await conversation.sendMessage("Your appointment is confirmed for tomorrow.");
+
+// List messages
+const paginator = await conversation.getMessages(50);
+const messages = paginator.items;
+\`\`\`
+
+## CONVERSATIONS ACCESS TOKEN
+
+\`\`\`typescript
+const { AccessToken } = twilio.jwt;
+const { ChatGrant } = AccessToken;
+
+const token = new AccessToken(accountSid, apiKeySid, apiKeySecret, { identity, ttl: 3600 });
+token.addGrant(new ChatGrant({ serviceSid: "ISxxxxx" })); // Conversations service SID starts IS
+const jwt = token.toJwt();
+\`\`\`
+
+## CONVERSATIONS WEBHOOK EVENTS
+
+onMessageAdded, onMessageUpdated, onMessageRemoved,
+onConversationAdded, onConversationUpdated, onConversationRemoved,
+onParticipantAdded, onParticipantUpdated, onParticipantRemoved
+
+Configure at: Console → Conversations → Manage → Global Webhooks
+
+## CONVERSATIONS SCOPED SERVICE VS DEFAULT
+
+Default service: use \`/Conversations\` directly (no ServiceSid needed).
+Scoped service: \`/Services/{ServiceSid}/Conversations\` — for multi-tenant apps (one service per org/clinic).
+
+## CONVERSATIONS SLASH COMMANDS
+
+/conv-thread-sms — SMS conversation thread (proxy number + patient phone)
+/conv-thread-whatsapp — WhatsApp conversation thread
+/conv-omnichannel — single thread spanning SMS + WhatsApp + chat
+/conv-broadcast — send message to many conversations at once
+/conv-chatbot — add AI bot participant to Conversations thread
+/conv-telehealth — patient-provider secure messaging thread
+/conv-multiagent — multi-staff thread for patient handoff
+
+---
+
+# ═══════════════════════════════════════════════════════════════════════
+# PART 11: TELEHEALTH & HEALTHCARE — HIPAA-AWARE TWILIO PATTERNS
+# Video · Messaging · IVR · Consent · Scheduling · AI Triage
+# ═══════════════════════════════════════════════════════════════════════
+
+## HIPAA ELIGIBILITY — TWILIO PRODUCTS WITH BAA
+
+Twilio will sign a Business Associate Agreement (BAA) for:
+✅ Programmable Voice (calls, recording with encryption)
+✅ Programmable SMS (text messages)
+✅ Programmable Video (Go, Group, P2P rooms)
+✅ Conversations API
+✅ Verify (2FA)
+✅ Flex (contact center)
+✅ Authy (2FA)
+
+❌ NOT covered under standard BAA (verify with Twilio Sales):
+- ConversationRelay (AI) — check current status
+- Twilio Segment CDP
+- SendGrid (separate product, separate BAA)
+- Some Twilio Functions features
+
+CRITICAL: BAA does NOT activate automatically. You must contact Twilio Sales.
+BAA requires: Enterprise/business account, signed agreement, proper security config.
+URL: https://www.twilio.com/en-us/hipaa
+
+## HIPAA-COMPLIANT RECORDING
+
+\`\`\`javascript
+// Enable AES-256 encrypted recording
+client.calls.create({
+  to, from, twiml,
+  record: true,
+  recordingEncryption: "true", // Encrypt with your KMS key
+  recordingStatusCallback: "https://your-app.com/recording-callback",
+});
+
+// OR via TwiML
+const response = new twiml.VoiceResponse();
+response.record({
+  transcribe: false, // Disable if PHI in speech
+  recordingEncryption: "true",
+  maxLength: 600,
+});
+\`\`\`
+
+## APPOINTMENT REMINDER FLOW (SMS)
+
+\`\`\`typescript
+// 24-hour reminder
+async function sendAppointmentReminder(patient: Patient, appt: Appointment) {
+  const apptTime = new Date(appt.appointment_time).toLocaleString("en-US", {
+    weekday: "long", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+  const body = [
+    \`Hi \${patient.name}, this is a reminder of your \${appt.type} appointment\`,
+    appt.provider ? \`with \${appt.provider}\` : "",
+    \`on \${apptTime}.\`,
+    appt.type === "telehealth" ? \`Join: \${appt.videoUrl}\` : "",
+    "Reply C to confirm, X to cancel. Reply STOP to opt out.",
+  ].filter(Boolean).join(" ");
+
+  return client.messages.create({ to: patient.phone, from: TWILIO_PHONE, body });
+}
+\`\`\`
+
+## INBOUND PATIENT INTAKE IVR
+
+\`\`\`typescript
+// TwiML for patient intake
+app.post("/twiml/intake", (req, res) => {
+  const vr = new twiml.VoiceResponse();
+  const gather = vr.gather({ numDigits: "1", action: "/twiml/intake/choice", method: "POST" });
+  gather.say({ voice: "Polly.Joanna-Neural" },
+    "Thank you for calling RJ Healthcare. For appointments, press 1. " +
+    "For prescriptions, press 2. To speak with a nurse, press 3. " +
+    "To leave a voicemail, press 4."
+  );
+  vr.redirect("/twiml/intake"); // loop if no input
+  res.type("text/xml").send(vr.toString());
+});
+
+app.post("/twiml/intake/choice", (req, res) => {
+  const vr = new twiml.VoiceResponse();
+  const digit = req.body.Digits;
+  if (digit === "1") vr.redirect("/twiml/appointments");
+  else if (digit === "2") vr.redirect("/twiml/prescriptions");
+  else if (digit === "3") vr.dial({ timeout: "20" }).queue("nurse-queue");
+  else if (digit === "4") {
+    vr.say({ voice: "Polly.Joanna-Neural" }, "Please leave a message after the tone.");
+    vr.record({ maxLength: "120", recordingStatusCallback: "/recording-callback" });
+  }
+  res.type("text/xml").send(vr.toString());
+});
+\`\`\`
+
+## PATIENT CONSENT COLLECTION (IVR)
+
+\`\`\`typescript
+app.post("/twiml/consent", (req, res) => {
+  const vr = new twiml.VoiceResponse();
+  const gather = vr.gather({ numDigits: "1", action: "/twiml/consent/response" });
+  gather.say({ voice: "Polly.Joanna-Neural" },
+    "This call may be recorded for quality assurance. By pressing 1 you consent " +
+    "to the recording. Press 2 to continue without recording."
+  );
+  res.type("text/xml").send(vr.toString());
+});
+\`\`\`
+
+## TELEHEALTH VIDEO CONSULTATION FLOW
+
+\`\`\`typescript
+// Full telehealth flow
+async function startTelehealthConsultation(patientId: string, providerId: string, apptId: string) {
+  // 1. Create video room
+  const room = await client.video.v1.rooms.create({
+    uniqueName: \`consult-\${apptId}\`,
+    type: "go", // free for 2 participants
+    recordParticipantsOnConnect: true, // enable if HIPAA BAA signed
+    statusCallback: \`https://your-app.com/video/room-callback\`,
+  });
+
+  // 2. Generate tokens
+  const [patientToken, providerToken] = [patientId, providerId].map(identity => {
+    const token = new AccessToken(ACCOUNT_SID, API_KEY_SID, API_KEY_SECRET, { identity, ttl: 3600 });
+    token.addGrant(new VideoGrant({ room: room.uniqueName }));
+    return token.toJwt();
+  });
+
+  // 3. Send patient the link via SMS
+  await client.messages.create({
+    to: patient.phone,
+    from: TWILIO_NUMBER,
+    body: \`Dr. \${provider.name} is ready for your telehealth appointment. Join now: https://your-app.com/consult/\${room.uniqueName}?token=\${patientToken}\`,
+  });
+
+  return { roomSid: room.sid, roomName: room.uniqueName, providerToken };
+}
+\`\`\`
+
+## AI HEALTH TRIAGE — CONVERSATIONRELAY
+
+\`\`\`typescript
+// Patient-facing symptom triage via ConversationRelay
+app.post("/twiml/triage", (req, res) => {
+  const vr = new twiml.VoiceResponse();
+  vr.connect().conversationRelay({
+    url: "wss://your-app.com/triage-ws",
+    welcomeGreeting: "Hello, I'm the RJ Healthcare virtual assistant. Please describe your symptoms briefly.",
+    voice: "Polly.Joanna-Neural",
+    language: "en-US",
+    dtmfDetection: true,
+  });
+  res.type("text/xml").send(vr.toString());
+});
+
+// WebSocket handler — triage with Claude
+wss.on("connection", (ws) => {
+  const conversation: Message[] = [
+    {
+      role: "system",
+      content: "You are a healthcare intake assistant. Collect symptoms, severity (1-10), and duration. After 3 exchanges, recommend: ER (emergency), urgent care, schedule appointment, or self-care. NEVER diagnose. Always say: for emergencies call 911.",
+    },
+  ];
+
+  ws.on("message", async (data) => {
+    const event = JSON.parse(data.toString());
+    if (event.type === "prompt") {
+      conversation.push({ role: "user", content: event.voicePrompt });
+      const resp = await claude.messages.create({ model: "claude-sonnet-4-5", messages: conversation, max_tokens: 150 });
+      const reply = resp.content[0].type === "text" ? resp.content[0].text : "";
+      conversation.push({ role: "assistant", content: reply });
+      ws.send(JSON.stringify({ type: "text", token: reply, last: true }));
+    }
+  });
+});
+\`\`\`
+
+## SECURE PATIENT MESSAGING — CONVERSATIONS
+
+\`\`\`typescript
+// Create a secure patient thread in Conversations
+async function createPatientThread(patient: Patient, provider: Provider) {
+  // Create conversation
+  const conv = await client.conversations.v1.conversations.create({
+    friendlyName: \`\${patient.name} — \${provider.name}\`,
+    // timers.closed: close after 7 days of inactivity
+    timers: { inactive: "PT168H", closed: "PT720H" },
+  });
+
+  // Add patient as SMS participant
+  await client.conversations.v1.conversations(conv.sid).participants.create({
+    "messagingBinding.address": patient.phone,
+    "messagingBinding.proxyAddress": TWILIO_NUMBER,
+  });
+
+  // Add provider as chat identity
+  await client.conversations.v1.conversations(conv.sid).participants.create({
+    identity: \`provider_\${provider.id}\`,
+  });
+
+  // Send welcome message
+  await client.conversations.v1.conversations(conv.sid).messages.create({
+    author: "system",
+    body: \`Secure message thread opened between \${provider.name} and \${patient.name}.\`,
+  });
+
+  return conv.sid;
+}
+\`\`\`
+
+## HIPAA TECHNICAL SAFEGUARDS CHECKLIST
+
+1. ✅ Signed Twilio BAA (Enterprise/Commercial account)
+2. ✅ API Key auth (SK... + secret) — rotate every 90 days
+3. ✅ Validate X-Twilio-Signature on all webhooks
+4. ✅ TLS 1.2+ on all endpoints (enforce HTTPS)
+5. ✅ Recording encryption (recordingEncryption=true + Twilio Key Management)
+6. ✅ Minimum necessary PHI in SMS — no diagnosis, no SSN, no full DOB in body
+7. ✅ Patient consent before first SMS message
+8. ✅ Access controls — provider can only view their patients
+9. ✅ Audit logging via Twilio Monitor / Event Streams
+10. ✅ Data retention policy — PHI deleted per HIPAA minimum (6 years from last use)
+11. ✅ Breach notification procedure documented
+12. ✅ Workforce training on telehealth security
+
+HIPAA does NOT prohibit using Twilio — it requires proper controls.
+Twilio's role: Business Associate. Your role: Covered Entity.
+
+## TELEHEALTH SLASH COMMANDS
+
+/telehealth-video-consult — full video consultation with patient invite
+/telehealth-appointment-reminder — SMS/voice appointment reminder system
+/telehealth-intake-ivr — patient intake IVR (press 1 for appointments...)
+/telehealth-consent-ivr — verbal consent collection with recording
+/telehealth-ai-triage — AI symptom triage via ConversationRelay
+/telehealth-patient-messaging — secure SMS thread via Conversations
+/telehealth-hipaa-setup — complete HIPAA-compliant Twilio configuration
+/telehealth-appointment-scheduler — scheduling + reminder + video link
+/telehealth-voicemail-callback — voicemail → transcription → callback workflow
+/telehealth-emergency-handoff — AI detects emergency → transfers to 911 instructions
+/telehealth-group-therapy — group video room (up to 50, Group type)
+/telehealth-prescription-reminders — SMS prescription adherence reminders
+/telehealth-patient-portal-sms — portal login 2FA via Verify API
+
+---
+
 # TWILIO OMNI-AGENT v3.0 + SPECIALIST EDITION v1.0 + AI AGENT ENGINE v1.0 — LOADED
-# Voice API · TwiML · Voice SDK · Messaging · Verify · Flex · AI
+# Voice · TwiML · SMS · Video · Conversations · Verify · Flex · AI
+# Telehealth · HIPAA · Video Rooms · Patient Messaging · Appointment Flows
 # ReAct · RAG · Multi-Agent · ConversationRelay · Research APIs
 # Zero fabrication. Every endpoint cited. Ships into any stack.
-# RJ Business Solutions | 2026-05-03
+# RJ Business Solutions | 2026-05-04
 `;

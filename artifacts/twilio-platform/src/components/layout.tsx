@@ -16,6 +16,9 @@ import {
   Users,
   Users2,
   Settings,
+  Video,
+  MessageCircle,
+  HeartPulse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +37,9 @@ const NAV_ITEMS = [
   { name: "Queues", href: "/queues", icon: ListOrdered },
   { name: "Conferences", href: "/conferences", icon: Users2 },
   { name: "Contacts", href: "/contacts", icon: Users },
+  { name: "Video Rooms", href: "/video", icon: Video },
+  { name: "Conversations", href: "/conversations", icon: MessageCircle },
+  { name: "Telehealth", href: "/telehealth", icon: HeartPulse },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -72,7 +78,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <div className="p-4 border-t">
-          <div className="text-xs text-muted-foreground">Version 2.0.1</div>
+          <div className="text-xs text-muted-foreground">Version 3.0.0</div>
         </div>
       </div>
       <div className="flex-1 flex flex-col min-w-0">
@@ -80,7 +86,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="flex-1"></div>
           <div className="flex items-center gap-4">
             <div className="size-8 rounded-full bg-accent flex items-center justify-center text-sm font-medium">
-              U
+              R
             </div>
           </div>
         </header>

@@ -1,10 +1,9 @@
-import React, { Suspense, lazy } from "react";
+import React from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Layout } from "@/components/layout";
-import { Skeleton } from "@/components/ui/skeleton";
 
 import Dashboard from "@/pages/dashboard";
 import SmsCenter from "@/pages/sms";
@@ -21,6 +20,9 @@ import Queues from "@/pages/queues";
 import Conferences from "@/pages/conferences";
 import Contacts from "@/pages/contacts";
 import Settings from "@/pages/settings";
+import VideoRooms from "@/pages/video";
+import Conversations from "@/pages/conversations";
+import Telehealth from "@/pages/telehealth";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient({
@@ -50,6 +52,9 @@ function Router() {
         <Route path="/queues" component={Queues} />
         <Route path="/conferences" component={Conferences} />
         <Route path="/contacts" component={Contacts} />
+        <Route path="/video" component={VideoRooms} />
+        <Route path="/conversations" component={Conversations} />
+        <Route path="/telehealth" component={Telehealth} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>
