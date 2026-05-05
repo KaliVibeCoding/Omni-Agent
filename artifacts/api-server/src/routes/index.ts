@@ -10,6 +10,7 @@ import telehealthRouter from "./telehealth";
 import tenantRouter from "./tenant";
 import salesChatRouter from "./sales-chat";
 import stripeRouter from "./stripe";
+import nicheRouter from "./niche";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use("/webhook-tester", webhookTesterRouter);
 router.use("/tenant", tenantRouter);
 router.use("/sales-chat", salesChatRouter);
 router.use("/stripe", stripeRouter);
+router.use("/niche", nicheRouter);
 
 export default router;

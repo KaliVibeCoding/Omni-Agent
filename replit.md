@@ -59,13 +59,14 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/video` — Video Rooms: Twilio Programmable Video — create/end rooms, participants, access token generator
 - `/conversations` — Conversations: Twilio Conversations API — threads, messages, participants (SMS + chat)
 - `/telehealth` — Telehealth: appointments CRUD, SMS reminders, video invites, HIPAA checklist, upcoming tab
+- `/niche/:slug` — Industry Hub dashboards (19 niches): config-driven template with records CRUD, status tracking, SMS quick-send, compliance checklist, industry-specific SMS templates. Backed by `niche_records` PostgreSQL table. Slugs: `credit-repair`, `real-estate`, `insurance`, `dental`, `legal`, `auto`, `home-services`, `fitness`, `restaurant`, `mortgage`, `chiropractic`, `veterinary`, `education`, `nonprofit`, `staffing`, `med-spa`, `property-management`, `ecommerce`, `financial-advisor`.
 - `/settings` — Settings: connected Twilio account (update/disconnect), account info, phone numbers, webhook URL references
 - `/billing` — Stripe subscription page: live plan cards from Stripe, one-click checkout, customer portal, upgrade/downgrade
 - `/email-campaigns` — Email campaigns: compose, templates, recipient list, campaign history, open/click stats
 - `/agi-framework` — Multi-agent AGI framework: build/run orchestrated agent pipelines across SMS/voice/email/data channels
 - `/admin` — Admin panel: tenant table, KPI cards, plan distribution, revenue metrics, system health
 
-**Version:** 6.0.0 (full SaaS — Stripe billing, transactional emails, email campaigns, AGI framework, admin panel)
+**Version:** 7.0.0 (full SaaS — Stripe billing, transactional emails, email campaigns, AGI framework, admin panel, 19 industry hub dashboards)
 **Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui, Clerk (`@clerk/react` + `@clerk/themes`), lucide icons, date-fns, dark theme CSS variables, Stripe (`stripe-replit-sync`).
 **Layout sidebar:** shows signed-in user name/email + sign-out dropdown. New sections: CAMPAIGNS, updated PLATFORM and ACCOUNT.
 

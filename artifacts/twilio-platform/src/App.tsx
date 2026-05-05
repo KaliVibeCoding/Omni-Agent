@@ -35,6 +35,7 @@ import AGIFramework from "@/pages/agi-framework";
 import AdminPanel from "@/pages/admin";
 import NichesHub from "@/pages/niches-hub";
 import NicheLanding from "@/pages/niche-landing";
+import NicheDashboard from "@/pages/niche-dashboard";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = publishableKeyFromHost(
@@ -237,6 +238,7 @@ function Router() {
       <Route path="/admin" component={() => <ProtectedRoute component={AdminPanel} />} />
       <Route path="/niches" component={NichesHub} />
       <Route path="/niches/:slug" component={NicheLanding} />
+      <Route path="/niche/:slug" component={() => <ProtectedRoute component={NicheDashboard} />} />
       <Route component={NotFound} />
     </Switch>
   );
