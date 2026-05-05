@@ -6,13 +6,72 @@ import {
   Globe,
   Zap,
   ArrowLeft,
+  ShieldCheck,
 } from "lucide-react";
 import LandingChatWidget from "@/components/LandingChatWidget";
 import { getNicheBySlug } from "@/data/niches";
 import NotFound from "@/pages/not-found";
 
-const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 const RED = "hsl(348 83% 47%)";
+
+const PLANS = [
+  {
+    name: "Starter",
+    price: "$79",
+    period: "/mo",
+    features: [
+      "SMS & Voice calls",
+      "Up to 1,000 messages/mo",
+      "Basic analytics dashboard",
+      "Email support",
+      "1 account connected",
+    ],
+    cta: "Get Started",
+    highlight: false,
+  },
+  {
+    name: "Growth",
+    price: "$199",
+    period: "/mo",
+    features: [
+      "Everything in Starter",
+      "Unlimited messages",
+      "Video & conferencing",
+      "AI automation suite",
+      "Priority support",
+    ],
+    cta: "Start Free Trial",
+    highlight: true,
+  },
+  {
+    name: "Business",
+    price: "$499",
+    period: "/mo",
+    features: [
+      "Everything in Growth",
+      "Multi-agent AGI framework",
+      "Advanced automation",
+      "White-label ready",
+      "Dedicated Slack channel",
+    ],
+    cta: "Start Free Trial",
+    highlight: false,
+  },
+  {
+    name: "Enterprise",
+    price: "Custom",
+    period: "",
+    features: [
+      "Everything in Business",
+      "Dedicated account manager",
+      "Custom integrations",
+      "Full compliance package",
+      "On-prem option available",
+    ],
+    cta: "Contact Sales",
+    highlight: false,
+  },
+];
 
 export default function NicheLanding() {
   const params = useParams<{ slug: string }>();
@@ -22,79 +81,10 @@ export default function NicheLanding() {
   if (!niche) return <NotFound />;
 
   const {
-    badge,
-    headline1,
-    headline2,
-    subheadline,
-    stats,
-    features,
-    highlight,
-    ctaHeading,
-    ctaBody,
+    badge, headline1, headline2, subheadline,
+    stats, features, highlight, compliance,
+    ctaHeading, ctaBody,
   } = niche;
-
-  const PLANS = [
-    {
-      name: "Starter",
-      price: "$79",
-      period: "/mo",
-      desc: `Perfect for solo ${niche.shortName.toLowerCase()} professionals`,
-      features: [
-        "SMS & Voice calls",
-        "Up to 1,000 messages/mo",
-        "Basic analytics dashboard",
-        "Email support",
-        "1 account connected",
-      ],
-      cta: "Get Started",
-      highlight: false,
-    },
-    {
-      name: "Growth",
-      price: "$199",
-      period: "/mo",
-      desc: `For growing ${niche.shortName.toLowerCase()} teams`,
-      features: [
-        "Everything in Starter",
-        "Unlimited messages",
-        "Video & conferencing",
-        "AI automation suite",
-        "Priority support",
-      ],
-      cta: "Start Free Trial",
-      highlight: true,
-    },
-    {
-      name: "Business",
-      price: "$499",
-      period: "/mo",
-      desc: "High-volume teams and agencies",
-      features: [
-        "Everything in Growth",
-        "Multi-agent AGI framework",
-        "Advanced automation",
-        "White-label ready",
-        "Dedicated Slack channel",
-      ],
-      cta: "Start Free Trial",
-      highlight: false,
-    },
-    {
-      name: "Enterprise",
-      price: "Custom",
-      period: "",
-      desc: "Multi-location organizations",
-      features: [
-        "Everything in Business",
-        "Dedicated account manager",
-        "Custom integrations",
-        "Compliance package",
-        "On-prem option available",
-      ],
-      cta: "Contact Sales",
-      highlight: false,
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-background text-foreground font-mono overflow-x-hidden">
@@ -104,8 +94,8 @@ export default function NicheLanding() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setLocation("/niches")}
-              className="text-muted-foreground hover:text-foreground transition-colors mr-1"
-              title="All niches"
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="All industries"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
@@ -118,8 +108,10 @@ export default function NicheLanding() {
             <span className="font-bold text-sm tracking-tight hidden sm:block">
               RJ Business Solutions
             </span>
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-semibold border ml-2"
-              style={{ borderColor: `${RED}55`, color: RED, background: `${RED}11` }}>
+            <span
+              className="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest border ml-1"
+              style={{ borderColor: `${RED}55`, color: RED, background: `${RED}11` }}
+            >
               {niche.shortName}
             </span>
           </div>
@@ -180,9 +172,7 @@ export default function NicheLanding() {
         <div className="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((s) => (
             <div key={s.label} className="text-center">
-              <div className="text-3xl font-bold mb-1" style={{ color: RED }}>
-                {s.value}
-              </div>
+              <div className="text-3xl font-bold mb-1" style={{ color: RED }}>{s.value}</div>
               <div className="text-xs text-muted-foreground uppercase tracking-widest">{s.label}</div>
             </div>
           ))}
@@ -194,7 +184,7 @@ export default function NicheLanding() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold mb-4">
-              Everything {niche.shortName.toLowerCase()} teams need
+              Everything {niche.shortName.toLowerCase()} businesses need
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
               18 integrated modules covering every aspect of{" "}
@@ -270,6 +260,70 @@ export default function NicheLanding() {
         </div>
       </section>
 
+      {/* ─── Compliance Section ───────────────────────────────────────────── */}
+      <section className="py-24 border-t border-border">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-14">
+            <div
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 border"
+              style={{ borderColor: `${RED}66`, color: RED, background: `${RED}14` }}
+            >
+              <ShieldCheck className="w-3 h-3" />
+              Compliance & Regulatory Standards
+            </div>
+            <h2 className="text-3xl font-bold mb-4">{compliance.headline}</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              {compliance.body}
+            </p>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {compliance.badges.map((badge) => (
+              <div
+                key={badge.label}
+                className="p-6 rounded-xl border bg-card"
+                style={{ borderColor: `${RED}33` }}
+              >
+                <div className="flex items-start gap-4">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5"
+                    style={{ background: `${RED}18` }}
+                  >
+                    <ShieldCheck className="w-5 h-5" style={{ color: RED }} />
+                  </div>
+                  <div>
+                    <div
+                      className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-widest mb-2 border"
+                      style={{ borderColor: `${RED}44`, color: RED, background: `${RED}0f` }}
+                    >
+                      {badge.label}
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">{badge.desc}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="mt-10 p-6 rounded-xl border text-center"
+            style={{ borderColor: `${RED}33`, background: `${RED}08` }}
+          >
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">Not sure if your use case is covered?</span>
+              {" "}Our compliance team reviews every enterprise deployment.{" "}
+              <a
+                href="mailto:support@rjbusinesssolutions.org"
+                className="font-semibold transition-colors hover:opacity-80"
+                style={{ color: RED }}
+              >
+                Talk to a compliance specialist →
+              </a>
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Pricing */}
       <section className="py-24 border-t border-border">
         <div className="max-w-7xl mx-auto px-6">
@@ -281,13 +335,11 @@ export default function NicheLanding() {
             {PLANS.map((plan) => (
               <div
                 key={plan.name}
-                className={`p-8 rounded-2xl border flex flex-col ${
-                  plan.highlight ? "shadow-lg" : "border-border"
-                }`}
+                className="p-8 rounded-2xl border flex flex-col"
                 style={
                   plan.highlight
                     ? { borderColor: RED, background: `${RED}0a`, boxShadow: `0 8px 30px ${RED}22` }
-                    : {}
+                    : { borderColor: "hsl(var(--border))" }
                 }
               >
                 {plan.highlight && (
@@ -299,8 +351,7 @@ export default function NicheLanding() {
                   </div>
                 )}
                 <h3 className="font-bold text-lg mb-1">{plan.name}</h3>
-                <p className="text-xs text-muted-foreground mb-4">{plan.desc}</p>
-                <div className="flex items-baseline gap-1 mb-6">
+                <div className="flex items-baseline gap-1 mb-6 mt-3">
                   <span className="text-4xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground text-sm">{plan.period}</span>
                 </div>
@@ -364,12 +415,8 @@ export default function NicheLanding() {
             <span className="text-sm font-semibold">RJ Business Solutions</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <a href="mailto:support@rjbusinesssolutions.org" className="hover:text-foreground transition-colors">
-              Support
-            </a>
-            <button onClick={() => setLocation("/niches")} className="hover:text-foreground transition-colors">
-              All Niches
-            </button>
+            <a href="mailto:support@rjbusinesssolutions.org" className="hover:text-foreground transition-colors">Support</a>
+            <button onClick={() => setLocation("/niches")} className="hover:text-foreground transition-colors">All Industries</button>
             <span>Powered by Twilio</span>
             <span>© 2026 RJ Business Solutions</span>
           </div>
