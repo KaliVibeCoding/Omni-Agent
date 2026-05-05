@@ -65,7 +65,7 @@ export default function Telehealth() {
   const [videoInviteId, setVideoInviteId] = useState<number | null>(null);
   const [videoUrl, setVideoUrl] = useState("");
   const [form, setForm] = useState(emptyForm);
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const { data: stats } = useQuery<Stats>({
     queryKey: ["telehealth-stats"],
@@ -75,7 +75,7 @@ export default function Telehealth() {
 
   const { data: appointments = [], isLoading, refetch } = useQuery<Appointment[]>({
     queryKey: ["telehealth-appointments", filterStatus],
-    queryFn: () => fetch(`/api/twilio/telehealth/appointments${filterStatus ? `?status=${filterStatus}` : ""}`).then(r => r.json()),
+    queryFn: () => fetch(`/api/twilio/telehealth/appointments${filterStatus && filterStatus !== "all" ? `?status=${filterStatus}` : ""}`).then(r => r.json()),
     refetchInterval: 15000,
   });
 
@@ -259,7 +259,7 @@ export default function Telehealth() {
           <Select value={filterStatus} onValueChange={setFilterStatus}>
             <SelectTrigger className="w-40"><SelectValue placeholder="All statuses" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="all">All</SelectItem>
               <SelectItem value="scheduled">Scheduled</SelectItem>
               <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
