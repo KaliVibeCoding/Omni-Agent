@@ -161,13 +161,32 @@ function HomeRedirect() {
   );
 }
 
+const BASE_URL = import.meta.env.BASE_URL ?? "/";
+const API_BASE = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+
+function useHasTwilioCredentials() {
+  const [status, setStatus] = React.useState<"loading" | "connected" | "missing">("loading");
+  React.useEffect(() => {
+    fetch(`${API_BASE}/api/tenant/credentials`, { credentials: "include" })
+      .then((r) => r.json())
+      .then((d: any) => setStatus(d.connected ? "connected" : "missing"))
+      .catch(() => setStatus("missing"));
+  }, []);
+  return status;
+}
+
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const credStatus = useHasTwilioCredentials();
   return (
     <>
       <Show when="signed-in">
-        <Layout>
-          <Component />
-        </Layout>
+        {credStatus === "loading" ? null : credStatus === "missing" ? (
+          <Redirect to="/connect" />
+        ) : (
+          <Layout>
+            <Component />
+          </Layout>
+        )}
       </Show>
       <Show when="signed-out">
         <Redirect to="/" />

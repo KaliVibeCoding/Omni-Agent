@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   Globe,
 } from "lucide-react";
+import LandingChatWidget from "@/components/LandingChatWidget";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -404,6 +405,9 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* Floating AI Sales Agent */}
+      <LandingChatWidget onSignUp={() => setLocation("/sign-up")} />
     </div>
   );
 }
