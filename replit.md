@@ -60,12 +60,17 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/conversations` — Conversations: Twilio Conversations API — threads, messages, participants (SMS + chat)
 - `/telehealth` — Telehealth: appointments CRUD, SMS reminders, video invites, HIPAA checklist, upcoming tab
 - `/settings` — Settings: connected Twilio account (update/disconnect), account info, phone numbers, webhook URL references
+- `/billing` — Stripe subscription page: live plan cards from Stripe, one-click checkout, customer portal, upgrade/downgrade
+- `/email-campaigns` — Email campaigns: compose, templates, recipient list, campaign history, open/click stats
+- `/agi-framework` — Multi-agent AGI framework: build/run orchestrated agent pipelines across SMS/voice/email/data channels
+- `/admin` — Admin panel: tenant table, KPI cards, plan distribution, revenue metrics, system health
 
-**Version:** 5.0.0 (multi-tenant SaaS — per-tenant Twilio credentials, onboarding flow, updated pricing)
-**Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui, Clerk (`@clerk/react` + `@clerk/themes`), lucide icons, date-fns, dark theme CSS variables.
-**Layout sidebar:** shows signed-in user name/email + sign-out dropdown. Dashboard nav link updated to `/dashboard`.
+**Version:** 6.0.0 (full SaaS — Stripe billing, transactional emails, email campaigns, AGI framework, admin panel)
+**Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui, Clerk (`@clerk/react` + `@clerk/themes`), lucide icons, date-fns, dark theme CSS variables, Stripe (`stripe-replit-sync`).
+**Layout sidebar:** shows signed-in user name/email + sign-out dropdown. New sections: CAMPAIGNS, updated PLATFORM and ACCOUNT.
 
-**Pricing tiers (landing page):** Starter $79/mo · Growth $199/mo · Business $499/mo · Enterprise custom
+**Pricing tiers (landing page + Stripe):** Starter $79/mo · Growth $199/mo · Business $499/mo · Enterprise custom
+**Stripe products seeded:** prod_USVKKxU9rn50gz (Starter), prod_USVKQcJdY3U2bj (Growth), prod_USVK1Z7YKJNPPj (Business), prod_USVKoplKgcC3eM (Enterprise)
 
 **Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
 
@@ -115,20 +120,32 @@ Express API server for local development. Uses PostgreSQL + Drizzle.
 
 **Multi-tenant credential system:** All Twilio route files use `getTenantClient(req)` — resolves credentials from `tenant_credentials` table via Clerk userId. No more global env-var Twilio credentials for the platform (env secrets remain for legacy compatibility).
 
-**New API routes:**
+**API routes:**
 - `GET /api/tenant/credentials` — get connected account info (masked, no raw token)
 - `POST /api/tenant/credentials` — validate + save Twilio credentials (AES-256-GCM encrypted)
 - `PATCH /api/tenant/plan` — update subscription plan
 - `DELETE /api/tenant/credentials` — disconnect Twilio account
+- `POST /api/stripe/webhook` — Stripe webhook (registered BEFORE express.json() for raw Buffer)
+- `GET /api/stripe/products` — public: list all plans with prices
+- `GET /api/stripe/subscription` — authenticated: current user's Stripe subscription
+- `POST /api/stripe/checkout` — create Stripe checkout session for a given priceId
+- `POST /api/stripe/portal` — create Stripe customer billing portal session
+- `GET /api/stripe/publishable-key` — public: Stripe publishable key for frontend
 
-**New backend files:**
+**Backend files:**
 - `artifacts/api-server/src/lib/encrypt.ts` — AES-256-GCM encrypt/decrypt
-- `artifacts/api-server/src/lib/tenantTwilio.ts` — getTenantTwilioClient(userId), getTenantCredentials(userId)
-- `artifacts/api-server/src/middlewares/requireAuth.ts` — Clerk getAuth middleware
-- `artifacts/api-server/src/routes/tenant/index.ts` — credential management API
-- `lib/db/src/schema/tenantCredentials.ts` — tenant_credentials table (Drizzle)
+- `artifacts/api-server/src/lib/tenantTwilio.ts` — getTenantTwilioClient(userId)
+- `artifacts/api-server/src/lib/stripeClient.ts` — getUncachableStripeClient(), getStripeSync(), getStripePublishableKey()
+- `artifacts/api-server/src/lib/webhookHandlers.ts` — WebhookHandlers.processWebhook()
+- `artifacts/api-server/src/lib/stripeStorage.ts` — queries stripe.* schema tables
+- `artifacts/api-server/src/lib/emailService.ts` — sendWelcomeEmail, sendUpgradeEmail, sendCancellationEmail, sendPaymentFailedEmail, sendReceiptEmail (Resend API)
+- `artifacts/api-server/src/routes/stripe/index.ts` — all Stripe routes + webhook-notify for email triggers
+- `scripts/src/seed-products.ts` — idempotent seed script for all 4 plans
 
-**Env vars:** `ENCRYPTION_KEY` (32-byte hex, shared env) — used for AES-256-GCM credential encryption.
+**Env vars:**
+- `ENCRYPTION_KEY` (32-byte hex) — AES-256-GCM credential encryption
+- `RESEND_API_KEY` (optional) — if set, emails are sent via Resend; otherwise logged to console
+- Stripe integration: managed via Replit Stripe connector (no manual key needed in dev)
 
 **Credentials** stored as Replit secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER` (kept for legacy; platform uses per-tenant DB credentials).
 

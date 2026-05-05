@@ -29,6 +29,10 @@ import Settings from "@/pages/settings";
 import VideoRooms from "@/pages/video";
 import Conversations from "@/pages/conversations";
 import Telehealth from "@/pages/telehealth";
+import BillingPage from "@/pages/billing";
+import EmailCampaigns from "@/pages/email-campaigns";
+import AGIFramework from "@/pages/agi-framework";
+import AdminPanel from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
 const clerkPubKey = publishableKeyFromHost(
@@ -225,6 +229,10 @@ function Router() {
       <Route path="/conversations" component={() => <ProtectedRoute component={Conversations} />} />
       <Route path="/telehealth" component={() => <ProtectedRoute component={Telehealth} />} />
       <Route path="/settings" component={() => <ProtectedRoute component={Settings} />} />
+      <Route path="/billing" component={() => <ProtectedRoute component={BillingPage} />} />
+      <Route path="/email-campaigns" component={() => <ProtectedRoute component={EmailCampaigns} />} />
+      <Route path="/agi-framework" component={() => <ProtectedRoute component={AGIFramework} />} />
+      <Route path="/admin" component={() => <ProtectedRoute component={AdminPanel} />} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -23,6 +23,10 @@ import {
   Zap,
   LogOut,
   ChevronDown,
+  CreditCard,
+  Mail,
+  Brain,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -36,6 +40,12 @@ const NAV_SECTIONS = [
       { name: "SMS Center", href: "/sms", icon: MessageSquare },
       { name: "Calls", href: "/calls", icon: PhoneCall },
       { name: "Phone Numbers", href: "/phone-numbers", icon: Phone },
+    ],
+  },
+  {
+    label: "CAMPAIGNS",
+    items: [
+      { name: "Email Campaigns", href: "/email-campaigns", icon: Mail },
     ],
   },
   {
@@ -53,6 +63,7 @@ const NAV_SECTIONS = [
       { name: "Video Rooms", href: "/video", icon: Video },
       { name: "Conversations", href: "/conversations", icon: MessageCircle },
       { name: "Telehealth", href: "/telehealth", icon: HeartPulse },
+      { name: "AGI Framework", href: "/agi-framework", icon: Brain },
     ],
   },
   {
@@ -67,9 +78,11 @@ const NAV_SECTIONS = [
   {
     label: "ACCOUNT",
     items: [
-      { name: "Usage & Billing", href: "/usage", icon: Activity },
+      { name: "Billing", href: "/billing", icon: CreditCard },
+      { name: "Usage & Stats", href: "/usage", icon: Activity },
       { name: "Alerts", href: "/alerts", icon: Bell },
       { name: "Settings", href: "/settings", icon: Settings },
+      { name: "Admin", href: "/admin", icon: Shield },
     ],
   },
 ];
@@ -111,6 +124,15 @@ function UserMenu() {
 
       {open && (
         <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-lg shadow-xl overflow-hidden z-50">
+          <Link href="/billing">
+            <div
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+            >
+              <CreditCard className="size-3.5" />
+              Billing & Plan
+            </div>
+          </Link>
           <button
             onClick={() => {
               setOpen(false);
@@ -202,7 +224,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="p-3 border-t border-border flex-shrink-0 space-y-2">
           <UserMenu />
           <div className="flex items-center justify-between px-2">
-            <span className="text-[10px] text-muted-foreground font-mono">v3.0.0</span>
+            <span className="text-[10px] text-muted-foreground font-mono">v3.1.0</span>
             <div className="flex items-center gap-1">
               <div className="size-1.5 rounded-full bg-green-500 animate-pulse" />
               <span className="text-[10px] text-muted-foreground">Live</span>

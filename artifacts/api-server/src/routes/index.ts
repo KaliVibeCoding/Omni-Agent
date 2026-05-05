@@ -9,6 +9,7 @@ import twilioConversationsRouter from "./twilio-conversations";
 import telehealthRouter from "./telehealth";
 import tenantRouter from "./tenant";
 import salesChatRouter from "./sales-chat";
+import stripeRouter from "./stripe";
 
 const router: IRouter = Router();
 
@@ -22,5 +23,6 @@ router.use("/twilio/telehealth", telehealthRouter);
 router.use("/webhook-tester", webhookTesterRouter);
 router.use("/tenant", tenantRouter);
 router.use("/sales-chat", salesChatRouter);
+router.use("/stripe", stripeRouter);
 
 export default router;
