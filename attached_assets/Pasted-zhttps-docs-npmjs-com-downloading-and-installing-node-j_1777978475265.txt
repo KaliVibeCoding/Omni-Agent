@@ -1,0 +1,605 @@
+zhttps://docs.npmjs.com/downloading-and-installing-node-js-and-npm
+https://docs.npmjs.com/
+
+
+API Details
+The CLōD API is OpenAI compatible. You can use it with any OpenAI compatible client like OpenClaw, n8n, Kilo Code, etc.
+Endpoint  https://api.clod.io/v1 
+Copy
+API Key   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjU3I3YklQTmd6TXA0YUdzQWZQNTc4WklGUmIyIiwidXNlcklkIjoiY1NyN2JJUE5nek1wNGFHc0FmUDU3OFpJRlJiMiIsInRlYW1JZCI6ImUyMmUyM2NkLTk0ZjktNDkxNC1hYzRmLWY1ZjEzZDQ3MmNhYiIsInRlYW1Sb2xlIjoib3duZXIiLCJwcm9qZWN0SWQiOiI0ZmUzMDY5YS00Mzk0LTRkNzQtOTNiMi1iZDE0N2EzNDhjZmIiLCJpYXQiOjE3Nzc1Njc2MzEsImV4cCI6MTgyNzU2NzYzMX0.2SrDWHx74PKhJEWVy1UUDeW8uMckuPqCYS4RqQq8ZnU
+Copy
+
+
+Client ID
+69203254042-70hv1ca3n5ha45teheq9u6edk9meph1s.apps.googleusercontent.com
+You will no longer be able to view or download the client secret once you close this dialog. Make sure you have copied or downloaded the information below and securely stored it.
+Client secret
+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
+Creation date
+April 29, 2026, 5:35:15 AM GMT-7
+Status
+ Enabled
+AIzaSyCuiTTAJzKg6MZFdmVgtXqkUCd4kfW1_lg
+
+
+
+Ollama e038d76988194bcaa9204bc6a3d988b2.sZCZDyCmlB9SBAM14u2WWAZx
+sk-KXfme9RwgMOkZtbLQe3xRKLnZdV0xGFMRtPKxJOVxq8znTTL
+Moonshot kimi 2.6 sk-D1aZdkiRVYS1h0Vo6ttF0sdCvJFcW1SuH6DJi3QkxOt0fZtA
+CLA
+
+UDE
+C
+\
+Name
+API Key
+State
+Plan Type
+Regenerate User Key
+ 
+RJ Business Solutions's App
+a51e0fa20121f79f6e4fcf561381a5b9
+live
+API Free Trial (30 Days)
+
+
+
+
+
+
+MAPIK#LDiY87948voy1qxHGjRHwIGwKK  adeleon414@gmail.com
+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
+
+Brave  BSAWDkbF7o9LHvxXmjBFsBLGAykz2kG
+
+iUxwvExYsFxgF5QEo1rQjHdokyymTh
+
+Gen spark gsk-eyJjb2dlbl9pZCI6IjYxZGU2M2Q0LThhM2ItNGI1NC05N2VlLTM4YjExY2U2MDExMyIsImtleV9pZCI6IjEwY2MyYjk4LTE0NDItNGJkZC1iNTMzLTUwZWEwZmExMzUyNiIsImN0aW1lIjoxNzc0MzExMDYyLCJjbGF1ZGVfYmlnX21vZGVsIjpudWxsLCJjbGF1ZGVfbWlkZGxlX21vZGVsIjpudWxsLCJjbGF1ZGVfc21hbGxfbW9kZWwiOm51bGx9fLiVdi4XF4cO2MAFnHuZ_YbgszXrtuzIe8ndpwn6AqB3
+
+Court listener 19f8bbe3a51ecb842de3bd8f2759a7ab95bcae16
+ Data gov Your API key for rickjefferson@rickjeffersonsolutions.com is:
+EFKCTYE7SuVAVESWz24GKdgzBWcwZok8w0gVamw2
+Open-states api API Key
+API Key
+Project ID 3ceb961d-18f0-4c65-b6e8-216a1348100c
+Coin base 6e37d8b3-97a6-46cd-b1c0-4fec511f177b
+Client api  vnL3nKoaqcrOdnmyrpbK9hJPaqd1GKYp
+https://docs.cdp.coinbase.com/
+https://docs.cdp.coinbase.com/api-reference/v2/introduction
+https://docs.cdp.coinbase.com/sdks
+https://docs.cdp.coinbase.com/get-started/demo-apps/learn
+https://docs.cdp.coinbase.com/coinbase-business/advanced-trade-apis/overview
+https://docs.cdp.coinbase.com/api-reference/advanced-trade-api/rest-api/introduction
+https://docs.cdp.coinbase.com/coinbase-app/introduction/welcome
+https://docs.cdp.coinbase.com/coinbase-business/introduction/welcome
+https://docs.cdp.coinbase.com/institutional-apis/overview
+https://docs.cdp.coinbase.com/institutional-apis/overview
+https://docs.cdp.coinbase.com/trade-api/welcome
+https://docs.cdp.coinbase.com/agent-kit/welcome
+
+Install SDK
+Backend
+Frontend
+For backend development, use the CDP SDK to create wallets, send and receive assets, and more. Learn moreName
+juk254
+API key ID
+3dc2e59a-317f-4a74-be36-fade0e96056f
+Secret
+Ia5/+ramjIZzWwcvN9hijqySkxY6TBG/s0blK56WnP6DBpcWOFCd80TH9FUvGac3bn1DoCXxGWZLVsOJ7RNaFg==
+
+https://lhoaqkbr.gensparkspace.com/
+
+🦞 RJ BUSINESS SOLUTIONS — MASTER ENV CONFIGURATION       ║
+# ║   Rick Jefferson | Organized: March 9, 2026                  ║
+# ╚═══════════════════════════════════════════════════════════# ─────────────────────────────────────────────
+# 🏢 COMPANY INFO
+# ─────────────────────────────────────────────
+COMPANY_NAME="RJ Business Solutions"
+COMPANY_OWNER="Rick Jefferson"
+COMPANY_ADDRESS="1342 NM 333, Tijeras, New Mexico 87059"
+COMPANY_WEBSITE=https://rjbusinesssolutions.org
+COMPANY_EMAIL=support@rjbusinesssolutions.org
+COMPANY_LOGO=https://storage.googleapis.com/msgsndr/qQnxRHDtyx0uydPd5sRl/media/67eb83c5e519ed689430646b.jpeg
+COMPANY_LINKEDIN=in/rick-jefferson-314998235
+COMPANY_GITHUB=rickjeffsolutions
+COMPANY_TIKTOK=@rick_jeff_solution
+COMPANY_TWITTER=@ricksolutions1
+Genspark h
+# ─────────────────────────────────────────────
+# 🔐 AUTHENTICATION — CLERK
+# ─────────────────────────────────────────────
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_c21vb3RoLXBsYXR5cHVzLTcxLmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_s53t95vMYhpj2zQ4aoNi2flVdlB3GkJAvB3qlwTXW2
+CLERK_FRONTEND_API_URL=https://smooth-platypus-71.clerk.accounts.dev
+CLERK_BACKEND_API_URL=https://api.clerk.com
+CLERK_JWKS_URL=https://smooth-platypus-71.clerk.accounts.dev/.well-known/jwks.json
+
+Genspark  gsk-eyJjb2dlbl9pZCI6ImUxYTI4OWRmLTQ2YzUtNDVkZC05ODJlLTg5MTA3YWFjYmIzNSIsImtleV9pZCI6ImZmYjVlOWIxLTYwMDctNDZhYi05NThhLWQxOWM5NDhhYTU2MSIsImN0aW1lIjoxNzczNjEwNDk3LCJjbGF1ZGVfYmlnX21vZGVsIjpudWxsLCJjbGF1ZGVfbWlkZGxlX21vZGVsIjpudWxsLCJjbGF1ZGVfc21hbGxfbW9kZWwiOm51bGx9fOcWv0ero3Z1lvvrqFZyjX77isQg_CFlB92XFIMcTvx_
+# ─────────────────────────────────────────────
+# 🔐 GOOGLE OAUTH
+# ─────────────────────────────────────────────
+GOOGLE_OAUTH_CLIENT_ID=325284650320-n1k5gho8q51mep3i226ehfkhqdhril9p.apps.googleusercontent.com
+GOOGLE_OAUTH_CLIENT_SECRET=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
+OAUTHLIB_INSECURE_TRANSPORT=1
+
+
+# ─────────────────────────────────────────────
+# 🔐 GOOGLE SERVICE ACCOUNT
+# ─────────────────────────────────────────────
+GOOGLE_SA_CLIENT_EMAIL=rick-gpt-433807@appspot.gserviceaccount.com
+GOOGLE_SA_CLIENT_ID=116367115148482233393
+
+
+# ─────────────────────────────────────────────
+# 💰 PAYMENTS — STRIPE
+# ─────────────────────────────────────────────
+STRIPE_SECRET_KEY=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
+
+STRIPE_PUBLISHABLE_KEY=pk_live_51ShGVR1ol5unodB2ihigOFXRIToYaB2t8yzQxyXBdXlczWogfThagRZy08r9jk16E2b8W7HnbkomNlSFeSVwK11G00W09dlcrq
+
+
+# ─────────────────────────────────────────────
+# 💰 PAYMENTS — PAYPAL
+# ─────────────────────────────────────────────
+PAYPAL_CLIENT_ID=AQ.Ab8RN6JHIMx90G_42QzZm3bDZP5hlWtTz4QH1qC28
+PAYPAL_CLIENT_SECRET=SVRQZmAgw
+
+
+# ─────────────────────────────────────────────
+# 📊 CREDIT MONITORING — MYFREESCORENOW
+# ─────────────────────────────────────────────
+MFSN_API_URL=https://api.myfreescorenow.com/api
+MFSN_EMAIL=rickjefferson@rickjeffersonsolutions.com
+MFSN_AID=RickJeffersonSolutions
+MFSN_DEFAULT_PID=49914
+
+
+# ─────────────────────────────────────────────
+# 🛡️ CREDIT REPAIR — DISPUTEFOX
+# ─────────────────────────────────────────────
+DISPUTEFOX_API_KEY=Fox_d2b91RywvEp6ZlV1iRxRTOK5s7nWhVEh
+DISPUTEFOX_EMAIL=rickjefferson@rickjeffersonsolutions.com
+DISPUTEFOX_LOGIN_URL=https://pulse.disputeprocess.com/jsp/client/login.jsp
+
+
+
+ RAPIDAPI ac7dbc0a2dmshc2a1fe624de264fp121f98jsna26622c59d3f
+       App ID 6212741
+# ─────────────────────────────────────────────
+# ☁️ CLOUDFLARE
+# ─────────────────────────────────────────────
+				Master cloudflare token=cfat_qLynDHLMG3Xfkxh0PN04HguEMqX4JZcvvQWSm82Naf393883
+CLOUDFLARE_API_TOKEN=zvXxjzZoiKJBlJfSjmK-v2r2dCIaLNnjq6kjLNav
+CLOUDFLARE_WORKER_TOKEN=mFRBvbxjiBWJIkcG9udWAUGCZ8CGw-AME2YmeW2t
+CLOUDFLARE_ZONE_ID=18e1ffe3c8a6b6c965860aa0bae60357
+CLOUDFLARE_ACCOUNT_ID=58250b56ae5b45d940cd6e4b64314c01
+CLOUDFLARE_ACCOUNT_HASH=Zubex6PB2rauwMiPzKIrLA
+CLOUDFLARE_R2_S3_API=https://58250b56ae5b45d940cd6e4b64314c01.r2.cloudflarestorage.com
+CLOUDFLARE_STREAM_SUBDOMAIN=customer-yrtxv8psp0qjyz0x.cloudflarestream.com
+CLOUDFLARE_IMAGE_DELIVERY_URL=https://imagedelivery.net/Zubex6PB2rauwMiPzKIrLA
+CLOUDFLARE_REALTIME_KIT_ID=832fbf53-29cf-4caf-8485-4dcbda28bb55
+User  cfut_xyLLQ2p7uuxQkwMscfOmPfc9E8lbmh3eLV8b63bJ1eb50f74
+
+# ─────────────────────────────────────────────
+# 🤖 AI MODELS — PRIMARY
+# ─────────────────────────────────────────────
+OPENAI_API_KEY=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
+https://developers.openai.com/api/docs
+https://developers.openai.com/
+https://developers.openai.com/apps-sdk
+OPENROUTER_API_KEY=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
+https://openrouter.ai/docs/quickstart
+openrouter/hunter-alpha
+7.15B
+$0
+$0
+1,048,576
+Mar 11, 2026
+ 
+https://api-docs.deepseek.com/
+PERPLEXITY_API_KEY=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
+https://www.perplexity.ai/api-platform
+https://docs.perplexity.ai/docs/getting-started/overview
+Memori VmMRf77FJL6GCqEuLJXdqealUfi7O03a7z5tPayhrmG0Qs5NVQHAo_F29QnvhlxSRA3jsecRFt1i4_h_3fcUGq46q37EeRroa2CvFaF1a5jHa0Qh6Qv-NY2P6bwVUk7ysPRR2WfAOZJiWDmEhisz0rZVIhHWzK4_x2A0BjDToRA
+https://memorilabs.ai/docs/memori-cloud/
+
+
+TOGETHER_AI_API_KEY=tgp_v1_uCtCAe47Kdb1MvbojEdctQ7-XN5JM5pYvTZncQKrnXo
+GROQ_API_KEY=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
+GOOGLE_API_KEY=AIzaSyBfKTDYRPiy7EVcA9jjyF1bOq3_cOj2d5Q
+GOOGLE_MAPS_API_KEY=AIzaSyDH0BkDfE3BwEi3DCDC7LhYlHXs92OYonU
+KIMI_API_KEY=sk-l6Kmo48y2h1AXuVpTp4WepnmwOrVaO6nkr8KGPxZ0pCQii5J
+
+
+# ─────────────────────────────────────────────
+# 🤖 AI MODELS — SECONDARY / SPECIALTY
+# ─────────────────────────────────────────────
+NVIDIA_API_KEY=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
+INFERMATIC_API_KEY=sk-XDu21qKO1Q7AhYJR9YwLhg
+INFERMATIC_API_URL=https://api.totalgpt.ai
+BLACKBOX_AI_API_KEY=sk-uywvKquDaRQSbuGdejb51A
+COMPOSIO_API_KEY=ak_T2SgaBiPp_cqoEdrQ9Ba
+CHUTES_API_KEY=cpk_86fa1d0e281a4dd5905dea896c1706cf.671dcf99a3f45d2fba9e7cfdd050899a.UWSO2D2J5yTfYWklHnIEjUlsrhncsk79
+ZAI_API_KEY=e0c30f9e280545a3b55c4fc43108daea.pOOwPtcyWzOYwJpC
+ZAI_DEVPACK_KEY=17098e3900674a6ca74f3abbabc53e62.fXMLTL3RczUO7O4b
+Deepseek sk-b425a6b1d7404f629ed5dd4d2e2c5c1a
+
+# ─────────────────────────────────────────────
+# 🤖 AI MODELS — MINIMAX
+# ─────────────────────────────────────────────
+MINIMAX_CODING_API_KEY=sk-cp-v6CQcdZYTUcj28Ku8KSYit-3DkQbj-OQIeO89OL1uFyHy-8rFgheru6uMC7Equ9JvUOAf_5X8bRbYZsUGhbKRUFbBCsC484K4BBq1ckD5NTWmy6xmkTSRfg
+MINIMAX_AUDIO_API_KEY=sk-api-BBx7ebXgnXoIbtax3pS_yJVarW3maXQDSU2w3puVwn3L3aEFPo9YJgPZoL4GJidXfGNILTBytQDsI7ouuiHiRork4UMdrlYhzrzgTTlMNKtXhwUJ_9Uncow
+MINIMAX_BASE_URL=https://api.minimax.io/anthropic
+
+
+# ─────────────────────────────────────────────
+# 🧠 VECTOR DATABASES & ML PLATFORMS
+# ─────────────────────────────────────────────
+PINECONE_API_KEY=pcsk_3Hgyh6_Mx4tghXBieSUuDWKMaqtJViMfuTzYXanP5cVjsyvZBQcde2Qngo66WezF8W12Qa
+LANGCHAIN_API_KEY=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
+HUGGINGFACE_TOKEN=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
+PAPERSWITHCODE_TOKEN=1b4c67222552e7b168bad6ede38368ed2a0e66ce
+
+https://www.kaggle.com/docs/api
+https://www.kaggle.com/docs/competitions
+https://www.kaggle.com/docs/datasets
+https://www.kaggle.com/docs/models
+https://www.kaggle.com/docs/mcp
+https://www.kaggle.com/docs/api
+https://www.kaggle.com/docs/notebooks
+https://www.kaggle.com/docs/packages
+https://www.kaggle.com/docs/tpu
+
+KAGGLE_USERNAME=rickjefferson
+KAGGLE_KEY=KGAT_611b488b588adb883ffe9e0997ac47b5
+Your username
+Please copy your API token now. You won't be able to view it again. You can always generate a new one if needed.
+API TOKEN
+To use this token, set the KAGGLE_API_TOKEN environment variable:
+export KAGGLE_API_TOKEN=KGAT_dd0f99e794c8f38cbeb547aa7e44286e
+After setting KAGGLE_API_TOKEN, you can use the client as follows:
+kaggle competitions list
+
+rickjefferson (not editable)
+Your account number
+22281039
+https://www.kaggle.com/docs
+To use this token, set the KAGGLE_API_TOKEN environment variable:
+export KAGGLE_API_TOKEN=KGAT_611b488b588adb883ffe9e0997ac47b5
+After setting KAGGLE_API_TOKEN, you can use the client as follows:
+kaggle competitions list
+
+
+
+# ─────────────────────────────────────────────
+# 🔊 VOICE & AUDIO AI
+# ─────────────────────────────────────────────
+ELEVENLABS_API_KEY=sk_606b9b17e9f9b49c3ee9dad4d3121b5141537b57af360843
+
+
+# ─────────────────────────────────────────────RUNWAY_API_KEY=F1796a04-0fef-4cf0-8201-1e0351162967
+JOGG_AI_KEY=da9ea765956146dc8a7ff5da7d84bcec
+MAGIC_HOUR_API_KEY=mhk_live_Fu8b3j6zAYi6uKaOrsRCF6DmGkxermdHD9YiCyZyn4X90GbCYy5NedhXgzUf07RcE3MAcE5TrJeioAOG
+CIVITAI_API_KEY=12b47eeaa9b3e12a2ca17a5c4f740b5d
+REPLICATE_API_TOKEN=r8_f5cuWnXT58HtVYx09VJIfikjPulqEkm0Kj5ss
+
+
+# ─────────────────────────────────────────────
+# 🎨 DESIGN & PRESENTATION
+# ─────────────────────────────────────────────
+GAMMA_API_KEY=sk-gamma-OwzimnTTirqzhm7Dlw9KdCyQ6YAfMVifYDjGxm0gc
+
+
+# ─────────────────────────────────────────────
+# 🔍 SEARCH & SCRAPING
+# ─────────────────────────────────────────────
+TAVILY_API_KEY=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
+FIRECRAWL_API_KEY=fc-98971179099744a096c3bbe7305a31cb
+LINKUP_API_KEY=4fddf4c2-6883-4c6f-8bd2-15c7c4ea7b83
+APIFY_API_KEY=apify_api_blkk1axbSJgMZHxUVpceRlZRFdrquB3NDFd9
+HYPERBROWSER_API_KEY=Hb_464b5e2505d5ad0a75949d91b468
+https://www.hyperbrowser.ai/docs/home
+PEXELS_API_KEY=H082ICYFrx9YGV1uW3BNCdJLYeKOvlwKcU8eKsgBLbRBYBFux1icpWbL
+
+
+# ─────────────────────────────────────────────
+# 🤖 SPECIALIZED AI SERVICES
+# ─────────────────────────────────────────────
+ABACUS_AI_API_KEY_1=s2_4df66e07d92d447084f2dcc9d2ece76f
+ABACUS_AI_API_KEY_2=s2_c72bd8bf4d8a4a1f93621f6db905d3f0
+GLAMA_API_KEY=glama_eyJhcGlLZXkiOiI3MGFiNzY3ZS1jNzZiLTQ4MzUtYjBhZi02ZmYwZjllMzM4ZTEifQ
+FAI_API_KEY=cd5e8ec6-8a92-4258-8f6f-ecaa258af2b2:5874c051ea7e2eea77202074ca43ffee
+AMINOS_AI_KEY=22822ff09ffe134509592f3845263f37
+
+
+# ─────────────────────────────────────────────
+# 📱 TWILIO — SMS / VOICE / WHATSAPP
+# ─────────────────────────────────────────────
+TWILIO_ACCOUNT_SID=AC4727a3fd6a8ce71a9b05d56fcc4b5b6c
+TWILIO_AUTH_TOKEN=8a525321370d865b717be74eba30519f
+TWILIO_API_KEY_SID=SK7d933b4f42c18a6e9c9401ce7943fbb8 
+TWILIO_API_KEY_SECRET=qiGAUIRZUbXYU6KdvOsGG4tvPwyvcixA 
+TWILIO_PHONE_NUMBER=+18667524618
+TWILIO_VOICE_INBOUND_URL=https://api.rjbizsolution.com/webhooks/twilio/voice/inbound
+TWILIO_VOICE_FAILOVER_URL=https://api.rjbizsolution.com/webhooks/twilio/voice/failover
+TWILIO_VOICE_STATUS_URL=https://api.rjbizsolution.com/webhooks/twilio/voice/status
+TWILIO_SMS_INBOUND_URL=https://api.rjbizsolution.com/webhooks/twilio/sms/inbound
+TWILIO_SMS_FAILOVER_URL=https://api.rjbizsolution.com/webhooks/twilio/sms/failover
+TWILLIO
+
+
+Live credentials
+Account SID- used to exercise the REST API
+AC4727a3fd6a8ce71a9b05d56fcc4b5b6c
+Auth token
+Request a secondary token
+Sensitive information. Store your token securely to protect your account. Learn more
+8a525321370d865b717be74eba30519f
+
+
+
+
+SID  SK7d933b4f42c18a6e9c9401ce7943fbb8 
+Secret qiGAUIRZUbXYU6KdvOsGG4tvPwyvcixA 
+
+(866) 752-4618
+
+
+# ─────────────────────────────────────────────
+# 📧 EMAIL SERVICES
+# ─────────────────────────────────────────────
+SENDGRID_API_KEY=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
+RESEND_API_KEY=re_EzDKaqWv_LATpBhrGtGCQcPJzs72W5Jf6
+EMAIL_HOST=smtp.rickjefferson.com
+EMAIL_PORT=465
+EMAIL_USER=info@rickjefferson.com
+EMAIL_IMAP_HOST=imap.rickjefferson.com
+EMAIL_IMAP_PORT=993
+EMAIL_POP3_HOST=pop3.rickjefferson.com
+EMAIL_POP3_PORT=995
+
+
+# ─────────────────────────────────────────────
+# 📬 PHYSICAL MAIL — CLICK2MAIL
+# ─────────────────────────────────────────────
+CLICK2MAIL_USERNAME=rj1006
+CLICK2MAIL_AUTH_BASIC=cmoxMDA2Ok5hZGlhMTEyMyQ=
+CLICK2MAIL_API_URL=https://stage-rest.click2mail.com/molpro
+CLICK2MAIL_USERNAME=rj1006 CLICK2MAIL_AUTH_BASIC=cmoxMDA2Ok5hZGlhMTEyMyQ= CLICK2MAIL_API_URL=https://stage-rest.click2mail.com/molpro https://developers.click2mail.com/?_gl=1*1w15u01*_gcl_aw*R0NMLjE3NzY4Mzk4MDIuQ2p3S0NBand3SnpQQmhCUkVpd0FKZkhSblVwWUVkdnhzR1dDNnRxWmFQQXpiWWhBai04d200TXlwT1dvTkJWZ256dmVuRGhjWnQ2d3BSb0Nla2NRQXZEX0J3RQ..*_gcl_au*ODQ1NzQyNTY1LjE3NzY4Mzk3ODY.*_ga*OTcwMTYyNTM2LjE3NzY4Mzk3ODY.*_ga_4ZMEJY7HJD*czE3NzY4Mzk3ODUkbzEkZzEkdDE3NzY4Mzk4MDEkajQ0JGwwJGg1NjI1NTQwOTk. https://developers.click2mail.com/reference/getaccountaddresses. https://developers.click2mail.com/docs/getting-started. this is the click 2 mail i want them able to mail the letters out after theu are generated
+
+# ─────────────────────────────────────────────
+# 🐙 GITHUB
+# ─────────────────────────────────────────────
+GITHUB_PAT=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
+GITHUB_USERNAME=rjbizsolution23-wq
+GITHUB_EMAIL=rjbizsolution23@gmail.com
+
+GITHUB_PAT=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
+RICK JEFFERSON jukeyman Credit and Finance Expert | Developer I'm Rick Jefferson, a seasoned credit and finance expert with over a decade of experience in financial literacy,  15 followers · 51 following Rick Jefferson Solutions https://rickjeffersonsolutions.com/ in/rick-jefferson-314998235 rickjeffsolutions https://www.tiktok.com/@rick_jeff_solution @ricksolutions1
+
+
+# ─────────────────────────────────────────────
+# 🐳 DOCKER
+# ─────────────────────────────────────────────
+DOCKER_USERNAME=jukeyman2024
+DOCKER_PAT=dckr_pat_SJCpSL1a6f1EoVvg4P0DqvB9EzA
+
+
+# ─────────────────────────────────────────────
+# 💬 DISCORD — MAIN BOT
+# ─────────────────────────────────────────────
+DISCORD_BOT_TOKEN=MTQ2NjMzNjUyMjg3Njc0Nzk1NA.G7XxE1.CPQRi0bpoezG0VbAFPaq-GRqfAcaZjMrLkWBfU
+DISCORD_CLIENT_ID=1466336522876747954
+DISCORD_CLIENT_SECRET=gfD4YAYwYnuSElHwrQho1gXDDY9k9_RD
+
+
+# ─────────────────────────────────────────────
+# 💬 DISCORD — MENS BOT
+# ─────────────────────────────────────────────
+DISCORD_MENS_BOT_APP_ID=1468487536794931242
+DISCORD_MENS_BOT_PUBLIC_KEY=1ea1042be7d27fdb03e084c7a0dab818162c85a618a6b913bdb969644bcb6999
+DISCORD_MENS_BOT_CLIENT_ID=1468487536794931242
+DISCORD_MENS_BOT_CLIENT_SECRET=HpU3_YirY1bkUwsthELW8PGZ8wGEbkNB
+
+
+# ─────────────────────────────────────────────
+# 💬 DISCORD — LEGAL AI BOT
+# ─────────────────────────────────────────────
+DISCORD_LEGAL_BOT_TOKEN=MTQ2ODQ4NzUzNjc5NDkzMTI0Mg.Gj5nMa.efqyweRMcVCjDjKut__StON7y0iunwH1xxuTi8
+
+
+# ─────────────────────────────────────────────
+# 📱 TELEGRAM
+# ─────────────────────────────────────────────
+TELEGRAM_BOT_USERNAME=jukeymanbot
+TELEGRAM_BOT_TOKEN=8463220954:AAEsSjjpbVXrv7CEmkzpnVOLR4MJm4uD0s8
+
+
+# ─────────────────────────────────────────────
+# 📘 FACEBOOK / META
+# ─────────────────────────────────────────────
+FACEBOOK_ACCESS_TOKEN=EAAHPHrkbogUBQ3LP4pHus6gtIaZCHpnq7daP7kQZAkI6rQTeukn0QCbzNM4bziZAnAoAuPsnR0mUBF5zx7wDJJppEviV1A8oz9Ok3WDc7HqOZAiDvHd5OFJaio5JxsKSlqXKIQekvLD3ZCdChFiJ447hbAXw8pHPwYJlbhkeZCE7nVEuGHJxfumySaaHcNWMnkdqoG05RnjyjFopkzLT6VR8p0Rg1fTgtF3vJjO5SGgH0QAnOP3I9J3nWdONdwZCWp3ouA8fapPLOdWZA7hAkTRQ50lnMJX0LmZCTJQZDZD
+FACEBOOK_APP_ID=509205838275077
+FACEBOOK_APP_SECRET=e2c19bbebf79eb4f017ba02fb30d16ff
+FACEBOOK_BUSINESS_ID=990563925127915
+FACEBOOK_TOKEN=aa96eaaf7c67d46398f3a828d3953fe0
+Get Access Token
+Select Token PermissionsLearn More
+ads_management
+ads_read
+read_insights
+
+By clicking Get Token, you agree to revoke all previous permissions granted, and grant this app the permissions that you just selected.
+Get Token
+EAAHPHrkbogUBRX1pTYyXDASeK5BBkDC1TExszPwZBeREgKG3ixhFxxEvms8YivL1VPN8LjXg7JMdN2grBSnIsay8SyiRZAIQTgGPUDnmkHGrPABTTK66hKXzMstjKmip9J0YmeKph9lrXRFO46lE2IZA4k9CBaMYA0vpIK7w8iZAZCjev4qnqoREUpzib7BZArSyDxmz309UxkZBnsdq5UDt3Gy
+
+
+# ─────────────────────────────────────────────
+# 🏢 GHL / HIGHLEVEL
+# ─────────────────────────────────────────────
+GHL_API_KEY=pit-68a40b4e-027e-4a13-b781-7a39a159d1cb
+GHL_LOCATION_ID_1=WCybfTVR84MV2oX8mb5O
+GHL_LOCATION_ID_2=Y9jeLXo4T5iJuSnNh6bs
+GHL_PIT_2=pit-4a9978b7-3d66-4c17-9fd2-e1a30f8bdaeb
+GHL_ACCOUNT_API_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb2NhdGlvbl9pZCI6IldDeWJmVFZSODRNVjJvWDhtYjVPIiwidmVyc2lvbiI6MSwiaWF0IjoxNzU2OTE0NjM5MDIzLCJzdWIiOiJVVHNOZlVMSDdlblBzTHFZOENsYyJ9.PpO8WHZH8LJkpj0PRSb_OavJgxjJzgGmWHwFvsA8VWI
+
+
+# ─────────────────────────────────────────────
+# 🔗 AUTOMATION & WORKFLOW
+# ─────────────────────────────────────────────
+ZAPIER_API_KEY=05bb585067b54827a2bd0d2179c4273c6e0330bc499545beb62b45ea7bf4a328
+MAKE_API_KEY=5e874e12-735c-4387-a0bb-18813bb9198a
+
+
+# ─────────────────────────────────────────────
+# 📚 SKOOL
+# ─────────────────────────────────────────────
+SKOOL_WEBHOOK_URL=https://api2.skool.com/groups/credit-empire-builders-3336/webhooks/539ad4a128504527b113ccb886ffde45
+
+
+# ─────────────────────────────────────────────
+# 🚀 DEPLOYMENT PLATFORMS
+# ─────────────────────────────────────────────
+NETLIFY_TOKEN=nfp_6uBkDJRpwf381Xc9vV6jP3dKwwJjnkaq1589
+HEROKU_TOKEN=HRKU-9b4a1a46-abc1-431b-aaaf-86dcc176cb06
+RAILWAY_API_KEY=5d0d78e8-7b50-485d-8021-764e475a916e
+RAILWAY_PROJECT_ID=2fbc822f-ea8e-4d2c-bb96-c7600ac063b9
+RAILWAY_CLIENT_ID=rlwy_oaci_Oxmq3OvpFj6k4xu7bk5PRHMv
+RAILWAY_CLIENT_SECRET=Rlwy_oacs_bdc7a30f955555e4249e9abab40f697160a87210
+CONVEX_DEPLOY_KEY=prod:wary-ox-827|eyJ2MiI6ImIxZDg1MjZkNGEyNTQzOGE5NmE4MTI4NDkxOWM1M2Y1In0=
+
+
+# ─────────────────────────────────────────────
+# 📡 VIDEO MEETING — DYTE
+# ─────────────────────────────────────────────
+DYTE_ORG_ID=832fbf53-29cf-4caf-8485-4dcbda28bb55
+DYTE_API_KEY=c3919c49cc8d16f67405
+DYTE_AUTH_HEADER="Basic ODMyZmJmNTMtMjljZi00Y2FmLTg0ODUtNGRjYmRhMjhiYjU1OmMzOTE5YzQ5Y2M4ZDE2ZjY3NDA1"
+
+
+# ─────────────────────────────────────────────
+# 🏪 REPLIERS (REAL ESTATE)
+# ─────────────────────────────────────────────
+REPLIERS_API_KEY=fJrObfyuDvbo9TZXsOxWGkdOKQWMGm
+iUxwvExYsFxgF5QEo1rQjHdokyymTh
+
+# ─────────────────────────────────────────────
+# 🌐 WORDPRESS — rickjefferson.com
+# ─────────────────────────────────────────────
+WP_API_KEY="uVCI bkKr aBNX CbgJ DKOr zDOw"
+WP_DB_NAME=SCWORDPRESS-35313034301d
+WP_DB_USER=SCWORDPRESS-35313034301d
+WP_DB_PASSWORD=f003ae04a67b
+WP_DB_HOST=wpdb-42.hosting.stackcp.net
+WP_TABLE_PREFIX=rjbs_
+WP_DOMAIN=rickjefferson.com
+WP_IP=185.146.167.199
+WP_IPV6=2a07:7800::215
+WP_HOME_PATH=/home/sites/36a/a/a0906c163b/
+WP_FTP_SERVER=ftp.rickjefferson.com
+WP_FTP_USERNAME=rickjefferson.com
+WP_SSH_HOST=rickjefferson.com@ssh.us.stackcp.com
+WP_AUTH_KEY=AfeT7oVW7d9uQkT+hJfXPjpF1Pxk2kUO
+WP_SECURE_AUTH_KEY=3cXPFqGBe3DXxMlcJjn87RqhkqsVCSlB
+WP_LOGGED_IN_KEY=OTpDVR2CraHZ+BrR4bM8yWLgYCWJ+HMW
+WP_NONCE_KEY=zS9f/d+EOhQJUZg+bMfC8W8Ui/BjQ8bm
+WP_AUTH_SALT=MnRYptIyAyjIQ0S5oe6V73Own/31JBmO
+WP_SECURE_AUTH_SALT=Gmqb9Y+rVIycn8aGOu6WvU4h/3ejfhkp
+WP_LOGGED_IN_SALT=NMjBNZYguTq90tmvlc6cSl8oxp3n2nx7
+WP_NONCE_SALT=TAQY4Q8Run35k3q8d54F8QlY70mWikVg
+
+
+# ─────────────────────────────────────────────
+# 📡 KILO CODE
+# ─────────────────────────────────────────────
+KILO_CODE_KEY_1=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnYiOiJwcm9kdWN0aW9uIiwia2lsb1VzZXJJZCI6IjcxYjI0MWQ4LTY1MTEtNDdhOC04Y2ZkLTU0NzI4OTE1YzA1NyIsImFwaVRva2VuUGVwcGVyIjpudWxsLCJ2ZXJzaW9uIjozLCJpYXQiOjE3NzI1MTY3MDcsImV4cCI6MTkzMDE5NjcwN30.FYwgaQoyDZdrqqhSmZAU2u3ph73D6roqFujHnjD5Btw
+KILO_CODE_KEY_2=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbnYiOiJwcm9kdWN0aW9uIiwia2lsb1VzZXJJZCI6Im9hdXRoL2dvb2dsZToxMDQyMjk0OTcwODI2NTMxNjA4MjIiLCJhcGlUb2tlblBlcHBlciI6bnVsbCwidmVyc2lvbiI6MywiaWF0IjoxNzU0NTkxNzQ4LCJleHAiOjE5MTIzNzk3NDh9.U_5Srm-sSJLWdplVOPiGc_fvGdIpgPGjqqbiBDdSdQQ
+
+
+# ─────────────────────────────────────────────
+# 🔑 SSH — DEBIAN SERVER
+# ─────────────────────────────────────────────
+SSH_HOST=debian
+SSH_USER=debian
+SSH_PORT=3389
+SSH_LOGIN_USER=rick24
+
+
+# ─────────────────────────────────────────────
+# 🔑 KIMI AI (ADDITIONAL)
+# ─────────────────────────────────────────────
+KIMI_SECONDARY_KEY=sk-6GUXJkGs9Hig2z1Cg6JwpKspWq3f7qCTGiYAUfWHmhlLCs34
+
+
+# ─────────────────────────────────────────────
+# 📜 SCANBOT LICENSE
+# ─────────────────────────────────────────────
+SCANBOT_LICENSE_KEY="V0LkE84q/KNzgOa336NaWajQDps3ZcEzf/PptygrRYBhr7WpZHfUpmCNDg13C6oWlFy18uHJy1cMgKD+Dmmo4PMCExFIUDBji0tTIAUd+Wbk8rsK4Wcn48C8/Lfx0Rgzm40mZQgfDQF4YfIc2ClQ/EWrxH7C/Z3naGVUxoNw5RW8ZaUZCO1duEzTgfuZw7XJHy9k8orJ1uOUEhaLbDGFIK2hojewyLxI/YMvz0+4NXUQxuTHnwVK9wn5ovteabqK+mZ4b/R8ZqXoGZQCS7J92HBel8s5kcXwz8Q5bcZcsPiQZjKcNP88IbnxscLTCaOyzTX7sWZcgYbaSrYDSYRZAg==\nU2NhbmJvdFNESwpsb2NhbGhvc3R8cmpiaXpzb2x1dGlvbi5jb20KMTc3MzYxOTE5OQo4Mzg4NjA3Cjg=\n"
+
+The OpenAI Supreme MCP Server has been flawlessly deployed to Cloudflare Workers using your API key! 🚀
+The live endpoint is now available at: https://openai-supreme-mcp.rickjefferson.workers.dev
+It is using the WebStandardStreamableHTTPServerTransport to support the Model Context Protocol over Server-Sent Events (SSE).
+You can now connect any MCP-compatible agent (like Claude Desktop or your local orchestrator) directly to this URL to instantly give them access to GPT-5.4, structured outputs, embeddings, and background tasks!
+
+
+
+
+
+# ─────────────────────────────────────────────
+# 📊 END OF MASTER ENV
+# ─────────────────────────────────────────────
+# ⚠️  NEVER commit this file to git
+# ⚠️  Add to .gitignore IMMEDIATELY
+# ⚠️  Rotate all keys exposed in chat
+# ─────────────────────────────────────────────
+Done! Congratulations on your new bot. You will find it at t.me/juk12bot. You can now add a description, about section and profile picture for your bot, see /help for a list of commands. By the way, when you've finished creating your cool bot, ping our Bot Support if you want a better username for it. Just make sure the bot is fully operational before you do this.
+Use this token to access the HTTP API:
+8796254428:AAGhX6U427obU5vrR-J_K0PcqPNd-XLhGqs
+Keep your token secure and store it safely, it can be used by anyone to control your bot.
+1. Disable UAC (User Account Control)
+
+Press Win + R → type gpedit.msc → press Enter
+Navigate: Computer Configuration > Windows Settings > Security Settings > Local Policies > Security Options
+Find: User Account Control: Run all administrators in Admin Approval Mode
+Set to: Disabled
+Restart computer
+2. Grant Full NTFS Permissions
+
+Right-click  → Properties → Security tab
+Click Edit → select your username
+Check Full Control → Apply → OK
+Repeat for: , D:\, %APPDATA%, %LOCALAPPDATA%
+3. Exclude from Windows Defender
+
+Open Windows Defender (search "Defender")
+Go to Virus & threat protection → Manage settings
+Scroll to Exclusions → Add exclusions
+Add folder: hermes-agent-main
+Add folder: agentstarter
+4. Set PowerShell Execution Policy
+
+Right-click PowerShell → Run as Administrator
+Type: Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser -Force
+Press Enter
+5. Set Environment Variables (Manual)
+
+Search: Edit environment variables
+Click Environment Variables button
+Under System variables → New
+Add these:
+KIMI_API_KEY = sk-D1aZdkiRVYS1h0Vo6ttF0sdCvJFcW1SuH6DJi3QkxOt0fZtA
+MINIMAX_CODING_API_KEY = sk-cp-v6CQcdZYTUcj28Ku8KSYit-3DkQbj-OQIeO89OL1uFyHy-8rFgheru6uMC7Equ9JvUOAf_5X8bRbYZsUGhbKRUFbBCsC484K4BBq1ckD5NTWmy6xmkTSRfg
+OPENROUTER_API_KEY = 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
+Click OK → restart PowerShell
+6. Enable 24/7 Auto-Run (Task Scheduler)
+
+Search: Task Scheduler
+Right panel → Create Basic Task
+Name: HermesAgent24-7
+Trigger: At system startup
+Action: Start a program → browse to hermes
+Finish
+Done. Hermes now has full system control + 24/7 auto-start.
+
+/Users/kalivibecoding/Downloads/MFSN\ API /Users/kalivibecoding/Downloads/redhat /Users/kalivibecoding/Downloads/cyber\ meta\ 2026 /Users/kalivibecoding/Downloads/_CREDIT-HUB/resources/Credit-Repair-Laws /Users/kalivibecoding/Projects/alirezarezvani-claude-code-skill-factory /Users/kalivibecoding/Projects/antigravity-awesome-skills /Users/kalivibecoding/Projects/voltagent-awesome-agent-skills /Users/kalivibecoding/Projects/cybersecurity-skills /Users/kalivibecoding/Projects/awesome-claude-code-subagents /Users/kalivibecoding/Projects/claude-ai-music-skills /Users/kalivibecoding/Projects/everything-claude-code /Users/kalivibecoding/Projects/ui-ux-pro-max-skill /Users/kalivibecoding/Projects/obsidian-skills /Users/kalivibecoding/Projects/onewave-ai-claude-skills /Users/kalivibecoding/Projects/anthropics-skills 
+
