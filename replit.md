@@ -38,6 +38,9 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/sign-in` — Clerk sign-in (branded dark theme, JetBrains Mono, Twilio red)
 - `/sign-up` — Clerk sign-up (same branding)
 
+**Onboarding route:**
+- `/connect` — Connect Twilio Account: AES-256 encrypted credential storage, optional API Key, validates against Twilio API before saving
+
 **Protected routes (require Clerk auth — redirect to `/` if signed out):**
 - `/dashboard` — Dashboard: live account status, balance, active calls, recent calls/messages, phone numbers
 - `/sms` — SMS Center: compose SMS, message history with filtering
@@ -56,11 +59,13 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/video` — Video Rooms: Twilio Programmable Video — create/end rooms, participants, access token generator
 - `/conversations` — Conversations: Twilio Conversations API — threads, messages, participants (SMS + chat)
 - `/telehealth` — Telehealth: appointments CRUD, SMS reminders, video invites, HIPAA checklist, upcoming tab
-- `/settings` — Settings: account info, phone numbers, webhook URL references
+- `/settings` — Settings: connected Twilio account (update/disconnect), account info, phone numbers, webhook URL references
 
-**Version:** 4.0.0 (added Clerk auth, public landing page, portal gating)
+**Version:** 5.0.0 (multi-tenant SaaS — per-tenant Twilio credentials, onboarding flow, updated pricing)
 **Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui, Clerk (`@clerk/react` + `@clerk/themes`), lucide icons, date-fns, dark theme CSS variables.
 **Layout sidebar:** shows signed-in user name/email + sign-out dropdown. Dashboard nav link updated to `/dashboard`.
+
+**Pricing tiers (landing page):** Starter $79/mo · Growth $199/mo · Business $499/mo · Enterprise custom
 
 **Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
 
@@ -108,7 +113,24 @@ Express API server for local development. Uses PostgreSQL + Drizzle.
 - `/api/twilio/contacts` — local contacts (PostgreSQL via Drizzle)
 - `/api/twilio/lookup` — number lookup
 
-**Credentials** stored as Replit secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER`.
+**Multi-tenant credential system:** All Twilio route files use `getTenantClient(req)` — resolves credentials from `tenant_credentials` table via Clerk userId. No more global env-var Twilio credentials for the platform (env secrets remain for legacy compatibility).
+
+**New API routes:**
+- `GET /api/tenant/credentials` — get connected account info (masked, no raw token)
+- `POST /api/tenant/credentials` — validate + save Twilio credentials (AES-256-GCM encrypted)
+- `PATCH /api/tenant/plan` — update subscription plan
+- `DELETE /api/tenant/credentials` — disconnect Twilio account
+
+**New backend files:**
+- `artifacts/api-server/src/lib/encrypt.ts` — AES-256-GCM encrypt/decrypt
+- `artifacts/api-server/src/lib/tenantTwilio.ts` — getTenantTwilioClient(userId), getTenantCredentials(userId)
+- `artifacts/api-server/src/middlewares/requireAuth.ts` — Clerk getAuth middleware
+- `artifacts/api-server/src/routes/tenant/index.ts` — credential management API
+- `lib/db/src/schema/tenantCredentials.ts` — tenant_credentials table (Drizzle)
+
+**Env vars:** `ENCRYPTION_KEY` (32-byte hex, shared env) — used for AES-256-GCM credential encryption.
+
+**Credentials** stored as Replit secrets: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_API_KEY_SID`, `TWILIO_API_KEY_SECRET`, `TWILIO_PHONE_NUMBER` (kept for legacy; platform uses per-tenant DB credentials).
 
 ---
 

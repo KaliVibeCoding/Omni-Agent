@@ -1,24 +1,22 @@
 import { Router } from "express";
+import type { Request } from "express";
 import twilio from "twilio";
+import { getAuth } from "@clerk/express";
+import { getTenantTwilioClient } from "../../lib/tenantTwilio";
 
 const router = Router();
 
-function getTwilioClient() {
-  const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-  const authToken = process.env["TWILIO_AUTH_TOKEN"];
-  const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-  const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
-  if (!accountSid) throw new Error("TWILIO_ACCOUNT_SID not configured");
-  if (authToken) return twilio(accountSid, authToken);
-  if (apiKeySid && apiKeySecret) return twilio(apiKeySid, apiKeySecret, { accountSid });
-  throw new Error("Set TWILIO_AUTH_TOKEN or TWILIO_API_KEY_SID + TWILIO_API_KEY_SECRET");
+async function getTenantClient(req: Request) {
+  const { userId } = getAuth(req);
+  if (!userId) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  return getTenantTwilioClient(userId);
 }
 
 // ─── Create Room ──────────────────────────────────────────────────────────────
 
 router.post("/rooms", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const {
       uniqueName, type = "go", maxParticipants,
       recordParticipantsOnConnect = false, statusCallback,
@@ -43,7 +41,7 @@ router.post("/rooms", async (req, res, next) => {
 
 router.get("/rooms", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const status = (req.query["status"] as string) ?? "in-progress";
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "20", 10), 50);
     const rooms = await (client.video.v1.rooms as any).list({ status, limit });
@@ -59,7 +57,7 @@ router.get("/rooms", async (req, res, next) => {
 
 router.get("/rooms/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const room = await (client.video.v1.rooms(req.params["sid"]!) as any).fetch();
     res.json({
       sid: room.sid, uniqueName: room.uniqueName, status: room.status, type: room.type,
@@ -73,7 +71,7 @@ router.get("/rooms/:sid", async (req, res, next) => {
 
 router.post("/rooms/:sid/end", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const updated = await (client.video.v1.rooms(req.params["sid"]!) as any).update({ status: "completed" });
     res.json({ sid: updated.sid, status: updated.status });
   } catch (err) { next(err); }
@@ -83,7 +81,7 @@ router.post("/rooms/:sid/end", async (req, res, next) => {
 
 router.get("/rooms/:sid/participants", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const participants = await (client.video.v1.rooms(req.params["sid"]!).participants as any).list({ limit: 20 });
     res.json(participants.map((p: any) => ({
       sid: p.sid, identity: p.identity, status: p.status,
@@ -96,7 +94,7 @@ router.get("/rooms/:sid/participants", async (req, res, next) => {
 
 router.get("/rooms/:sid/recordings", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const recs = await (client.video.v1.rooms(req.params["sid"]!).recordings as any).list({ limit: 20 });
     res.json(recs.map((r: any) => ({
       sid: r.sid, status: r.status, type: r.type, codec: r.codec,
@@ -112,11 +110,9 @@ router.post("/token", async (req, res, next) => {
   try {
     const { identity, roomName } = req.body as { identity: string; roomName?: string };
     if (!identity) { res.status(400).json({ error: "identity is required" }); return; }
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-    const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-    const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
-    if (!accountSid || !apiKeySid || !apiKeySecret) {
-      res.status(500).json({ error: "TWILIO_ACCOUNT_SID, TWILIO_API_KEY_SID and TWILIO_API_KEY_SECRET required for video tokens" });
+    const { accountSid, apiKeySid, apiKeySecret } = await getTenantClient(req);
+    if (!apiKeySid || !apiKeySecret) {
+      res.status(400).json({ error: "API Key SID and Secret are required for video tokens. Add them in Settings." });
       return;
     }
     const AccessToken = twilio.jwt.AccessToken;

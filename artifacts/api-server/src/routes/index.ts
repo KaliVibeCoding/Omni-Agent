@@ -7,6 +7,7 @@ import webhookTesterRouter from "./webhook-tester";
 import videoRouter from "./video";
 import twilioConversationsRouter from "./twilio-conversations";
 import telehealthRouter from "./telehealth";
+import tenantRouter from "./tenant";
 
 const router: IRouter = Router();
 
@@ -18,5 +19,6 @@ router.use("/twilio/video", videoRouter);
 router.use("/twilio/conv", twilioConversationsRouter);
 router.use("/twilio/telehealth", telehealthRouter);
 router.use("/webhook-tester", webhookTesterRouter);
+router.use("/tenant", tenantRouter);
 
 export default router;

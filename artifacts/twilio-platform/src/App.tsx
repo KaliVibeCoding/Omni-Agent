@@ -10,6 +10,7 @@ import { queryClient } from "@/lib/queryClient";
 
 import { Layout } from "@/components/layout";
 import Landing from "@/pages/landing";
+import ConnectPage from "@/pages/connect";
 import Dashboard from "@/pages/dashboard";
 import SmsCenter from "@/pages/sms";
 import Calls from "@/pages/calls";
@@ -181,6 +182,12 @@ function Router() {
       <Route path="/" component={HomeRedirect} />
       <Route path="/sign-in/*?" component={SignInPage} />
       <Route path="/sign-up/*?" component={SignUpPage} />
+      <Route path="/connect" component={() => (
+        <>
+          <Show when="signed-in"><ConnectPage /></Show>
+          <Show when="signed-out"><Redirect to="/" /></Show>
+        </>
+      )} />
       <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
       <Route path="/sms" component={() => <ProtectedRoute component={SmsCenter} />} />
       <Route path="/calls" component={() => <ProtectedRoute component={Calls} />} />

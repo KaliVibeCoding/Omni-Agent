@@ -1,24 +1,22 @@
 import { Router } from "express";
+import type { Request } from "express";
 import twilio from "twilio";
+import { getAuth } from "@clerk/express";
+import { getTenantTwilioClient } from "../../lib/tenantTwilio";
 
 const router = Router();
 
-function getTwilioClient() {
-  const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-  const authToken = process.env["TWILIO_AUTH_TOKEN"];
-  const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-  const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
-  if (!accountSid) throw new Error("TWILIO_ACCOUNT_SID not configured");
-  if (authToken) return twilio(accountSid, authToken);
-  if (apiKeySid && apiKeySecret) return twilio(apiKeySid, apiKeySecret, { accountSid });
-  throw new Error("Set TWILIO_AUTH_TOKEN or TWILIO_API_KEY_SID + TWILIO_API_KEY_SECRET");
+async function getTenantClient(req: Request) {
+  const { userId } = getAuth(req);
+  if (!userId) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  return getTenantTwilioClient(userId);
 }
 
 // ─── List Conversations ───────────────────────────────────────────────────────
 
 router.get("/", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "20", 10), 50);
     const cvs = await (client.conversations.v1.conversations as any).list({ limit });
     res.json(cvs.map((cv: any) => ({
@@ -33,7 +31,7 @@ router.get("/", async (req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { friendlyName } = req.body as { friendlyName?: string };
     const opts: Record<string, unknown> = {};
     if (friendlyName) opts["friendlyName"] = friendlyName;
@@ -46,7 +44,7 @@ router.post("/", async (req, res, next) => {
 
 router.get("/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const cv = await (client.conversations.v1.conversations(req.params["sid"]!) as any).fetch();
     res.json({ sid: cv.sid, friendlyName: cv.friendlyName, state: cv.state, dateCreated: cv.dateCreated, dateUpdated: cv.dateUpdated });
   } catch (err) { next(err); }
@@ -56,7 +54,7 @@ router.get("/:sid", async (req, res, next) => {
 
 router.put("/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const cv = await (client.conversations.v1.conversations(req.params["sid"]!) as any).update(req.body);
     res.json({ sid: cv.sid, friendlyName: cv.friendlyName, state: cv.state });
   } catch (err) { next(err); }
@@ -66,7 +64,7 @@ router.put("/:sid", async (req, res, next) => {
 
 router.delete("/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     await (client.conversations.v1.conversations(req.params["sid"]!) as any).remove();
     res.status(204).end();
   } catch (err) { next(err); }
@@ -76,7 +74,7 @@ router.delete("/:sid", async (req, res, next) => {
 
 router.get("/:sid/messages", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "50", 10), 100);
     const msgs = await (client.conversations.v1.conversations(req.params["sid"]!).messages as any).list({ limit });
     res.json(msgs.map((m: any) => ({
@@ -89,7 +87,7 @@ router.get("/:sid/messages", async (req, res, next) => {
 
 router.post("/:sid/messages", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { author, body } = req.body as { author: string; body: string };
     if (!author || !body) { res.status(400).json({ error: "author and body are required" }); return; }
     const msg = await (client.conversations.v1.conversations(req.params["sid"]!).messages as any).create({ author, body });
@@ -101,7 +99,7 @@ router.post("/:sid/messages", async (req, res, next) => {
 
 router.get("/:sid/participants", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const ps = await (client.conversations.v1.conversations(req.params["sid"]!).participants as any).list({ limit: 20 });
     res.json(ps.map((p: any) => ({
       sid: p.sid, identity: p.identity ?? null, messagingBinding: p.messagingBinding ?? null, dateCreated: p.dateCreated,
@@ -113,7 +111,7 @@ router.get("/:sid/participants", async (req, res, next) => {
 
 router.post("/:sid/participants", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { identity, phoneNumber, proxyAddress } = req.body as {
       identity?: string; phoneNumber?: string; proxyAddress?: string;
     };
@@ -136,7 +134,7 @@ router.post("/:sid/participants", async (req, res, next) => {
 
 router.delete("/:sid/participants/:participantSid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     await (client.conversations.v1.conversations(req.params["sid"]!).participants(req.params["participantSid"]!) as any).remove();
     res.json({ success: true });
   } catch (err) { next(err); }

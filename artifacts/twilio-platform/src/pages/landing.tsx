@@ -59,39 +59,62 @@ const STATS = [
 const PLANS = [
   {
     name: "Starter",
-    price: "$49",
+    price: "$79",
     period: "/mo",
-    desc: "Perfect for solo practitioners",
-    features: ["SMS & Voice", "Up to 500 messages/mo", "Basic analytics", "Email support"],
+    desc: "Perfect for solo practitioners & small teams",
+    features: [
+      "SMS & Voice calls",
+      "Up to 1,000 messages/mo",
+      "Basic analytics dashboard",
+      "Email support",
+      "1 Twilio account connected",
+    ],
     cta: "Get Started",
     highlight: false,
   },
   {
-    name: "Professional",
-    price: "$149",
+    name: "Growth",
+    price: "$199",
     period: "/mo",
-    desc: "For growing practices",
+    desc: "For growing practices and call centers",
     features: [
       "Everything in Starter",
       "Unlimited messages",
       "Video consultations",
       "Telehealth suite",
+      "AI Voice Agents",
       "Priority support",
     ],
     cta: "Start Free Trial",
     highlight: true,
   },
   {
+    name: "Business",
+    price: "$499",
+    period: "/mo",
+    desc: "High-volume teams and agencies",
+    features: [
+      "Everything in Growth",
+      "Multi-agent AGI framework",
+      "Advanced automation",
+      "White-label ready",
+      "Dedicated Slack channel",
+      "SLA guarantee",
+    ],
+    cta: "Start Free Trial",
+    highlight: false,
+  },
+  {
     name: "Enterprise",
     price: "Custom",
     period: "",
-    desc: "Multi-location organizations",
+    desc: "Multi-location and regulated organizations",
     features: [
-      "Everything in Pro",
+      "Everything in Business",
       "Dedicated account manager",
       "Custom integrations",
-      "SLA guarantee",
       "HIPAA BAA included",
+      "On-prem deployment option",
     ],
     cta: "Contact Sales",
     highlight: false,
@@ -284,7 +307,7 @@ export default function Landing() {
             <h2 className="text-3xl font-bold mb-4">Simple, transparent pricing</h2>
             <p className="text-muted-foreground">Start free. Scale as your practice grows.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {PLANS.map((plan) => (
               <div
                 key={plan.name}

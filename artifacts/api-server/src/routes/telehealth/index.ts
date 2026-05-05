@@ -1,17 +1,15 @@
 import { Router } from "express";
+import type { Request } from "express";
 import twilio from "twilio";
+import { getAuth } from "@clerk/express";
+import { getTenantTwilioClient } from "../../lib/tenantTwilio";
 
 const router = Router();
 
-function getTwilioClient() {
-  const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-  const authToken = process.env["TWILIO_AUTH_TOKEN"];
-  const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-  const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
-  if (!accountSid) throw new Error("TWILIO_ACCOUNT_SID not configured");
-  if (authToken) return twilio(accountSid, authToken);
-  if (apiKeySid && apiKeySecret) return twilio(apiKeySid, apiKeySecret, { accountSid });
-  throw new Error("Set TWILIO_AUTH_TOKEN or TWILIO_API_KEY_SID + TWILIO_API_KEY_SECRET");
+async function getTenantClient(req: Request) {
+  const { userId } = getAuth(req);
+  if (!userId) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  return getTenantTwilioClient(userId);
 }
 
 async function queryD1(sql: string, params: unknown[] = []) {
@@ -125,7 +123,7 @@ router.delete("/appointments/:id", async (req, res, next) => {
 
 router.post("/appointments/:id/remind", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const apptResult = await queryD1("SELECT * FROM appointments WHERE id=?", [req.params["id"]]);
     const appt = apptResult?.results?.[0] as any;
     if (!appt) { res.status(404).json({ error: "Appointment not found" }); return; }
@@ -146,7 +144,7 @@ router.post("/appointments/:id/remind", async (req, res, next) => {
 
 router.post("/appointments/:id/video-invite", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const apptResult = await queryD1("SELECT * FROM appointments WHERE id=?", [req.params["id"]]);
     const appt = apptResult?.results?.[0] as any;
     if (!appt) { res.status(404).json({ error: "Appointment not found" }); return; }
@@ -165,7 +163,7 @@ router.post("/appointments/:id/video-invite", async (req, res, next) => {
 
 router.post("/appointments/bulk-remind", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { date, customMessage } = req.body as { date?: string; customMessage?: string };
     const targetDate = date ?? new Date().toISOString().split("T")[0];
     const apptResult = await queryD1(

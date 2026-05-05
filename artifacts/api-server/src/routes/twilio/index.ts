@@ -1,4 +1,5 @@
 import { Router } from "express";
+import type { Request } from "express";
 import twilio from "twilio";
 import {
   SendTwilioSmsBody,
@@ -6,33 +7,20 @@ import {
   GetTwilioVoiceTokenBody,
   TwilioLookupBody,
 } from "@workspace/api-zod";
+import { getAuth } from "@clerk/express";
+import { getTenantTwilioClient } from "../../lib/tenantTwilio";
 
 const router = Router();
 
-function getTwilioClient() {
-  const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-  const authToken = process.env["TWILIO_AUTH_TOKEN"];
-  const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-  const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
-
-  if (!accountSid) {
-    throw new Error("Twilio credentials not configured. Set TWILIO_ACCOUNT_SID.");
-  }
-
-  // Use Auth Token (most reliable); fall back to API Key auth
-  if (authToken) {
-    return twilio(accountSid, authToken);
-  }
-  if (apiKeySid && apiKeySecret) {
-    return twilio(apiKeySid, apiKeySecret, { accountSid });
-  }
-  throw new Error("Set TWILIO_AUTH_TOKEN or TWILIO_API_KEY_SID + TWILIO_API_KEY_SECRET.");
+async function getTenantClient(req: Request) {
+  const { userId } = getAuth(req);
+  if (!userId) throw Object.assign(new Error("Unauthorized"), { status: 401 });
+  return getTenantTwilioClient(userId);
 }
 
 router.get("/account", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"]!;
+    const { client, accountSid } = await getTenantClient(req);
     const account = await client.api.v2010.accounts(accountSid).fetch();
     const balance = await client.balance.fetch();
     res.json({
@@ -49,7 +37,7 @@ router.get("/account", async (req, res, next) => {
 
 router.get("/phone-numbers", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const numbers = await client.incomingPhoneNumbers.list({ limit: 50 });
     res.json(numbers.map((n) => ({
       sid: n.sid,
@@ -84,7 +72,7 @@ router.put("/phone-numbers/:sid", async (req, res, next) => {
       friendlyName, voiceUrl, voiceMethod, voiceFallbackUrl,
       smsUrl, smsMethod, statusCallback,
     } = req.body as Record<string, string | undefined>;
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const updateParams: Record<string, string> = {};
     if (friendlyName !== undefined) updateParams["friendlyName"] = friendlyName;
     if (voiceUrl !== undefined) updateParams["voiceUrl"] = voiceUrl;
@@ -108,7 +96,7 @@ router.put("/phone-numbers/:sid", async (req, res, next) => {
 router.post("/send-sms", async (req, res, next) => {
   try {
     const { to, from, body } = SendTwilioSmsBody.parse(req.body);
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const msg = await client.messages.create({ to, from, body });
     res.json({ sid: msg.sid, status: msg.status, to: msg.to, from: msg.from, body: msg.body });
   } catch (err) {
@@ -119,7 +107,7 @@ router.post("/send-sms", async (req, res, next) => {
 router.post("/make-call", async (req, res, next) => {
   try {
     const { to, from, twiml } = MakeTwilioCallBody.parse(req.body);
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const call = await client.calls.create({ to, from, twiml });
     res.json({ sid: call.sid, status: call.status, to: call.to, from: call.from });
   } catch (err) {
@@ -130,25 +118,18 @@ router.post("/make-call", async (req, res, next) => {
 router.post("/voice-token", async (req, res, next) => {
   try {
     const { identity } = GetTwilioVoiceTokenBody.parse(req.body);
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-    const apiKeySid = process.env["TWILIO_API_KEY_SID"];
-    const apiKeySecret = process.env["TWILIO_API_KEY_SECRET"];
+    const { accountSid, apiKeySid, apiKeySecret } = await getTenantClient(req);
 
-    if (!accountSid || !apiKeySid || !apiKeySecret) {
-      res.status(500).json({ error: "Twilio credentials not configured" });
+    if (!apiKeySid || !apiKeySecret) {
+      res.status(400).json({ error: "API Key SID and Secret are required for voice tokens. Add them in Settings." });
       return;
     }
 
     const AccessToken = twilio.jwt.AccessToken;
     const VoiceGrant = AccessToken.VoiceGrant;
-
     const voiceGrant = new VoiceGrant({ incomingAllow: true });
-    const token = new AccessToken(accountSid, apiKeySid, apiKeySecret, {
-      identity,
-      ttl: 3600,
-    });
+    const token = new AccessToken(accountSid, apiKeySid, apiKeySecret, { identity, ttl: 3600 });
     token.addGrant(voiceGrant);
-
     res.json({ token: token.toJwt(), identity, ttl: 3600 });
   } catch (err) {
     next(err);
@@ -159,7 +140,7 @@ router.post("/voice-token", async (req, res, next) => {
 
 router.get("/calls/active", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const calls = await client.calls.list({ status: "in-progress", limit: 50 });
     const ringing = await client.calls.list({ status: "ringing", limit: 20 });
     const all = [...calls, ...ringing];
@@ -183,7 +164,7 @@ router.get("/calls/active", async (req, res, next) => {
 
 router.get("/calls/recent", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const calls = await client.calls.list({ limit: 30 });
     res.json(calls.map(c => ({
       sid: c.sid,
@@ -206,7 +187,7 @@ router.post("/calls/:sid/whisper", async (req, res, next) => {
   try {
     const { sid } = req.params;
     const { message = "You have a whispered message from your supervisor." } = req.body as { message?: string };
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     // Update the call with new TwiML that whispers to the agent leg
     const twiml = `<Response><Say voice="Polly.Joanna-Neural">${message}</Say></Response>`;
     const updated = await client.calls(sid).update({ twiml });
@@ -220,7 +201,7 @@ router.post("/calls/:sid/transfer", async (req, res, next) => {
   try {
     const { sid } = req.params;
     const { queueName = "support", twimlUrl } = req.body as { queueName?: string; twimlUrl?: string };
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const twiml = twimlUrl
       ? undefined
       : `<Response><Enqueue>${queueName}</Enqueue></Response>`;
@@ -234,7 +215,7 @@ router.post("/calls/:sid/transfer", async (req, res, next) => {
 router.post("/calls/:sid/hangup", async (req, res, next) => {
   try {
     const { sid } = req.params;
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const updated = await client.calls(sid).update({ status: "completed" });
     res.json({ sid: updated.sid, status: updated.status });
   } catch (err) {
@@ -419,7 +400,7 @@ router.get("/calls/logs", async (req, res, next) => {
 router.post("/lookup", async (req, res, next) => {
   try {
     const { phoneNumber, fields } = TwilioLookupBody.parse(req.body);
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
 
     const fetchOptions: Record<string, unknown> = {};
     if (fields && fields.length > 0) {
@@ -445,7 +426,7 @@ router.post("/lookup", async (req, res, next) => {
 
 router.get("/sms/messages", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "50", 10), 200);
     const to = req.query["to"] as string | undefined;
     const from = req.query["from"] as string | undefined;
@@ -558,7 +539,7 @@ router.post("/calls/outbound", async (req, res, next) => {
   try {
     const { to, from, twiml, url } = req.body as { to: string; from: string; twiml?: string; url?: string };
     if (!to || !from) { res.status(400).json({ error: "to and from are required" }); return; }
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const opts: Record<string, unknown> = { to, from };
     if (url) opts["url"] = url;
     else opts["twiml"] = twiml ?? `<Response><Say voice="Polly.Joanna-Neural">Hello from RJ Business Solutions. Please hold for the next available agent.</Say></Response>`;
@@ -571,13 +552,12 @@ router.post("/calls/outbound", async (req, res, next) => {
 
 router.get("/recordings", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const callSid = req.query["callSid"] as string | undefined;
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "25", 10), 100);
     const opts: Record<string, unknown> = { limit };
     if (callSid) opts["callSid"] = callSid;
     const recordings = await client.recordings.list(opts as any);
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
     res.json(recordings.map(r => ({
       sid: r.sid, callSid: r.callSid, duration: r.duration,
       status: r.status, source: r.source, dateCreated: r.dateCreated,
@@ -589,9 +569,14 @@ router.get("/recordings", async (req, res, next) => {
 
 router.get("/recordings/:sid/stream", async (req, res, next) => {
   try {
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
-    const authToken = process.env["TWILIO_AUTH_TOKEN"];
-    if (!accountSid || !authToken) { res.status(500).json({ error: "Missing credentials" }); return; }
+    const { userId } = getAuth(req);
+    if (!userId) { res.status(401).json({ error: "Unauthorized" }); return; }
+    const { getTenantCredentials } = await import("../../lib/tenantTwilio");
+    const { decrypt } = await import("../../lib/encrypt");
+    const creds = await getTenantCredentials(userId);
+    if (!creds) { res.status(402).json({ error: "No Twilio account connected" }); return; }
+    const accountSid = creds.accountSid;
+    const authToken = decrypt(creds.authTokenEncrypted);
     const { sid } = req.params;
     const recUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings/${sid}.mp3`;
     const upstream = await fetch(recUrl, {
@@ -614,7 +599,7 @@ router.get("/recordings/:sid/stream", async (req, res, next) => {
 
 router.get("/conferences/active", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const conferences = await client.conferences.list({ status: "in-progress" as any, limit: 20 });
     const withParticipants = await Promise.all(conferences.map(async conf => {
       const participants = await client.conferences(conf.sid).participants.list({ limit: 20 });
@@ -632,7 +617,7 @@ router.get("/conferences/active", async (req, res, next) => {
 
 router.post("/conferences/:sid/end", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const updated = await client.conferences(req.params["sid"]).update({ status: "completed" as any });
     res.json({ sid: updated.sid, status: updated.status });
   } catch (err) { next(err); }
@@ -640,7 +625,7 @@ router.post("/conferences/:sid/end", async (req, res, next) => {
 
 router.post("/conferences/:confSid/participants/:callSid/mute", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { confSid, callSid } = req.params;
     const { muted = true } = req.body as { muted?: boolean };
     const updated = await client.conferences(confSid!).participants(callSid!).update({ muted } as any);
@@ -703,7 +688,7 @@ router.delete("/contacts/:id", async (req, res, next) => {
 
 router.get("/voicemails", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "30", 10), 100);
 
     // Fetch transcriptions (created from voicemail recordings)
@@ -747,10 +732,9 @@ router.get("/voicemails", async (req, res, next) => {
 router.get("/voicemails/calls", async (req, res, next) => {
   // Returns recent calls that have recordings (potential voicemails), with call-from info
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const limit = Math.min(parseInt((req.query["limit"] as string) ?? "20", 10), 50);
     const recordings = await client.recordings.list({ limit });
-    const accountSid = process.env["TWILIO_ACCOUNT_SID"];
     res.json(recordings.map(r => ({
       sid: r.sid,
       callSid: r.callSid,
@@ -767,7 +751,7 @@ router.get("/voicemails/calls", async (req, res, next) => {
 router.delete("/voicemails/:sid", async (req, res, next) => {
   // Delete a transcription (and optionally its recording)
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { sid } = req.params;
     const deleteRecording = req.query["deleteRecording"] === "true";
 
@@ -790,7 +774,7 @@ router.post("/voicemails/sms-reply", async (req, res, next) => {
   try {
     const { to, from, body } = req.body as { to: string; from: string; body: string };
     if (!to || !from || !body) { res.status(400).json({ error: "to, from, body required" }); return; }
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const msg = await client.messages.create({ to, from, body });
     res.json({ sid: msg.sid, status: msg.status });
   } catch (err) { next(err); }
@@ -800,7 +784,7 @@ router.post("/voicemails/sms-reply", async (req, res, next) => {
 
 router.get("/queues", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const queues = await client.queues.list({ limit: 50 });
     res.json(queues.map(q => ({
       sid: q.sid,
@@ -816,7 +800,7 @@ router.get("/queues", async (req, res, next) => {
 
 router.get("/queues/:sid/members", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const members = await client.queues(req.params["sid"]).members.list({ limit: 50 });
     res.json(members.map(m => ({
       callSid: m.callSid,
@@ -829,7 +813,7 @@ router.get("/queues/:sid/members", async (req, res, next) => {
 
 router.delete("/queues/:queueSid/members/:callSid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { queueSid, callSid } = req.params;
     await client.queues(queueSid).members(callSid).update({ url: "http://twimlets.com/holdmusic?Bucket=com.twilio.music.classical", method: "GET" });
     res.json({ success: true });
@@ -838,7 +822,7 @@ router.delete("/queues/:queueSid/members/:callSid", async (req, res, next) => {
 
 router.post("/queues", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { friendlyName, maxSize } = req.body as { friendlyName: string; maxSize?: number };
     if (!friendlyName) { res.status(400).json({ error: "friendlyName required" }); return; }
     const q = await client.queues.create({ friendlyName, maxSize: maxSize ?? 100 });
@@ -848,7 +832,7 @@ router.post("/queues", async (req, res, next) => {
 
 router.delete("/queues/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     await client.queues(req.params["sid"]).remove();
     res.json({ success: true });
   } catch (err) { next(err); }
@@ -858,7 +842,7 @@ router.delete("/queues/:sid", async (req, res, next) => {
 
 router.get("/usage", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { startDate, endDate, category } = req.query as Record<string, string>;
     const params: Record<string, unknown> = { limit: 100 };
     if (startDate) params["startDate"] = new Date(startDate);
@@ -882,7 +866,7 @@ router.get("/usage", async (req, res, next) => {
 
 router.get("/usage/today", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const records = await client.usage.records.today.list({ limit: 100 });
     res.json(records.map(r => ({
       category: r.category,
@@ -899,7 +883,7 @@ router.get("/usage/today", async (req, res, next) => {
 
 router.get("/usage/thismonth", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const records = await client.usage.records.thisMonth.list({ limit: 100 });
     res.json(records.map(r => ({
       category: r.category,
@@ -918,7 +902,7 @@ router.get("/usage/thismonth", async (req, res, next) => {
 
 router.get("/alerts", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { logLevel, startDate, endDate } = req.query as Record<string, string>;
     const params: Record<string, unknown> = { pageSize: 50 };
     if (logLevel) params["logLevel"] = logLevel;
@@ -945,7 +929,7 @@ router.get("/alerts", async (req, res, next) => {
 
 router.get("/verify/services", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const services = await client.verify.v2.services.list({ limit: 20 });
     res.json(services.map(s => ({
       sid: s.sid,
@@ -960,7 +944,7 @@ router.get("/verify/services", async (req, res, next) => {
 
 router.post("/verify/services", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { friendlyName, codeLength } = req.body as { friendlyName: string; codeLength?: number };
     if (!friendlyName) { res.status(400).json({ error: "friendlyName required" }); return; }
     const svc = await client.verify.v2.services.create({ friendlyName, codeLength: codeLength ?? 6 });
@@ -970,7 +954,7 @@ router.post("/verify/services", async (req, res, next) => {
 
 router.post("/verify/send", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { serviceSid, to, channel } = req.body as { serviceSid: string; to: string; channel: string };
     if (!serviceSid || !to || !channel) { res.status(400).json({ error: "serviceSid, to, channel required" }); return; }
     const verification = await client.verify.v2.services(serviceSid).verifications.create({ to, channel });
@@ -980,7 +964,7 @@ router.post("/verify/send", async (req, res, next) => {
 
 router.post("/verify/check", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { serviceSid, to, code } = req.body as { serviceSid: string; to: string; code: string };
     if (!serviceSid || !to || !code) { res.status(400).json({ error: "serviceSid, to, code required" }); return; }
     const check = await client.verify.v2.services(serviceSid).verificationChecks.create({ to, code });
@@ -992,7 +976,7 @@ router.post("/verify/check", async (req, res, next) => {
 
 router.get("/messaging-services", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const services = await client.messaging.v1.services.list({ limit: 20 });
     res.json(services.map(s => ({
       sid: s.sid,
@@ -1015,7 +999,7 @@ router.get("/messaging-services", async (req, res, next) => {
 
 router.put("/messaging-services/:sid", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const updates = req.body as Record<string, unknown>;
     const svc = await client.messaging.v1.services(req.params["sid"]).update(updates as never);
     res.json({ sid: svc.sid, friendlyName: svc.friendlyName });
@@ -1024,7 +1008,7 @@ router.put("/messaging-services/:sid", async (req, res, next) => {
 
 router.get("/messaging-services/:sid/phone-numbers", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const numbers = await client.messaging.v1.services(req.params["sid"]).phoneNumbers.list({ limit: 50 });
     res.json(numbers.map(n => ({ sid: n.sid, phoneNumber: n.phoneNumber, countryCode: n.countryCode })));
   } catch (err) { next(err); }
@@ -1034,7 +1018,7 @@ router.get("/messaging-services/:sid/phone-numbers", async (req, res, next) => {
 
 router.get("/studio/flows", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const flows = await client.studio.v2.flows.list({ limit: 20 });
     res.json(flows.map(f => ({
       sid: f.sid,
@@ -1051,7 +1035,7 @@ router.get("/studio/flows", async (req, res, next) => {
 
 router.get("/studio/flows/:sid/executions", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const execs = await client.studio.v2.flows(req.params["sid"]).executions.list({ limit: 20 });
     res.json(execs.map(e => ({
       sid: e.sid,
@@ -1065,7 +1049,7 @@ router.get("/studio/flows/:sid/executions", async (req, res, next) => {
 
 router.post("/studio/flows/:sid/executions", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const { to, from, parameters } = req.body as { to: string; from: string; parameters?: Record<string, unknown> };
     if (!to || !from) { res.status(400).json({ error: "to and from required" }); return; }
     const exec = await client.studio.v2.flows(req.params["sid"]).executions.create({ to, from, parameters });
@@ -1077,7 +1061,7 @@ router.post("/studio/flows/:sid/executions", async (req, res, next) => {
 
 router.get("/taskrouter/workspaces", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const workspaces = await client.taskrouter.v1.workspaces.list({ limit: 10 });
     res.json(workspaces.map(w => ({
       sid: w.sid,
@@ -1091,7 +1075,7 @@ router.get("/taskrouter/workspaces", async (req, res, next) => {
 
 router.get("/taskrouter/workspaces/:sid/tasks", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const tasks = await client.taskrouter.v1.workspaces(req.params["sid"]).tasks.list({ limit: 50 });
     res.json(tasks.map(t => ({
       sid: t.sid,
@@ -1109,7 +1093,7 @@ router.get("/taskrouter/workspaces/:sid/tasks", async (req, res, next) => {
 
 router.get("/taskrouter/workspaces/:sid/workers", async (req, res, next) => {
   try {
-    const client = getTwilioClient();
+    const { client, accountSid } = await getTenantClient(req);
     const workers = await client.taskrouter.v1.workspaces(req.params["sid"]).workers.list({ limit: 50 });
     res.json(workers.map(w => ({
       sid: w.sid,
