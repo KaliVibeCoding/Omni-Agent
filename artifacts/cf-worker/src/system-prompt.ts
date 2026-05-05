@@ -324,6 +324,7 @@ Secrets: wrangler secret put TWILIO_ACCOUNT_SID (etc.)
 ---
 
 
+
 # ═══════════════════════════════════════════════════════════════════════
 # PART 12: COMPREHENSIVE RESEARCH & DATASET KNOWLEDGE BASE
 # Academic Papers · ML Datasets · Open Data · Research APIs · Build Patterns
@@ -344,552 +345,411 @@ that queries them. Always query multiple sources in parallel for speed.
 - Query params: search_query=all:{terms}, sortBy=submittedDate, max_results=20
 - Category filter: search_query=cat:cs.LG (restrict to one category)
 
-```typescript
-const params = new URLSearchParams({
-  search_query: `all:${topic}`,
-  sortBy: "submittedDate",
-  sortOrder: "descending",
-  max_results: "10",
-});
-const xml = await fetch(`http://export.arxiv.org/api/query?${params}`).then(r => r.text());
-// Parse Atom XML: entry > id (arxiv URL), title, summary, author, published
-// Use fast-xml-parser: import { XMLParser } from "fast-xml-parser";
-// const parser = new XMLParser(); const feed = parser.parse(xml).feed;
-```
+Example:
+  const params = new URLSearchParams({ search_query: "all:"+topic, sortBy: "submittedDate", max_results: "10" });
+  const xml = await fetch("http://export.arxiv.org/api/query?"+params).then(r => r.text());
+  // Parse Atom XML: entry > id, title, summary, author, published
+  // npm: fast-xml-parser — new XMLParser().parse(xml).feed.entry
 
 ### 2. Semantic Scholar (200M+ papers) — FREE
 - Search: https://api.semanticscholar.org/graph/v1/paper/search
-- Paper detail: https://api.semanticscholar.org/graph/v1/paper/{paperId}
+- Paper: https://api.semanticscholar.org/graph/v1/paper/{paperId}
 - Citations: /paper/{id}/citations | References: /paper/{id}/references
 - Recommendations: https://api.semanticscholar.org/recommendations/v1/papers
-- Fields param: title,abstract,authors,year,citationCount,influentialCitationCount,openAccessPdf,tldr,publicationTypes
-- Rate: 100 req/5min (free). Header "x-api-key" for 1 req/sec.
-- Batch lookup: POST /graph/v1/paper/batch { "ids": ["arXiv:2305.10601", ...] }
+- Fields: title,abstract,authors,year,citationCount,influentialCitationCount,openAccessPdf,tldr
+- Rate: 100 req/5min free. Header "x-api-key" for 1 req/sec.
+- Batch lookup: POST /graph/v1/paper/batch with body { ids: ["arXiv:2305.10601", ...] }
 
-```typescript
-const res = await fetch(
-  `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(topic)}&fields=title,abstract,year,citationCount,openAccessPdf,tldr&limit=10`
-);
-const { data } = await res.json(); // array of papers with tldr.text for summary
-```
+Example:
+  const res = await fetch("https://api.semanticscholar.org/graph/v1/paper/search?query="+encodeURIComponent(topic)+"&fields=title,abstract,year,citationCount,openAccessPdf,tldr&limit=10");
+  const { data } = await res.json(); // array of papers with tldr.text
 
 ### 3. PubMed / NCBI (35M+ biomedical papers) — FREE
 - Search: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term={query}&retmode=json&retmax=20
-- Summary: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={ids,csv}&retmode=json
-- Full XML: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={id}&rettype=xml&retmode=xml
+- Summary: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id={ids}&retmode=json
+- Full XML: https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&id={id}&rettype=xml
 - PMC full text: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC{id}/
-- Rate: 3/sec (no key), 10/sec (with NCBI API key)
-- MeSH terms: add [MeSH Terms] to query for controlled vocabulary
+- Rate: 3/sec (no key), 10/sec (with NCBI key)
+- MeSH terms: add [MeSH Terms] suffix to query
 
-```typescript
-const { esearchresult } = await fetch(
-  `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=${encodeURIComponent(query)}&retmode=json&retmax=10`
-).then(r => r.json());
-const ids: string[] = esearchresult.idlist;
-const { result } = await fetch(
-  `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=${ids.join(",")}&retmode=json`
-).then(r => r.json());
-// result[id] = { title, authors, pubdate, source (journal), articleids }
-```
+Example:
+  const search = await fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term="+encodeURIComponent(query)+"&retmode=json&retmax=10").then(r=>r.json());
+  const ids = search.esearchresult.idlist;
+  const summaries = await fetch("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id="+ids.join(",")+"&retmode=json").then(r=>r.json());
+  // summaries.result[id] = { title, authors, pubdate, source }
 
 ### 4. IEEE Xplore (6M+ technical papers) — REQUIRES KEY
 - API KEY: process.env.IEEE_API_KEY
 - Base: https://ieeexploreapi.ieee.org/api/v1/search/articles
-- Params: querytext, max_records (25 default, max 200), start_record, sort_field (relevance|article_title|publication_year), sort_order (asc|desc), format=json
-- Response fields: doi, title, abstract, authors.authors[], publication_year, conference_title, isbn, issn, citing_paper_count, pdf_url, html_url
-- Can also search by: author (author=), affiliation, doi (doi=), publication title
+- Params: apikey, querytext, max_records (25 default), start_record, sort_field (relevance|publication_year), format=json
+- Response: total_records, articles[].{ doi, title, abstract, authors, publication_year, pdf_url, citing_paper_count }
 
-```typescript
-const params = new URLSearchParams({
-  apikey: process.env.IEEE_API_KEY!,
-  querytext: topic,
-  max_records: "10",
-  sort_field: "relevance",
-  format: "json",
-});
-const data = await fetch(
-  `https://ieeexploreapi.ieee.org/api/v1/search/articles?${params}`
-).then(r => r.json());
-// data.total_records, data.articles = array
-```
+Example:
+  const p = new URLSearchParams({ apikey: process.env.IEEE_API_KEY, querytext: topic, max_records: "10", sort_field: "relevance", format: "json" });
+  const data = await fetch("https://ieeexploreapi.ieee.org/api/v1/search/articles?"+p).then(r=>r.json());
+  // data.articles = array
 
 ### 5. ACM Digital Library — NO PUBLIC REST API
 - DOI metadata via CrossRef: https://api.crossref.org/works/{doi}
 - Direct page: https://dl.acm.org/doi/{doi}
-- Best approach: search via Semantic Scholar/OpenAlex → get ACM DOI → fetch CrossRef metadata
-- ACM OpenURL: https://dl.acm.org/action/showDoPubAssets?doi={doi}&type=metadata
+- Best: search via Semantic Scholar/OpenAlex → get DOI → CrossRef metadata
 
 ### 6. DBLP (Computer Science bibliography) — FREE
-- Papers: https://dblp.org/search/publ/api?q={query}&format=json&h=20&f=0 (h=results, f=offset)
+- Papers: https://dblp.org/search/publ/api?q={query}&format=json&h=20
 - Authors: https://dblp.org/search/author/api?q={name}&format=json&h=10
 - Venues: https://dblp.org/search/venue/api?q={venue}&format=json&h=10
-- Rate: 60 req/min. Returns: title, authors, year, venue, DOI, ee (electronic edition URL)
-- Direct paper URL: https://dblp.org/rec/{key}.html
+- Rate: 60 req/min. Returns: title, authors, year, venue, DOI, ee (URL)
 
-```typescript
-const res = await fetch(`https://dblp.org/search/publ/api?q=${encodeURIComponent(topic)}&format=json&h=10`);
-const { result } = await res.json();
-// result.hits.hit = array of { info: { title, authors, year, venue, doi, ee } }
-```
+Example:
+  const res = await fetch("https://dblp.org/search/publ/api?q="+encodeURIComponent(topic)+"&format=json&h=10");
+  const { result } = await res.json();
+  // result.hits.hit = array of { info: { title, authors, year, venue, doi, ee } }
 
-### 7. OpenAlex (250M+ academic works — FULLY OPEN, NO KEY)
+### 7. OpenAlex (250M+ works — FULLY OPEN, NO KEY)
 - Works: https://api.openalex.org/works?search={query}
 - Authors: https://api.openalex.org/authors?search={name}
-- Institutions: https://api.openalex.org/institutions?search={name}
 - Concepts: https://api.openalex.org/concepts?search={concept}
-- Venues: https://api.openalex.org/venues?search={name}
-- Filters: filter=publication_year:2020-2026,open_access.is_oa:true,cited_by_count:>50,type:journal-article
+- Filters: filter=publication_year:2020-2026,open_access.is_oa:true,cited_by_count:>50
 - Sort: sort=cited_by_count:desc | publication_date:desc | relevance_score:desc
-- Paging: &per_page=25 (max 200), &cursor=* for deep paging (cursor-based)
-- Select only needed fields: &select=id,doi,title,authorships,publication_year,cited_by_count,open_access
+- Paging: per_page=25 (max 200). cursor=* for deep paging.
+- Polite pool (higher rate limits): add &mailto=support@rjbusinesssolutions.org
 
-```typescript
-const res = await fetch(
-  `https://api.openalex.org/works?search=${encodeURIComponent(topic)}&filter=open_access.is_oa:true,publication_year:2023-2026&sort=cited_by_count:desc&per_page=10&mailto=support@rjbusinesssolutions.org`
-);
-const { results, meta } = await res.json();
-// meta.count = total, results = array of works with abstract_inverted_index (reconstruct abstract)
-```
+Example:
+  const res = await fetch("https://api.openalex.org/works?search="+encodeURIComponent(topic)+"&filter=open_access.is_oa:true,publication_year:2023-2026&sort=cited_by_count:desc&per_page=10&mailto=support@rjbusinesssolutions.org");
+  const { results, meta } = await res.json();
+  // meta.count = total, results = array of works
 
 ### 8. CrossRef (130M+ DOI records) — FREE POLITE POOL
-- Works: https://api.crossref.org/works?query={terms}&rows=20&sort=relevance&offset=0
+- Works: https://api.crossref.org/works?query={terms}&rows=20&sort=relevance
 - DOI lookup: https://api.crossref.org/works/{doi}
-- Funder search: https://api.crossref.org/funders/{funder-id}/works
-- Journal filter: &filter=issn:{issn},from-pub-date:2023
-- Polite pool: add &mailto=support@rjbusinesssolutions.org (10x rate limit)
-- Returns: DOI, title, author[], published-print, container-title, reference-count, is-referenced-by-count, URL, abstract (when available)
+- Polite pool (10x rate): add &mailto=support@rjbusinesssolutions.org
+- Returns: DOI, title, author[], published-print, container-title, reference-count, is-referenced-by-count
 
-### 9. PLOS (Fully Open Access Journals) — FREE
+### 9. PLOS (Fully Open Access) — FREE
 - API: https://api.plos.org/search?q={query}&fl=id,title,abstract,author,publication_date,journal&wt=json&rows=10
-- Add fq=doc_type:full for full articles only
 - Journals: PLOS ONE, Medicine, Biology, Genetics, Pathogens, Computational Biology
-- Full text: journals.plos.org/plosone/article?id={doi}
-- All content CC-BY licensed — freely reusable
+- All CC-BY licensed — freely reusable
 
 ### 10. Europe PMC (28M+ life science) — FREE
 - Search: https://www.ebi.ac.uk/europepmc/webservices/rest/search?query={query}&format=json&resultType=core&pageSize=25&sort_field=CITED&sort_order=desc
-- Article: https://www.ebi.ac.uk/europepmc/webservices/rest/article/{source}/{id}
-- Full-text XML: https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTextXML
-- Sources: MED (PubMed), PMC (PubMed Central), PPR (Preprints), PAT (patents)
-- Supports MeSH, GO terms, chemical names in queries
+- Full XML: https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTextXML
+- Sources: MED (PubMed), PMC, PPR (Preprints), PAT (patents)
 
-### 11. bioRxiv / medRxiv (Biology & Medical Preprints) — FREE
-- Search by date: https://api.biorxiv.org/details/biorxiv/{YYYY-MM-DD}/{YYYY-MM-DD}/{cursor}/json
+### 11. bioRxiv / medRxiv (Preprints) — FREE
+- bioRxiv: https://api.biorxiv.org/details/biorxiv/{YYYY-MM-DD}/{YYYY-MM-DD}/{cursor}/json
 - medRxiv: https://api.biorxiv.org/details/medrxiv/{date-from}/{date-to}/0/json
-- DOI lookup: https://api.biorxiv.org/details/biorxiv/{doi}
+- DOI: https://api.biorxiv.org/details/biorxiv/{doi}
 - Up to 100 results per request. cursor = page offset (0, 100, 200...)
-- category filter: collection.filter(p => p.category === "bioinformatics")
-- bioRxiv categories: neuroscience, bioinformatics, cancer-biology, genomics, immunology, microbiology, cell-biology, biochemistry, genetics, evolutionary-biology, developmental-biology, systems-biology, pharmacology-toxicology, animal-behavior-cognition, plant-biology, ecology, paleontology, synthetic-biology, bioengineering
-
-```typescript
-const res = await fetch(`https://api.biorxiv.org/details/biorxiv/2024-01-01/2026-05-04/0/json`);
-const { collection } = await res.json();
-const filtered = collection.filter((p: any) =>
-  p.title.toLowerCase().includes(keyword) || p.category === targetCategory
-);
-```
+- bioRxiv categories: neuroscience, bioinformatics, cancer-biology, genomics,
+  immunology, microbiology, cell-biology, biochemistry, genetics,
+  evolutionary-biology, developmental-biology, systems-biology,
+  pharmacology-toxicology, synthetic-biology, bioengineering
 
 ### 12. Unpaywall (Legal open-access PDFs for any DOI) — FREE
 - Lookup: https://api.unpaywall.org/v2/{doi}?email=support@rjbusinesssolutions.org
 - is_oa: true/false | oa_status: gold|green|hybrid|bronze|closed
 - best_oa_location.url_for_pdf = direct downloadable PDF URL
-- 100K requests/day. Always check before telling user a paper is paywalled.
+- 100K requests/day. Always check before saying a paper is paywalled.
 
-```typescript
-const { is_oa, best_oa_location, oa_status } = await fetch(
-  `https://api.unpaywall.org/v2/${encodeURIComponent(doi)}?email=support@rjbusinesssolutions.org`
-).then(r => r.json());
-if (is_oa) console.log("Free PDF:", best_oa_location?.url_for_pdf);
-```
+Example:
+  const data = await fetch("https://api.unpaywall.org/v2/"+encodeURIComponent(doi)+"?email=support@rjbusinesssolutions.org").then(r=>r.json());
+  if (data.is_oa) console.log("Free PDF:", data.best_oa_location?.url_for_pdf);
 
 ## ════════ B: ML / AI RESEARCH REPOSITORIES ════════
 
 ### 13. Papers with Code — AUTHENTICATED
 - TOKEN: process.env.PAPERSWITHCODE_TOKEN
-- Papers: https://paperswithcode.com/api/v1/papers/?q={query}&ordering=-github_stars&page=1&items_per_page=20
+- Auth header: Authorization: Token {PAPERSWITHCODE_TOKEN}
+- Papers: https://paperswithcode.com/api/v1/papers/?q={query}&ordering=-github_stars
 - Methods: https://paperswithcode.com/api/v1/methods/?q={query}
 - Datasets: https://paperswithcode.com/api/v1/datasets/?q={query}
 - Tasks: https://paperswithcode.com/api/v1/tasks/?q={query}
 - SOTA: https://paperswithcode.com/api/v1/sota/?task={task_id}
 - Results: https://paperswithcode.com/api/v1/results/?task={id}&evaluated_on__gte=2024-01-01
 - Repos: https://paperswithcode.com/api/v1/repositories/?paper={paper_id}
-- Paper repos: links GitHub repos with star counts, frameworks (PyTorch/TF/JAX/etc.)
-- Auth: Authorization: Token {PAPERSWITHCODE_TOKEN}
 
-```typescript
-const headers = { Authorization: `Token ${process.env.PAPERSWITHCODE_TOKEN}` };
+Example:
+  const pwcHeaders = { Authorization: "Token "+process.env.PAPERSWITHCODE_TOKEN };
+  const papers = await fetch("https://paperswithcode.com/api/v1/papers/?q="+encodeURIComponent(topic)+"&ordering=-github_stars", { headers: pwcHeaders }).then(r=>r.json());
+  // papers.results[].repositories[].url = GitHub repo URL
 
-// Find papers with implementations
-const papers = await fetch(
-  `https://paperswithcode.com/api/v1/papers/?q=${encodeURIComponent(topic)}&ordering=-github_stars`,
-  { headers }
-).then(r => r.json());
-// papers.results[].repositories[].url = GitHub repo URL
+  const tasks = await fetch("https://paperswithcode.com/api/v1/tasks/?q="+encodeURIComponent(taskName), { headers: pwcHeaders }).then(r=>r.json());
+  const sota  = await fetch("https://paperswithcode.com/api/v1/sota/?task="+tasks.results[0].id, { headers: pwcHeaders }).then(r=>r.json());
+  // sota.results[].rows[].model_name, .metrics, .paper.title, .code_links[]
 
-// Get SOTA leaderboard
-const tasks = await fetch(`https://paperswithcode.com/api/v1/tasks/?q=${encodeURIComponent(task)}`, { headers }).then(r => r.json());
-const sota = await fetch(`https://paperswithcode.com/api/v1/sota/?task=${tasks.results[0].id}`, { headers }).then(r => r.json());
-// sota.results[].rows[].model_name, .metrics{}, .paper.title, .code_links[]
-```
-
-### 14. Hugging Face Hub (500K+ models, 200K+ datasets, 400K+ Spaces) — AUTHENTICATED
+### 14. Hugging Face Hub (500K+ models, 200K+ datasets) — AUTHENTICATED
 - TOKEN: process.env.HUGGINGFACE_TOKEN
+- Auth header: Authorization: Bearer {HUGGINGFACE_TOKEN}
 - Models: https://huggingface.co/api/models?search={query}&filter={task}&sort=downloads&limit=20
 - Datasets: https://huggingface.co/api/datasets?search={query}&filter={task}&sort=downloads&limit=20
 - Spaces: https://huggingface.co/api/spaces?search={query}&sort=likes&limit=20
 - Model info: https://huggingface.co/api/models/{owner}/{model-name}
-- Dataset viewer: https://huggingface.co/api/datasets/{owner}/{dataset-name}/parquet/{config}/{split}/0.parquet
 - Inference API: POST https://api-inference.huggingface.co/models/{model-id}
-- Auth: Authorization: Bearer {HUGGINGFACE_TOKEN}
 
-Task filter values: text-classification, token-classification, question-answering,
+Task filter options: text-classification, token-classification, question-answering,
 text-generation, text2text-generation, translation, summarization, fill-mask,
 sentence-similarity, feature-extraction, image-classification, object-detection,
 image-segmentation, text-to-image, image-to-text, text-to-speech,
 automatic-speech-recognition, audio-classification, zero-shot-classification,
-table-question-answering, conversational, reinforcement-learning, robotics
+table-question-answering, conversational, reinforcement-learning
 
 Library filter: transformers, diffusers, peft, sentence-transformers, timm,
 speechbrain, pytorch, jax, stable-baselines3, scikit-learn
 
-```typescript
-const hfHeaders = { Authorization: `Bearer ${process.env.HUGGINGFACE_TOKEN}` };
+Example:
+  const hfH = { Authorization: "Bearer "+process.env.HUGGINGFACE_TOKEN };
+  const models = await fetch("https://huggingface.co/api/models?search="+encodeURIComponent(q)+"&filter=text-generation&sort=downloads&limit=10", { headers: hfH }).then(r=>r.json());
+  // models = array of { id, downloads, likes, pipeline_tag, tags, gated }
 
-// Find top models for a task
-const models = await fetch(
-  `https://huggingface.co/api/models?search=${encodeURIComponent(query)}&filter=text-generation&sort=downloads&limit=10`,
-  { headers: hfHeaders }
-).then(r => r.json()); // array of { id, downloads, likes, pipeline_tag, tags, gated }
-
-// Run inference (text classification example)
-const result = await fetch(
-  `https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment`,
-  {
+  // Inference (text classification):
+  const result = await fetch("https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment", {
     method: "POST",
-    headers: { ...hfHeaders, "Content-Type": "application/json" },
-    body: JSON.stringify({ inputs: "I love this product!" }),
-  }
-).then(r => r.json());
-// result = [[ { label: "POSITIVE", score: 0.98 } ]]
+    headers: { ...hfH, "Content-Type": "application/json" },
+    body: JSON.stringify({ inputs: "I love this product!" })
+  }).then(r=>r.json());
+  // result = [[ { label: "POSITIVE", score: 0.98 } ]]
 
-// Python: from datasets import load_dataset; ds = load_dataset("owner/dataset", split="train")
-// Python: from transformers import pipeline; pipe = pipeline("text-classification", model="...")
-```
+  // Python: from transformers import pipeline; pipe = pipeline("text-classification", model="...")
+  // Python: from datasets import load_dataset; ds = load_dataset("owner/dataset", split="train")
 
 ### 15. MLCommons / MLPerf Benchmarks
-- Training results: mlcommons.org/benchmarks/training/
-- Inference results: mlcommons.org/benchmarks/inference/
+- Training: mlcommons.org/benchmarks/training/
+- Inference: mlcommons.org/benchmarks/inference/
 - Training v4.0 tasks: ResNet-50, BERT-Large, GPT-3 175B, Stable Diffusion, LLaMA 2 70B, DLRM-DCNv2
-- Inference v4.1: Llama 2 70B, Stable Diffusion XL, ResNet-50, BERT-Large, DLRM, 3D-UNet, GPTJ-6B
-- Hardware tested: NVIDIA H100, A100, H200; AMD MI300X; Google TPU v5p; Intel Gaudi
+- Inference v4.1: Llama 2 70B, SDXL, ResNet-50, BERT-Large, GPTJ-6B, 3D-UNet
+- Hardware: NVIDIA H100/A100/H200, AMD MI300X, Google TPU v5p, Intel Gaudi
 - Reference impls: github.com/mlcommons/training | github.com/mlcommons/inference
-- Submitters tracked: NVIDIA, Google, Intel, AMD, Qualcomm, Cerebras, SambaNova, Habana
 
 ## ════════ C: DATASET REPOSITORIES ════════
 
 ### 16. Kaggle (100K+ datasets + competitions) — AUTHENTICATED
 - CREDENTIALS: KAGGLE_USERNAME=rickjefferson, KAGGLE_KEY=process.env.KAGGLE_KEY
-- Datasets: https://www.kaggle.com/api/v1/datasets?search={query}&sortBy=votes&pageSize=20&page=1
-- Dataset files: https://www.kaggle.com/api/v1/datasets/{owner}/{name}/versions/{version}/files
-- Download file: https://www.kaggle.com/api/v1/datasets/{owner}/{name}/download/{filename}
-- Competitions: https://www.kaggle.com/api/v1/competitions?search={query}&sortBy=prize&category=all
-- Competition files: https://www.kaggle.com/api/v1/competitions/data/list/{competition-name}
+- Auth: HTTP Basic — base64("rickjefferson:"+KAGGLE_KEY)
+- Datasets: https://www.kaggle.com/api/v1/datasets?search={query}&sortBy=votes&pageSize=20
+- Dataset files: https://www.kaggle.com/api/v1/datasets/{owner}/{name}/versions/{v}/files
+- Download: https://www.kaggle.com/api/v1/datasets/{owner}/{name}/download/{filename}
+- Competitions: https://www.kaggle.com/api/v1/competitions?search={query}&sortBy=prize
 - Notebooks: https://www.kaggle.com/api/v1/kernels?search={query}&sortBy=votes
 - Models: https://www.kaggle.com/api/v1/models?search={query}
-- Auth: HTTP Basic Authentication — base64("rickjefferson:{KAGGLE_KEY}")
 
-```typescript
-const auth = Buffer.from(`rickjefferson:${process.env.KAGGLE_KEY}`).toString("base64");
-const kaggleHeaders = { Authorization: `Basic ${auth}` };
+Example:
+  const auth = Buffer.from("rickjefferson:"+process.env.KAGGLE_KEY).toString("base64");
+  const kH = { Authorization: "Basic "+auth };
+  const { datasets } = await fetch("https://www.kaggle.com/api/v1/datasets?search="+encodeURIComponent(topic)+"&sortBy=votes", { headers: kH }).then(r=>r.json());
+  // datasets[].ref = "owner/dataset-name", .title, .totalBytes, .downloadCount
 
-// Search datasets
-const { datasets } = await fetch(
-  `https://www.kaggle.com/api/v1/datasets?search=${encodeURIComponent(topic)}&sortBy=votes`,
-  { headers: kaggleHeaders }
-).then(r => r.json());
-// datasets[].ref = "owner/dataset-name", .title, .totalBytes, .lastUpdated, .downloadCount
-
-// Download via CLI (best for large datasets):
-// export KAGGLE_USERNAME=rickjefferson && export KAGGLE_KEY=${KAGGLE_KEY}
-// kaggle datasets download -d {owner}/{dataset-name} --path ./data/
-// kaggle competitions download -c {competition-name} --path ./data/
-```
+  // CLI download (preferred for large files):
+  // export KAGGLE_USERNAME=rickjefferson KAGGLE_KEY=$KAGGLE_KEY
+  // kaggle datasets download -d owner/dataset-name --path ./data/
+  // kaggle competitions download -c competition-name --path ./data/
 
 ### 17. UCI Machine Learning Repository — FREE
-- Search API: https://archive.ics.uci.edu/api/public/dataset/search?query={query}
+- Search: https://archive.ics.uci.edu/api/public/dataset/search?query={query}
 - Dataset info: https://archive.ics.uci.edu/api/public/dataset/{id}
-- Download: https://archive.ics.uci.edu/static/public/{id}/{dataset-name}.zip
-- 600+ datasets covering classification, regression, clustering, time series
-- Python: pip install ucimlrepo → from ucimlrepo import fetch_ucirepo; ds = fetch_ucirepo(id=53)
-- Key datasets: Iris(53), Wine(109), Adult(2), Breast Cancer Wisconsin(17), MNIST alternative, Boston Housing
+- Download: https://archive.ics.uci.edu/static/public/{id}/{name}.zip
+- Python: pip install ucimlrepo
+  from ucimlrepo import fetch_ucirepo; ds = fetch_ucirepo(id=53)
+  X, y = ds.data.features, ds.data.targets
+- Key datasets: Iris(53), Wine(109), Adult(2), Breast Cancer Wisconsin(17)
 
 ### 18. OpenML — FREE
-- Datasets list: https://www.openml.org/api/v1/json/data/list?data_format=CSV&limit=100
-- Search by name: https://www.openml.org/api/v1/json/data/list?data_name={name}
-- Dataset detail: https://www.openml.org/api/v1/json/data/{id}
-- Flows (algorithms): https://www.openml.org/api/v1/json/flow/list
+- Datasets: https://www.openml.org/api/v1/json/data/list?data_name={name}&limit=100
+- Detail: https://www.openml.org/api/v1/json/data/{id}
 - Tasks: https://www.openml.org/api/v1/json/task/list
-- Runs: https://www.openml.org/api/v1/json/run/list/task/{task_id}
-- Python: pip install openml → import openml; ds = openml.datasets.get_dataset(61); X, y, _, _ = ds.get_data(target=ds.default_target_attribute)
-- 4000+ datasets, 100K+ experiment runs, integrates with scikit-learn, Weka, WEKA
+- Python: import openml; ds = openml.datasets.get_dataset(61); X, y, _, _ = ds.get_data(target=ds.default_target_attribute)
+- 4000+ datasets, integrates with scikit-learn
 
 ### 19. TensorFlow Datasets (TFDS) — FREE, PYTHON ONLY
-- Full catalog: https://www.tensorflow.org/datasets/catalog/overview
-- 200+ datasets: image, text, audio, video, structured, RL
-- Python: pip install tensorflow-datasets → import tensorflow_datasets as tfds; ds = tfds.load("cifar10", split="train", as_supervised=True)
-- Key datasets: mnist, fashion_mnist, cifar10, cifar100, imagenet2012, coco/2017, librispeech, wikipedia, glue, squad, cnn_dailymail, wmt_translate
-- HuggingFace mirrors most TFDS datasets — use those for non-Python access
+- Catalog: tensorflow.org/datasets/catalog/overview (200+ datasets)
+- Python: import tensorflow_datasets as tfds; ds = tfds.load("cifar10", split="train", as_supervised=True)
+- Key: mnist, fashion_mnist, cifar10/100, imagenet2012, coco/2017, librispeech, wikipedia, glue, squad
+- HuggingFace mirrors most TFDS datasets for non-Python access
 
-### 20. AWS Open Data (Registry of Open Data) — FREE in same AWS region
-- Registry search: https://registry.opendata.aws/api/v1/search?search={query}
-- Browse: registry.opendata.aws
-- Direct S3 access: aws s3 ls s3://{bucket-name}/ --no-sign-request
+### 20. AWS Open Data Registry — FREE (in same AWS region)
+- Registry: registry.opendata.aws
+- Search API: https://registry.opendata.aws/api/v1/search?search={query}
+- S3 access: aws s3 ls s3://{bucket}/ --no-sign-request
 - Key public buckets:
-  - Common Crawl: s3://commoncrawl/ (800TB+ web text, WARC format)
-  - NOAA Weather: s3://noaa-ghcn-pds/ s3://noaa-nexrad-level2/
-  - OpenStreetMap: s3://osm-pds/
-  - GDELT: s3://gdelt-open-data/
-  - Allen Institute AI: s3://ai2-public-datasets/
-  - SpaceNet: s3://spacenet-dataset/ (satellite imagery)
-  - 1000 Genomes: s3://1000genomes/
-  - NASA Earth Exchange: s3://nex-gddp-cmip6/
-
-```bash
-# List Common Crawl crawl directories
-aws s3 ls s3://commoncrawl/crawl-data/ --no-sign-request
-
-# Download a WARC file (100-200MB each)
-aws s3 cp s3://commoncrawl/crawl-data/CC-MAIN-2024-10/warc.paths.gz . --no-sign-request
-```
+  s3://commoncrawl/         (800TB+ web text, WARC format)
+  s3://noaa-ghcn-pds/       (NOAA weather)
+  s3://osm-pds/             (OpenStreetMap)
+  s3://gdelt-open-data/     (GDELT news events)
+  s3://ai2-public-datasets/ (Allen Institute AI)
+  s3://spacenet-dataset/    (satellite imagery)
+  s3://1000genomes/         (genomics)
 
 ### 21. Zenodo (CERN-hosted, 3M+ records) — FREE
-- Search: https://zenodo.org/api/records?q={query}&sort=mostrecent&size=20&type=dataset&page=1
+- Search: https://zenodo.org/api/records?q={query}&sort=mostrecent&size=20&type=dataset
 - Record: https://zenodo.org/api/records/{id}
-- Community: https://zenodo.org/api/records?communities={community-id}&size=20
-- Files in record: record.files[].links.self (direct download URL)
-- DOI prefix: 10.5281/zenodo.{id}
-- Notable communities: ml4science, openneuro, eudat, cern
+- Community: https://zenodo.org/api/records?communities={community}&size=20
+- Files: record.files[].links.self = direct download URL
 
-```typescript
-const records = await fetch(
-  `https://zenodo.org/api/records?q=${encodeURIComponent(query)}&type=dataset&size=10&sort=mostrecent`
-).then(r => r.json());
-for (const r of records.hits.hits) {
-  console.log(r.metadata.title, r.links.doi);
-  for (const f of r.files ?? []) console.log("  File:", f.key, f.size, "bytes", f.links.self);
-}
-```
+Example:
+  const records = await fetch("https://zenodo.org/api/records?q="+encodeURIComponent(query)+"&type=dataset&size=10&sort=mostrecent").then(r=>r.json());
+  for (const r of records.hits.hits) {
+    console.log(r.metadata.title, r.links.doi);
+    for (const f of r.files ?? []) console.log("  File:", f.key, f.size+" bytes", f.links.self);
+  }
 
 ### 22. Figshare — FREE
 - Search: POST https://api.figshare.com/v2/articles/search
-  Body: { search_for: "{query}", item_type: 3, page_size: 20, order: "published_date", order_direction: "desc" }
-  item_type: 1=figure, 2=media, 3=dataset, 4=presentation, 5=poster, 6=paper, 11=code
+  Body (JSON): { search_for: "{query}", item_type: 3, page_size: 20, order: "published_date", order_direction: "desc" }
+  item_type: 1=figure, 2=media, 3=dataset, 4=presentation, 6=paper, 11=code
 - Article: GET https://api.figshare.com/v2/articles/{id}
-- Files: GET https://api.figshare.com/v2/articles/{id}/files → download_url
-- No auth for public. OAuth2 for uploads.
+- Files: GET https://api.figshare.com/v2/articles/{id}/files (each has download_url)
 
 ### 23. Harvard Dataverse — FREE
-- Search: https://dataverse.harvard.edu/api/search?q={query}&type=dataset&per_page=20&start=0
-- Dataset metadata: https://dataverse.harvard.edu/api/datasets/{id}
-- Files list: https://dataverse.harvard.edu/api/datasets/{id}/versions/:latest/files
-- File download: https://dataverse.harvard.edu/api/access/datafile/{fileId}
-- Many universities run their own Dataverse (same API): dataverse.nl, data.aussda.at, abacus.library.ubc.ca
-- Also supports OAI-PMH harvesting
+- Search: https://dataverse.harvard.edu/api/search?q={query}&type=dataset&per_page=20
+- Metadata: https://dataverse.harvard.edu/api/datasets/{id}
+- Files: https://dataverse.harvard.edu/api/datasets/{id}/versions/:latest/files
+- Download: https://dataverse.harvard.edu/api/access/datafile/{fileId}
 
 ### 24. OSF (Open Science Framework) — FREE
 - Search: https://api.osf.io/v2/search/?q={query}&filter[type]=project&page[size]=10
-- Project files: https://api.osf.io/v2/nodes/{guid}/files/osfstorage/
-- Download: GET URL from files response data[].links.download
-- Preprints: osf.io/preprints — use bioRxiv/medRxiv/PsyArXiv APIs instead for programmatic access
+- Files: https://api.osf.io/v2/nodes/{guid}/files/osfstorage/
+- Download: GET data[].links.download
 
 ## ════════ D: SPECIALIZED DOMAIN DATASETS ════════
 
-### 25. NLP — Key Datasets & Libraries
-Benchmarks:
-- GLUE (9 NLU tasks): huggingface.co/datasets/glue
-- SuperGLUE (harder NLU): huggingface.co/datasets/super_glue
-- SQuAD 2.0 (QA + unanswerable): huggingface.co/datasets/rajpurkar/squad_v2
-- MMLU (57-subject MCQ): huggingface.co/datasets/cais/mmlu
-- HellaSwag (commonsense): huggingface.co/datasets/Rowan/hellaswag
-- HumanEval (code): huggingface.co/datasets/openai_humaneval
+### 25. NLP — Key Datasets
+Benchmarks: GLUE (huggingface.co/datasets/glue), SuperGLUE (super_glue),
+  SQuAD 2.0 (rajpurkar/squad_v2), MMLU (cais/mmlu), HumanEval (openai_humaneval)
 
 Pretraining corpora:
-- Common Crawl: s3://commoncrawl/ (petabyte web text)
-- Wikipedia: huggingface.co/datasets/wikimedia/wikipedia (20+ languages)
-- The Pile: huggingface.co/datasets/EleutherAI/pile (800GB)
-- C4: huggingface.co/datasets/allenai/c4
-- RedPajama-1T: huggingface.co/datasets/togethercomputer/RedPajama-Data-1T
-- Dolma: huggingface.co/datasets/allenai/dolma (3T tokens, open)
+  Common Crawl: s3://commoncrawl/ (petabyte web text)
+  Wikipedia: huggingface.co/datasets/wikimedia/wikipedia (20+ languages)
+  The Pile: huggingface.co/datasets/EleutherAI/pile (800GB)
+  C4: huggingface.co/datasets/allenai/c4
+  Dolma: huggingface.co/datasets/allenai/dolma (3T tokens, open)
 
 Libraries: pip install spacy transformers datasets sentencepiece tiktoken
 
-### 26. Computer Vision — Key Datasets & Libraries
-- ImageNet-1K (1M images, 1000 classes): huggingface.co/datasets/imagenet-1k
-- COCO 2017 (detection/segmentation/keypoints): cocodataset.org; images on S3: s3://coco-dataset/
-- Open Images V7 (9M images, 600 classes): storage.googleapis.com/openimages/web/index.html
-- LAION-5B (5B image-text pairs): laion.ai/blog/laion-5b/ (on S3: s3://s-laion/)
-- CIFAR-10/100: via TFDS or huggingface
-- SA-1B (Segment Anything, 11M images): ai.meta.com/datasets/segment-anything/
-- Waymo Open Dataset: waymo.com/open (LiDAR + camera, autonomous driving)
-- nuScenes: nuscenes.org (1000 driving scenes, full 360 camera+LiDAR+radar)
-- Roboflow Universe (200K+ labeled CV datasets): universe.roboflow.com → REST API with API key
+### 26. Computer Vision — Key Datasets
+  ImageNet-1K (1M images): huggingface.co/datasets/imagenet-1k
+  COCO 2017 (detection/segmentation): cocodataset.org
+  Open Images V7 (9M images): storage.googleapis.com/openimages/web/index.html
+  LAION-5B (5B image-text pairs): laion.ai/blog/laion-5b/
+  SA-1B (Segment Anything, 11M): ai.meta.com/datasets/segment-anything/
+  Waymo Open (autonomous driving): waymo.com/open
+  nuScenes (1000 driving scenes): nuscenes.org
+  Roboflow Universe (200K+ CV datasets): universe.roboflow.com
 
 Libraries: pip install opencv-python torchvision albumentations ultralytics
 
 ### 27. Audio & Speech — Key Datasets
-- LibriSpeech (960h English ASR): huggingface.co/datasets/openslr/librispeech_asr
-- Common Voice 16.1 (120 languages): huggingface.co/datasets/mozilla-foundation/common_voice_16_1
-- VoxCeleb2 (1M utterances, 6K speakers): huggingface.co/datasets/ProgramComputer/voxceleb
-- AudioSet (2M YouTube clips, 527 classes): research.google.com/audioset
-- MUSDB18 (music source separation): zenodo.org/record/1117372
-- FSD50K (sound events): zenodo.org/record/4060432
-- GigaSpeech (10K hours, multi-domain): huggingface.co/datasets/speechcolab/gigaspeech
-- MLS (Multilingual LibriSpeech, 44.5K hours, 8 languages): huggingface.co/datasets/facebook/multilingual_librispeech
+  LibriSpeech (960h English): huggingface.co/datasets/openslr/librispeech_asr
+  Common Voice 16.1 (120 langs): huggingface.co/datasets/mozilla-foundation/common_voice_16_1
+  VoxCeleb2 (speaker recognition): huggingface.co/datasets/ProgramComputer/voxceleb
+  AudioSet (2M clips, 527 classes): research.google.com/audioset
+  GigaSpeech (10K hours): huggingface.co/datasets/speechcolab/gigaspeech
 
-Libraries: pip install librosa soundfile torchaudio pyaudio openai-whisper
+Libraries: pip install librosa soundfile torchaudio openai-whisper
 
 ### 28. Reinforcement Learning
-- Gymnasium (OpenAI Gym successor): pip install gymnasium; envs: CartPole, MountainCar, Atari, MuJoCo, Robotics
-- D4RL (offline RL, offline datasets): github.com/Farama-Foundation/D4RL; pip install d4rl
-- Minari (offline RL dataset registry): minari.farama.org; pip install minari; minari.list_remote_datasets()
-- ProcGen (16 procedural games): pip install procgen; gym.make("procgen:procgen-coinrun-v0")
-- NetHack Learning Env: github.com/facebookresearch/nle; pip install nle
-- MiniGrid: pip install minigrid; gym.make("MiniGrid-Empty-5x5-v0")
-- BabyAI: github.com/mila-iqia/babyai (language-grounded navigation)
-- Key algorithms: PPO, SAC, TD3, DQN, DDPG, IQL (offline), CQL (offline), BC (behavioral cloning)
+  Gymnasium: pip install gymnasium (CartPole, Atari, MuJoCo, Robotics)
+  D4RL (offline RL): pip install d4rl (github.com/Farama-Foundation/D4RL)
+  Minari (offline RL registry): minari.farama.org; pip install minari
+  ProcGen (16 procedural games): pip install procgen
+  MiniGrid: pip install minigrid
+  Key algorithms: PPO, SAC, TD3, DQN, IQL (offline), CQL (offline), BC
 
-Libraries: pip install stable-baselines3 sb3-contrib ray[rllib] tianshou
+Libraries: pip install stable-baselines3 ray[rllib]
 
-### 29. Biomedical & Clinical (often require credentialing)
-- MIMIC-III / MIMIC-IV (2M+ patient records, ICU): physionet.org/content/mimiciv/ — requires CITI training + PhysioNet credential (3-5 days)
-- PhysioNet (ECG, PPG, EEG, sleep): physionet.org — some open, some credentialed
-- GEO (Gene Expression Omnibus): ncbi.nlm.nih.gov/geo/ → query: ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={GSE_id}&targ=gse&form=json
-- TCGA (cancer genomics, open access): portal.gdc.cancer.gov → API: https://api.gdc.cancer.gov/files?filters=...
-- ClinicalTrials.gov: clinicaltrials.gov/api/query/full_studies?expr={query}&max_rnk=10&fmt=json (no auth)
-- UK Biobank: ukbiobank.ac.uk — application + fee required (major research institutions)
-- SEER (cancer surveillance): seer.cancer.gov — free after registration
+### 29. Biomedical & Clinical
+  MIMIC-IV: physionet.org/content/mimiciv/ (requires CITI training + credential, 3-5 days)
+  PhysioNet (ECG/EEG): physionet.org (some open, some credentialed)
+  GEO (gene expression): ncbi.nlm.nih.gov/geo/
+  TCGA (cancer genomics, open): portal.gdc.cancer.gov
+  ClinicalTrials.gov API: clinicaltrials.gov/api/query/full_studies?expr={query}&max_rnk=10&fmt=json
+  SEER (cancer stats): seer.cancer.gov (free after registration)
+  UK Biobank: ukbiobank.ac.uk (application + fee required)
 
-## ════════ E: MULTI-SOURCE DISCOVERY CODE PATTERNS ════════
+## ════════ E: PARALLEL DISCOVERY PATTERNS (COPY-PASTE READY) ════════
 
-### Parallel Research Discovery (query all databases at once)
-```typescript
-async function discoverResearch(topic: string) {
-  const encoded = encodeURIComponent(topic);
-  const pwcHeaders = { Authorization: `Token ${process.env.PAPERSWITHCODE_TOKEN}` };
+Multi-database paper search:
+  async function discoverResearch(topic) {
+    const encoded = encodeURIComponent(topic);
+    const [arxivXml, s2, pwc, openalex, dblp] = await Promise.all([
+      fetch("http://export.arxiv.org/api/query?search_query=all:"+encoded+"&sortBy=submittedDate&max_results=5").then(r=>r.text()),
+      fetch("https://api.semanticscholar.org/graph/v1/paper/search?query="+encoded+"&fields=title,abstract,year,citationCount,openAccessPdf,tldr&limit=5").then(r=>r.json()),
+      fetch("https://paperswithcode.com/api/v1/papers/?q="+encoded+"&ordering=-github_stars", { headers: { Authorization: "Token "+process.env.PAPERSWITHCODE_TOKEN } }).then(r=>r.json()),
+      fetch("https://api.openalex.org/works?search="+encoded+"&sort=cited_by_count:desc&per_page=5&mailto=support@rjbusinesssolutions.org").then(r=>r.json()),
+      fetch("https://dblp.org/search/publ/api?q="+encoded+"&format=json&h=5").then(r=>r.json()),
+    ]);
+    return { arxiv: arxivXml, s2: s2.data, pwc: pwc.results, openalex: openalex.results, dblp: dblp.result?.hits?.hit };
+  }
 
-  const [arxivXml, s2, pwc, openalex, dblp] = await Promise.all([
-    fetch(`http://export.arxiv.org/api/query?search_query=all:${encoded}&sortBy=submittedDate&max_results=5`).then(r => r.text()),
-    fetch(`https://api.semanticscholar.org/graph/v1/paper/search?query=${encoded}&fields=title,abstract,year,citationCount,openAccessPdf,tldr&limit=5`).then(r => r.json()),
-    fetch(`https://paperswithcode.com/api/v1/papers/?q=${encoded}&ordering=-github_stars`, { headers: pwcHeaders }).then(r => r.json()),
-    fetch(`https://api.openalex.org/works?search=${encoded}&sort=cited_by_count:desc&per_page=5&mailto=support@rjbusinesssolutions.org`).then(r => r.json()),
-    fetch(`https://dblp.org/search/publ/api?q=${encoded}&format=json&h=5`).then(r => r.json()),
-  ]);
-  return {
-    arxiv: arxivXml,
-    semanticScholar: s2.data,
-    papersWithCode: pwc.results,
-    openAlex: openalex.results,
-    dblp: dblp.result?.hits?.hit,
-  };
-}
-```
+Multi-database dataset search:
+  async function discoverDatasets(topic) {
+    const encoded = encodeURIComponent(topic);
+    const auth = Buffer.from("rickjefferson:"+process.env.KAGGLE_KEY).toString("base64");
+    const [kaggle, hf, zenodo, pwc, uci] = await Promise.all([
+      fetch("https://www.kaggle.com/api/v1/datasets?search="+encoded+"&sortBy=votes", { headers: { Authorization: "Basic "+auth } }).then(r=>r.json()),
+      fetch("https://huggingface.co/api/datasets?search="+encoded+"&sort=downloads&limit=10", { headers: { Authorization: "Bearer "+process.env.HUGGINGFACE_TOKEN } }).then(r=>r.json()),
+      fetch("https://zenodo.org/api/records?q="+encoded+"&type=dataset&size=5&sort=mostrecent").then(r=>r.json()),
+      fetch("https://paperswithcode.com/api/v1/datasets/?q="+encoded, { headers: { Authorization: "Token "+process.env.PAPERSWITHCODE_TOKEN } }).then(r=>r.json()),
+      fetch("https://archive.ics.uci.edu/api/public/dataset/search?query="+encoded).then(r=>r.json()),
+    ]);
+    return { kaggle: kaggle.datasets ?? kaggle, hf, zenodo: zenodo.hits?.hits, pwc: pwc.results, uci: uci.results };
+  }
 
-### Parallel Dataset Discovery (all major dataset hubs)
-```typescript
-async function discoverDatasets(topic: string) {
-  const encoded = encodeURIComponent(topic);
-  const auth = Buffer.from(`rickjefferson:${process.env.KAGGLE_KEY}`).toString("base64");
-  const hfToken = process.env.HUGGINGFACE_TOKEN;
-  const pwcToken = process.env.PAPERSWITHCODE_TOKEN;
-
-  const [kaggle, hf, zenodo, pwc, uci] = await Promise.all([
-    fetch(`https://www.kaggle.com/api/v1/datasets?search=${encoded}&sortBy=votes`,
-      { headers: { Authorization: `Basic ${auth}` } }).then(r => r.json()),
-    fetch(`https://huggingface.co/api/datasets?search=${encoded}&sort=downloads&limit=10`,
-      { headers: { Authorization: `Bearer ${hfToken}` } }).then(r => r.json()),
-    fetch(`https://zenodo.org/api/records?q=${encoded}&type=dataset&size=5&sort=mostrecent`).then(r => r.json()),
-    fetch(`https://paperswithcode.com/api/v1/datasets/?q=${encoded}`,
-      { headers: { Authorization: `Token ${pwcToken}` } }).then(r => r.json()),
-    fetch(`https://archive.ics.uci.edu/api/public/dataset/search?query=${encoded}`).then(r => r.json()),
-  ]);
-  return {
-    kaggle: kaggle.datasets ?? kaggle,
-    huggingFace: hf,
-    zenodo: zenodo.hits?.hits,
-    papersWithCode: pwc.results,
-    uci: uci.results,
-  };
-}
-```
-
-### Full Data App Scaffold
-```typescript
-// 1. Find datasets
-const datasets = await discoverDatasets(userRequest);
-
-// 2. Download from Kaggle (streaming, handles large files)
-const auth = Buffer.from(`rickjefferson:${process.env.KAGGLE_KEY}`).toString("base64");
-const response = await fetch(
-  `https://www.kaggle.com/api/v1/datasets/{owner}/{name}/download/{file}.csv`,
-  { headers: { Authorization: `Basic ${auth}` } }
-);
-// Stream to disk or Cloudflare R2
-
-// 3. Parse CSV
-import { parse } from "csv-parse/sync";
-const rows = parse(await response.text(), { columns: true, skip_empty_lines: true });
-
-// 4. Visualize with Recharts + React (bar, line, scatter, histogram charts)
-// 5. ML inference via HuggingFace Inference API or local Python FastAPI
-// 6. Deploy on Cloudflare Workers + R2 (datasets) + D1 (metadata)
-```
+Full data app scaffold:
+  // 1. Discover datasets
+  const datasets = await discoverDatasets(userRequest);
+  // 2. Download from Kaggle
+  const auth = Buffer.from("rickjefferson:"+process.env.KAGGLE_KEY).toString("base64");
+  const csv = await fetch("https://www.kaggle.com/api/v1/datasets/owner/name/download/file.csv", { headers: { Authorization: "Basic "+auth } }).then(r=>r.text());
+  // 3. Parse: import { parse } from "csv-parse/sync"; const rows = parse(csv, { columns: true });
+  // 4. Visualize: React + Recharts (bar, line, scatter, histogram)
+  // 5. ML inference: HuggingFace Inference API or Python FastAPI
+  // 6. Deploy: Cloudflare Workers + R2 (storage) + D1 (metadata)
 
 ## ════════ F: API CREDENTIALS REFERENCE ════════
 
-| Service | Env Variable | Auth Method | Rate Limit |
-|---------|-------------|-------------|-----------|
-| IEEE Xplore | `IEEE_API_KEY` | `?apikey={key}` in query string | 200 req/day |
-| HuggingFace Hub | `HUGGINGFACE_TOKEN` | `Authorization: Bearer {token}` | 1000 req/day |
-| Papers with Code | `PAPERSWITHCODE_TOKEN` | `Authorization: Token {token}` | Generous |
-| Kaggle | `KAGGLE_KEY` (user=rickjefferson) | `Basic base64(user:key)` | Generous |
-| Semantic Scholar | none (free tier) | — | 100 req/5min |
-| arXiv | none required | — | 3 req/sec |
-| PubMed/NCBI | none (free) | — | 3 req/sec |
-| OpenAlex | none (polite pool) | `?mailto=` param | Generous |
-| CrossRef | none (polite pool) | `?mailto=` param | Generous |
-| DBLP | none required | — | 60 req/min |
-| Zenodo | none (public) | — | Generous |
-| Figshare | none (public) | — | Generous |
-| Harvard Dataverse | none (public) | — | Generous |
-| bioRxiv/medRxiv | none required | — | Generous |
-| PLOS | none required | — | Generous |
-| Europe PMC | none required | — | Generous |
-| Unpaywall | none (`?email=` param) | — | 100K req/day |
+Service             | Env Variable            | Auth Method                        | Rate Limit
+--------------------|-------------------------|------------------------------------|------------
+IEEE Xplore         | IEEE_API_KEY            | ?apikey={key} in query string      | 200 req/day
+HuggingFace Hub     | HUGGINGFACE_TOKEN       | Authorization: Bearer {token}      | 1000 req/day
+Papers with Code    | PAPERSWITHCODE_TOKEN    | Authorization: Token {token}       | Generous
+Kaggle              | KAGGLE_KEY (user=rickjefferson) | Basic base64(user:key)   | Generous
+Semantic Scholar    | (none for free tier)    | —                                  | 100 req/5min
+arXiv               | (none required)         | —                                  | 3 req/sec
+PubMed/NCBI         | (none required)         | —                                  | 3 req/sec
+OpenAlex            | (none, polite pool)     | ?mailto= param                     | Generous
+CrossRef            | (none, polite pool)     | ?mailto= param                     | Generous
+DBLP                | (none required)         | —                                  | 60 req/min
+Zenodo              | (none for public)       | —                                  | Generous
+Figshare            | (none for public)       | —                                  | Generous
+Harvard Dataverse   | (none for public)       | —                                  | Generous
+bioRxiv/medRxiv     | (none required)         | —                                  | Generous
+PLOS                | (none required)         | —                                  | Generous
+Europe PMC          | (none required)         | —                                  | Generous
+Unpaywall           | (none, email param)     | ?email= param                      | 100K req/day
 
 ## ════════ G: RESEARCH SLASH COMMANDS ════════
 
-/research-arxiv {topic} — latest arXiv papers with abstracts and PDF links
-/research-semantic {topic} — Semantic Scholar with citation counts and AI-generated TLDRs
-/research-ieee {topic} — IEEE Xplore search (requires IEEE_API_KEY)
-/research-pubmed {topic} — PubMed biomedical literature search
-/research-pwc {topic} — Papers with Code + GitHub repos + SOTA leaderboards
-/research-openalex {topic} — OpenAlex comprehensive academic search (open access filter)
-/research-dblp {topic} — DBLP computer science bibliography search
-/research-multi {topic} — parallel search across ALL 8 databases simultaneously
-/research-cite {doi} — fetch citation metadata + check for open-access PDF via Unpaywall
-/research-related {arxiv_id} — related papers via Semantic Scholar recommendations
-/research-biorxiv {topic} — bioRxiv/medRxiv preprints by category and date
-/dataset-kaggle {topic} — top Kaggle datasets with working download code
-/dataset-huggingface {topic} — HuggingFace datasets with load_dataset() code
-/dataset-zenodo {topic} — Zenodo research datasets with direct file links
-/dataset-uci {topic} — UCI Machine Learning Repository datasets
-/dataset-all {topic} — parallel: Kaggle + HuggingFace + Zenodo + UCI + PapersWithCode
-/sota-find {task} — SOTA leaderboards and best models via Papers with Code
-/model-find {task} — top HuggingFace models with inference API code
-/build-data-app {description} — full data-driven app: discover → download → process → visualize → deploy
-/build-ml-pipeline {task} — end-to-end ML: data loading → preprocessing → training → evaluation → serving API
-/build-rag {corpus} — RAG pipeline: chunk → embed → index → retrieve → generate with citations
-/build-lit-review {topic} — automated literature review across all databases with summary
+/research-arxiv {topic}       — latest arXiv papers with abstracts and PDF links
+/research-semantic {topic}    — Semantic Scholar with citation counts and AI TLDRs
+/research-ieee {topic}        — IEEE Xplore (uses IEEE_API_KEY)
+/research-pubmed {topic}      — PubMed biomedical literature search
+/research-pwc {topic}         — Papers with Code + GitHub repos + SOTA leaderboards
+/research-openalex {topic}    — OpenAlex open-access academic search
+/research-dblp {topic}        — DBLP computer science bibliography
+/research-multi {topic}       — parallel search across ALL 8 databases
+/research-cite {doi}          — citation metadata + open-access PDF via Unpaywall
+/research-related {arxiv_id}  — related papers via Semantic Scholar recommendations
+/research-biorxiv {topic}     — bioRxiv/medRxiv preprints by category
+/dataset-kaggle {topic}       — top Kaggle datasets with download code
+/dataset-huggingface {topic}  — HuggingFace datasets with load_dataset() code
+/dataset-zenodo {topic}       — Zenodo research datasets with file links
+/dataset-uci {topic}          — UCI Machine Learning Repository datasets
+/dataset-all {topic}          — parallel: Kaggle + HuggingFace + Zenodo + UCI + PwC
+/sota-find {task}             — SOTA leaderboards via Papers with Code
+/model-find {task}            — top HuggingFace models with inference code
+/build-data-app {description} — full data app: discover → download → visualize → deploy
+/build-ml-pipeline {task}     — end-to-end ML: data → train → evaluate → serve
+/build-rag {corpus}           — RAG pipeline: chunk → embed → index → retrieve → generate
+/build-lit-review {topic}     — automated literature review across all databases
 
 ---
 
