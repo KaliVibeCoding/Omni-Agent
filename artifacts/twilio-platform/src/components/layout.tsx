@@ -27,6 +27,7 @@ import {
   Mail,
   Brain,
   Shield,
+  Plug,
   Home,
   Umbrella,
   Scale,
@@ -80,6 +81,7 @@ const NAV_SECTIONS = [
       { name: "Conversations", href: "/conversations", icon: MessageCircle },
       { name: "Telehealth", href: "/telehealth", icon: HeartPulse },
       { name: "AGI Framework", href: "/agi-framework", icon: Brain },
+      { name: "Integrations", href: "/integrations", icon: Plug },
     ],
   },
   {

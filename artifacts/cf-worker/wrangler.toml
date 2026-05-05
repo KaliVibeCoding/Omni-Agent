@@ -45,5 +45,13 @@ database_id = "40755aff-1355-48f5-9296-5579a5ba22eb"
 # wrangler secret put RESEND_API_KEY
 
 [vars]
-# Non-secret public vars — update to your deployed Pages URL
 APP_URL = "https://rj-agent-frontend.pages.dev"
+CLOD_API_URL = "https://api.clod.io/v1"
+MINIMAX_BASE_URL = "https://api.minimax.io/anthropic"
+INFERMATIC_API_URL = "https://api.totalgpt.ai"
+MFSN_API_URL = "https://api.myfreescorenow.com/api"
+MFSN_AID = "RickJeffersonSolutions"
+MFSN_DEFAULT_PID = "49914"
+COMPANY_NAME = "RJ Business Solutions"
+COMPANY_WEBSITE = "https://rjbusinesssolutions.org"
+COMPANY_EMAIL = "support@rjbusinesssolutions.org"
