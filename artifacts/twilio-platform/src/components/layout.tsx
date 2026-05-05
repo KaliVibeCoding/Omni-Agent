@@ -21,15 +21,18 @@ import {
   HeartPulse,
   ChevronRight,
   Zap,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useClerk, useUser } from "@clerk/react";
 
 const NAV_SECTIONS = [
   {
     label: "COMMUNICATIONS",
     items: [
-      { name: "Dashboard", href: "/", icon: LayoutDashboard },
+      { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
       { name: "SMS Center", href: "/sms", icon: MessageSquare },
       { name: "Calls", href: "/calls", icon: PhoneCall },
       { name: "Phone Numbers", href: "/phone-numbers", icon: Phone },
@@ -71,11 +74,66 @@ const NAV_SECTIONS = [
   },
 ];
 
+function UserMenu() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
+  const [open, setOpen] = useState(false);
+  const [, setLocation] = useLocation();
+
+  const initials = user
+    ? (user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? user.emailAddresses?.[0]?.emailAddress?.[0] ?? "?")
+    : "?";
+
+  const displayName = user?.firstName
+    ? `${user.firstName} ${user.lastName ?? ""}`.trim()
+    : user?.emailAddresses?.[0]?.emailAddress ?? "User";
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 w-full px-2 py-2 rounded-md hover:bg-sidebar-accent transition-colors"
+      >
+        <div
+          className="size-7 rounded-full flex items-center justify-center text-[11px] font-bold text-white flex-shrink-0 uppercase"
+          style={{ background: "hsl(348 83% 47%)" }}
+        >
+          {initials}
+        </div>
+        <div className="flex-1 min-w-0 text-left">
+          <p className="text-xs font-semibold truncate text-sidebar-foreground">{displayName}</p>
+          <p className="text-[10px] text-muted-foreground truncate">
+            {user?.emailAddresses?.[0]?.emailAddress ?? ""}
+          </p>
+        </div>
+        <ChevronDown className={cn("size-3 text-muted-foreground transition-transform flex-shrink-0", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute bottom-full left-0 right-0 mb-1 bg-popover border border-border rounded-lg shadow-xl overflow-hidden z-50">
+          <button
+            onClick={() => {
+              setOpen(false);
+              signOut(() => setLocation("/"));
+            }}
+            className="flex items-center gap-2.5 w-full px-3 py-2.5 text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <LogOut className="size-3.5" />
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
   const isActive = (href: string) =>
-    href === "/" ? location === "/" : location.startsWith(href);
+    href === "/dashboard" ? location === "/dashboard" || location === "/" : location.startsWith(href);
+
+  const currentPage = NAV_SECTIONS.flatMap(s => s.items).find(i => isActive(i.href))?.name ?? "Dashboard";
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
@@ -140,8 +198,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </ScrollArea>
 
-        {/* Footer */}
-        <div className="p-3 border-t border-border flex-shrink-0">
+        {/* User footer */}
+        <div className="p-3 border-t border-border flex-shrink-0 space-y-2">
+          <UserMenu />
           <div className="flex items-center justify-between px-2">
             <span className="text-[10px] text-muted-foreground font-mono">v3.0.0</span>
             <div className="flex items-center gap-1">
@@ -157,9 +216,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Topbar */}
         <header className="h-14 border-b border-border flex items-center px-6 flex-shrink-0 bg-background">
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
-              {NAV_SECTIONS.flatMap(s => s.items).find(i => isActive(i.href))?.name ?? "Dashboard"}
-            </span>
+            <span className="text-sm font-medium text-foreground">{currentPage}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="text-xs text-muted-foreground hidden sm:block">RJ Business Solutions</div>

@@ -31,9 +31,15 @@ See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and pa
 
 ### twilio-platform (previewPath: `/`)
 Full-featured Twilio Communications Platform dashboard. React + Vite frontend with dark theme.
+**Auth:** Clerk (Replit-managed). Provisioned app ID: `app_3DHlr8en5li8fpnCEHdTwT4sK0a`. Secrets: `CLERK_SECRET_KEY`, `CLERK_PUBLISHABLE_KEY`, `VITE_CLERK_PUBLISHABLE_KEY`.
 
-**Pages (all fully implemented — 18 total):**
-- `/` — Dashboard: live account status, balance, active calls, recent calls/messages, phone numbers
+**Public routes:**
+- `/` — Landing page: RJ Business Solutions marketing page with hero, features, pricing, sign-up/sign-in CTAs
+- `/sign-in` — Clerk sign-in (branded dark theme, JetBrains Mono, Twilio red)
+- `/sign-up` — Clerk sign-up (same branding)
+
+**Protected routes (require Clerk auth — redirect to `/` if signed out):**
+- `/dashboard` — Dashboard: live account status, balance, active calls, recent calls/messages, phone numbers
 - `/sms` — SMS Center: compose SMS, message history with filtering
 - `/calls` — Call Manager: make calls, active calls, recent calls, recordings playback
 - `/phone-numbers` — Phone Numbers: list numbers, edit friendly name/webhook URLs
@@ -52,8 +58,9 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 - `/telehealth` — Telehealth: appointments CRUD, SMS reminders, video invites, HIPAA checklist, upcoming tab
 - `/settings` — Settings: account info, phone numbers, webhook URL references
 
-**Version:** 3.0.0 (added Video Rooms, Conversations, Telehealth)
-**Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui components, lucide icons, date-fns, dark theme CSS variables.
+**Version:** 4.0.0 (added Clerk auth, public landing page, portal gating)
+**Tech:** wouter router, React Query (@tanstack/react-query), shadcn/ui, Clerk (`@clerk/react` + `@clerk/themes`), lucide icons, date-fns, dark theme CSS variables.
+**Layout sidebar:** shows signed-in user name/email + sign-out dropdown. Dashboard nav link updated to `/dashboard`.
 
 **Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
 
