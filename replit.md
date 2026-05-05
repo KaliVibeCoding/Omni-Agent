@@ -91,13 +91,28 @@ Hono-based Cloudflare Worker replacing the Express API server for production.
 
 **Routes:**
 - `GET /api/healthz` — health check
-- `GET|POST|PUT|DELETE /api/twilio/*` — all Twilio routes (identical to Express API)
+- `GET|POST|PUT|DELETE /api/twilio/*` — all Twilio routes
+- `GET|POST|DELETE /api/twilio/video/*` — video rooms
+- `GET|POST|DELETE /api/twilio/conv/*` — Conversations API
+- `GET|POST|PUT|PATCH|DELETE /api/twilio/telehealth/*` — telehealth appointments + SMS remind + video invite
 - `GET|POST|DELETE /api/anthropic/*` — Anthropic AI conversations with D1 storage
 - `GET|POST|DELETE /api/openrouter/*` — OpenRouter AI conversations with D1 storage
 - `POST /api/webhook-tester/send` — webhook proxy/tester
+- `GET|POST|PATCH|DELETE /api/tenant/*` — multi-tenant Twilio credential management (AES-256-GCM encrypted in D1)
+- `GET|POST /api/stripe/*` — Stripe billing (products, subscription, checkout, portal, webhook)
+- `GET|POST|PATCH|DELETE /api/niche/:slug/*` — all 19 industry hub record CRUD + SMS send + bulk SMS
+
+**Lib:**
+- `src/lib/d1.ts` — D1 query/run helpers
+- `src/lib/auth.ts` — Clerk JWT userId extraction
+- `src/lib/encrypt.ts` — AES-256-GCM Web Crypto API encrypt/decrypt
 
 **Database:** Cloudflare D1 (SQLite) via `artifacts/cf-worker/db/schema.sql`
+Tables: conversations, messages, call_logs, sms_logs, contacts, appointments, video_rooms, tenant_credentials, niche_records
+
 **Config:** `artifacts/cf-worker/wrangler.toml` (replace `YOUR_D1_DATABASE_ID`)
+
+**Secrets required:** TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, CLERK_SECRET_KEY, CLERK_PUBLISHABLE_KEY, ENCRYPTION_KEY (32-byte hex), STRIPE_SECRET_KEY, STRIPE_PUBLISHABLE_KEY, STRIPE_WEBHOOK_SECRET, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, RESEND_API_KEY
 
 ### api-server (port 8080 — Replit dev server)
 Express API server for local development. Uses PostgreSQL + Drizzle.
@@ -154,53 +169,61 @@ Express API server for local development. Uses PostgreSQL + Drizzle.
 
 ## Cloudflare Deployment Guide
 
-### Step 1 — Install Wrangler globally (or use npx)
-```bash
-npm install -g wrangler
-wrangler login
-```
+**Full step-by-step instructions in `docs/DEPLOYMENT.md`**
 
-### Step 2 — Create the D1 database
+Quick reference:
+
 ```bash
+# 1. Install tools
+npm install -g wrangler pnpm
+wrangler login
+
+# 2. Create D1 database
 cd artifacts/cf-worker
 wrangler d1 create twilio-platform
-# Copy the database_id output, paste into wrangler.toml replacing YOUR_D1_DATABASE_ID
-```
+# → paste database_id into wrangler.toml
 
-### Step 3 — Apply D1 schema
-```bash
+# 3. Apply schema (incl. new tenant_credentials + niche_records tables)
 wrangler d1 execute twilio-platform --file=db/schema.sql --remote
-```
 
-### Step 4 — Set Worker secrets
-```bash
+# 4. Set all secrets (see wrangler.toml comments for full list)
+wrangler secret put CLERK_SECRET_KEY
+wrangler secret put ENCRYPTION_KEY   # openssl rand -hex 32
+wrangler secret put STRIPE_SECRET_KEY
+wrangler secret put STRIPE_PUBLISHABLE_KEY
+wrangler secret put STRIPE_WEBHOOK_SECRET
 wrangler secret put TWILIO_ACCOUNT_SID
 wrangler secret put TWILIO_AUTH_TOKEN
-wrangler secret put TWILIO_API_KEY_SID
-wrangler secret put TWILIO_API_KEY_SECRET
 wrangler secret put TWILIO_PHONE_NUMBER
-wrangler secret put ANTHROPIC_API_KEY
-wrangler secret put OPENROUTER_API_KEY   # optional
-```
+wrangler secret put ANTHROPIC_API_KEY    # optional
+wrangler secret put RESEND_API_KEY       # optional
 
-### Step 5 — Deploy the Worker
-```bash
+# 5. Deploy the Worker API
 wrangler deploy
-# Note the Worker URL: https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev
-```
+# → note URL: https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev
 
-### Step 6 — Build and deploy the frontends (Cloudflare Pages)
-For each frontend, create a Pages project in the Cloudflare Dashboard:
-- **Build command:** `pnpm --filter @workspace/twilio-platform run build` (or twilio-omni-agent)
-- **Build output:** `artifacts/twilio-platform/dist/public` (or twilio-omni-agent)
-- **Root directory:** `/` (monorepo root)
-- **Environment variable:** `CF_WORKER_URL=https://twilio-platform-api.YOUR_SUBDOMAIN.workers.dev`
+# 6. Build frontend
+cd ../../
+pnpm --filter @workspace/twilio-platform run build
 
-Or use Wrangler Pages:
-```bash
+# 7. Deploy to Cloudflare Pages
 cd artifacts/twilio-platform
 wrangler pages deploy dist/public --project-name twilio-platform
+# → set CF_WORKER_URL and VITE_CLERK_PUBLISHABLE_KEY in Pages env vars
 ```
+
+## Documentation Files
+
+All sales, technical, and operational docs are in `docs/`:
+
+| File | Contents |
+|------|----------|
+| `docs/DEPLOYMENT.md` | Full 14-step deployment guide with troubleshooting |
+| `docs/ARCHITECTURE.md` | System architecture, data flows, security model |
+| `docs/API_REFERENCE.md` | All API endpoints with request/response examples |
+| `docs/FAQ.md` | 40+ Q&A covering technical, billing, compliance, white-label |
+| `docs/SALES_PITCH.md` | Demo script, competitive comparison, objection handling |
+| `docs/WHITE_LABEL_GUIDE.md` | Step-by-step rebrand checklist (logo, colors, domain, pricing) |
 
 ### AI Clients — No Replit Proxy Required
 Both Anthropic and OpenRouter clients fall back to direct API keys:

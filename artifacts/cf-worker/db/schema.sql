@@ -89,12 +89,49 @@ CREATE TABLE IF NOT EXISTS video_rooms (
   created_at       TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
+-- ─── Multi-Tenant Credentials ─────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS tenant_credentials (
+  id                       INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id                  TEXT    NOT NULL UNIQUE,
+  account_sid              TEXT    NOT NULL,
+  auth_token_encrypted     TEXT    NOT NULL,
+  account_name             TEXT,
+  api_key_sid              TEXT,
+  api_key_secret_encrypted TEXT,
+  phone_number             TEXT,
+  plan                     TEXT    NOT NULL DEFAULT 'starter',
+  created_at               TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at               TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
+-- ─── Industry Hub Records (all 19 niches share this table, partitioned by slug) ─
+
+CREATE TABLE IF NOT EXISTS niche_records (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  slug          TEXT    NOT NULL,
+  entity_name   TEXT    NOT NULL,
+  entity_phone  TEXT    NOT NULL,
+  entity_email  TEXT,
+  record_type   TEXT    DEFAULT 'general',
+  status        TEXT    DEFAULT 'new',
+  notes         TEXT,
+  assigned_to   TEXT,
+  scheduled_at  TEXT,
+  reminder_sent INTEGER NOT NULL DEFAULT 0,
+  created_at    TEXT    NOT NULL DEFAULT (datetime('now')),
+  updated_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+);
+
 -- ─── Indexes ──────────────────────────────────────────────────────────────────
 
-CREATE INDEX IF NOT EXISTS idx_messages_conversation ON messages(conversation_id);
-CREATE INDEX IF NOT EXISTS idx_call_logs_created ON call_logs(created_at);
-CREATE INDEX IF NOT EXISTS idx_sms_logs_created ON sms_logs(created_at);
-CREATE INDEX IF NOT EXISTS idx_contacts_name ON contacts(name);
-CREATE INDEX IF NOT EXISTS idx_appointments_time ON appointments(appointment_time);
-CREATE INDEX IF NOT EXISTS idx_appointments_status ON appointments(status);
-CREATE INDEX IF NOT EXISTS idx_appointments_phone ON appointments(patient_phone);
+CREATE INDEX IF NOT EXISTS idx_messages_conversation   ON messages(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_call_logs_created       ON call_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_sms_logs_created        ON sms_logs(created_at);
+CREATE INDEX IF NOT EXISTS idx_contacts_name           ON contacts(name);
+CREATE INDEX IF NOT EXISTS idx_appointments_time       ON appointments(appointment_time);
+CREATE INDEX IF NOT EXISTS idx_appointments_status     ON appointments(status);
+CREATE INDEX IF NOT EXISTS idx_appointments_phone      ON appointments(patient_phone);
+CREATE INDEX IF NOT EXISTS idx_tenant_credentials_user ON tenant_credentials(user_id);
+CREATE INDEX IF NOT EXISTS idx_niche_records_slug      ON niche_records(slug);
+CREATE INDEX IF NOT EXISTS idx_niche_records_slug_stat ON niche_records(slug, status);

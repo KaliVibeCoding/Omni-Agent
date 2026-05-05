@@ -7,21 +7,43 @@ compatibility_flags = ["nodejs_compat"]
 enabled = true
 
 # ── D1 Database ────────────────────────────────────────────────────────────────
-# Run: wrangler d1 create twilio-platform
-# Then replace database_id below with the output ID.
+# Step 1: wrangler d1 create twilio-platform
+# Step 2: Replace YOUR_D1_DATABASE_ID below with the output ID
+# Step 3: wrangler d1 execute twilio-platform --file=db/schema.sql --remote
 [[d1_databases]]
 binding = "DB"
 database_name = "twilio-platform"
 database_id = "YOUR_D1_DATABASE_ID"
 
-# ── Secrets (set via CLI or Dashboard) ────────────────────────────────────────
+# ── Secrets (set via Wrangler CLI) ────────────────────────────────────────────
+# Run each command below to set your secrets:
+#
+# TWILIO (tenant fallback credentials)
 # wrangler secret put TWILIO_ACCOUNT_SID
 # wrangler secret put TWILIO_AUTH_TOKEN
 # wrangler secret put TWILIO_API_KEY_SID
 # wrangler secret put TWILIO_API_KEY_SECRET
 # wrangler secret put TWILIO_PHONE_NUMBER
+#
+# AI MODELS
 # wrangler secret put ANTHROPIC_API_KEY
 # wrangler secret put OPENROUTER_API_KEY
+#
+# AUTH (Clerk)
+# wrangler secret put CLERK_SECRET_KEY
+# wrangler secret put CLERK_PUBLISHABLE_KEY
+#
+# ENCRYPTION (generate: openssl rand -hex 32)
+# wrangler secret put ENCRYPTION_KEY
+#
+# STRIPE
+# wrangler secret put STRIPE_SECRET_KEY
+# wrangler secret put STRIPE_PUBLISHABLE_KEY
+# wrangler secret put STRIPE_WEBHOOK_SECRET
+#
+# EMAIL (Resend.com — optional, emails logged to console if not set)
+# wrangler secret put RESEND_API_KEY
 
 [vars]
-# Non-secret vars can go here
+# Non-secret public vars — update to your deployed Pages URL
+APP_URL = "https://twilio-platform.pages.dev"
