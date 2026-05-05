@@ -73,7 +73,10 @@ Full-featured Twilio Communications Platform dashboard. React + Vite frontend wi
 **Pricing tiers (landing page + Stripe):** Starter $79/mo · Growth $199/mo · Business $499/mo · Enterprise custom
 **Stripe products seeded:** prod_USVKKxU9rn50gz (Starter), prod_USVKQcJdY3U2bj (Growth), prod_USVK1Z7YKJNPPj (Business), prod_USVKoplKgcC3eM (Enterprise)
 
-**Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml` — set `CF_WORKER_URL` env var in the Cloudflare Dashboard.
+**Cloudflare Pages deployment:** `artifacts/twilio-platform/wrangler.toml`
+**LIVE PRODUCTION URL:** https://rj-agent-frontend.pages.dev
+**API Worker URL:** https://twilio-platform-api.rickjefferson.workers.dev
+CF_WORKER_URL and VITE_CLERK_PUBLISHABLE_KEY set in Pages env vars via API.
 
 ### twilio-omni-agent (previewPath: `/twilio-omni-agent`)
 AI-powered Twilio Omni-Agent chat. React + Vite frontend.

@@ -13,7 +13,7 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "twilio-platform"
-database_id = "YOUR_D1_DATABASE_ID"
+database_id = "40755aff-1355-48f5-9296-5579a5ba22eb"
 
 # ── Secrets (set via Wrangler CLI) ────────────────────────────────────────────
 # Run each command below to set your secrets:
@@ -46,4 +46,4 @@ database_id = "YOUR_D1_DATABASE_ID"
 
 [vars]
 # Non-secret public vars — update to your deployed Pages URL
-APP_URL = "https://twilio-platform.pages.dev"
+APP_URL = "https://rj-agent-frontend.pages.dev"
