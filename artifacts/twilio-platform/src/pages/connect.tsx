@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/react";
 
 const BASE = import.meta.env.BASE_URL ?? "/";
 const API = BASE.endsWith("/") ? BASE.slice(0, -1) : BASE;
