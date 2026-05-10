@@ -1,0 +1,87 @@
+
+--- 2026-05-05T10:47:50.105Z debug
+🪵  Writing logs to "/home/runner/workspace/.config/.wrangler/logs/wrangler-2026-05-05_10-47-49_889.log"
+---
+
+--- 2026-05-05T10:47:50.105Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:47:50.111Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:47:50.121Z log
+
+ ⛅️ wrangler 4.87.0
+───────────────────
+---
+
+--- 2026-05-05T10:47:50.132Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command started","timestamp":1777978070132,"properties":{"amplitude_session_id":1777978070129,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":true,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"d1 create","sanitizedArgs":{}}}
+---
+
+--- 2026-05-05T10:47:50.180Z debug
+Saving to cache: {"account":{"id":"58250b56ae5b45d940cd6e4b64314c01","name":""}}
+---
+
+--- 2026-05-05T10:47:50.183Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/d1/database
+---
+
+--- 2026-05-05T10:47:50.183Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:47:50.184Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:47:50.184Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:47:50.184Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:47:51.457Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:47:51.458Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:47:51.458Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:47:51.458Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:47:51.460Z log
+✅ Successfully created DB 'twilio-platform' in region ENAM
+---
+
+--- 2026-05-05T10:47:51.460Z log
+Created your new D1 database.
+
+---
+
+--- 2026-05-05T10:47:51.460Z log
+To access your new D1 Database in your Worker, add the following snippet to your configuration file:
+---
+
+--- 2026-05-05T10:47:51.464Z log
+[[d1_databases]]
+binding = "twilio_platform"
+database_name = "twilio-platform"
+database_id = "40755aff-1355-48f5-9296-5579a5ba22eb"
+
+---
+
+--- 2026-05-05T10:47:51.466Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command completed","timestamp":1777978071466,"properties":{"amplitude_session_id":1777978070129,"amplitude_event_id":1,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"d1 create","sanitizedArgs":{},"durationMs":1352}}
+---

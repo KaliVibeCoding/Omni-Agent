@@ -1,6 +1,8 @@
-# Workspace
+# RJ Business Solutions Omni-Agent Platform
 
-## Overview
+## Executive Summary
+
+The **RJ Business Solutions Omni-Agent Platform** is a premium, enterprise-grade multi-agent communications framework engineered by **Rick Jefferson**, CTO of RJ Business Solutions. This platform securely handles automated voice, SMS, and email operations across numerous verticals with scalable architecture and complete data privacy.
 
 pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
 
@@ -226,7 +228,7 @@ All sales, technical, and operational docs are in `docs/`:
 | `docs/API_REFERENCE.md` | All API endpoints with request/response examples |
 | `docs/FAQ.md` | 40+ Q&A covering technical, billing, compliance, white-label |
 | `docs/SALES_PITCH.md` | Demo script, competitive comparison, objection handling |
-| `docs/WHITE_LABEL_GUIDE.md` | Step-by-step rebrand checklist (logo, colors, domain, pricing) |
+| `docs/ENTERPRISE_DEPLOYMENT_GUIDE.md` | Step-by-step customization checklist (logo, colors, domain, pricing) |
 
 ### AI Clients — No Replit Proxy Required
 Both Anthropic and OpenRouter clients fall back to direct API keys:

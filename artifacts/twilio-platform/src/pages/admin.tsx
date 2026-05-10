@@ -9,7 +9,7 @@ const API = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
 
 // Mock data for the admin panel (real data would come from DB queries)
 const MOCK_TENANTS = [
-  { id: "user_1", name: "Acme Corp", email: "admin@acme.com", plan: "business", status: "active", joined: "Jan 12, 2026", sms: 8420, calls: 1240, mrr: 499 },
+  { id: "user_1", name: "RJ Business Solutions", email: "admin@rjbusinesssolutions.org", plan: "business", status: "active", joined: "Jan 12, 2026", sms: 8420, calls: 1240, mrr: 499 },
   { id: "user_2", name: "TechStart LLC", email: "ops@techstart.io", plan: "growth", status: "active", joined: "Feb 3, 2026", sms: 3100, calls: 420, mrr: 199 },
   { id: "user_3", name: "HealthFirst", email: "admin@healthfirst.org", plan: "business", status: "active", joined: "Feb 18, 2026", sms: 12400, calls: 3200, mrr: 499 },
   { id: "user_4", name: "QuickPay Inc", email: "it@quickpay.com", plan: "starter", status: "active", joined: "Mar 5, 2026", sms: 780, calls: 90, mrr: 79 },

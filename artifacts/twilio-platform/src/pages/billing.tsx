@@ -38,7 +38,7 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "Unlimited SMS",
     "Multi-agent AGI framework",
     "Full call center suite",
-    "White-label options",
+    "Enterprise customization",
     "Custom integrations",
     "HIPAA compliance tools",
     "Dedicated account manager",

@@ -99,7 +99,7 @@ const PLANS = [
       "Everything in Growth",
       "Multi-agent AGI framework",
       "Advanced automation",
-      "White-label ready",
+      "Enterprise customization",
       "Dedicated Slack channel",
       "SLA guarantee",
     ],

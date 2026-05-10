@@ -1,0 +1,46 @@
+
+--- 2026-05-05T10:49:14.665Z debug
+🪵  Writing logs to "/home/runner/workspace/.config/.wrangler/logs/wrangler-2026-05-05_10-49-14_464.log"
+---
+
+--- 2026-05-05T10:49:14.665Z debug
+.env file not found at "/home/runner/workspace/artifacts/twilio-platform/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:49:14.671Z debug
+.env file not found at "/home/runner/workspace/artifacts/twilio-platform/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:49:14.682Z log
+
+ ⛅️ wrangler 4.87.0
+───────────────────
+---
+
+--- 2026-05-05T10:49:14.686Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command started","timestamp":1777978154686,"properties":{"amplitude_session_id":1777978154683,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":["projectName"],"argsCombination":"projectName","sanitizedCommand":"pages deploy","sanitizedArgs":{}}}
+---
+
+--- 2026-05-05T10:49:14.707Z debug
+Configuration file belonging to ⚡️ Pages ⚡️ project detected.
+---
+
+--- 2026-05-05T10:49:14.738Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/pages/projects/twilio-platform
+---
+
+--- 2026-05-05T10:49:14.738Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:49:14.739Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:49:14.739Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:49:14.739Z debug
+-- END CF API REQUEST
+---

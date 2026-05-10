@@ -1,6 +1,6 @@
-# White-Label Guide — Make It Your Own Brand
+# Enterprise Deployment Guide — RJ Business Solutions
 
-Rebrand the entire platform in under an hour. No deep coding required.
+Customizing the Omni-Agent platform for dedicated enterprise deployments.
 
 ---
 
@@ -167,15 +167,17 @@ The development environment includes some Replit-specific plugins. These are aut
 
 ## Quick Checklist
 
-- [ ] Company name replaced in layout.tsx, landing.tsx
-- [ ] Logo files replaced (logo.svg, favicon.svg, opengraph.jpg)
-- [ ] Brand color updated in index.css
-- [ ] Clerk auth screens customized (Clerk Dashboard → Appearance)
-- [ ] Custom domain configured in Cloudflare Pages
-- [ ] Custom domain configured in Cloudflare Workers
+- [ ] Enterprise name replaced in layout.tsx, landing.tsx
+- [ ] Enterprise logo files updated (logo.svg, favicon.svg, opengraph.jpg)
+- [ ] Enterprise brand colors updated in index.css
+- [ ] Clerk auth screens customized for the enterprise client
+- [ ] Custom enterprise domain configured in Cloudflare Pages
+- [ ] Custom enterprise API domain configured in Cloudflare Workers
 - [ ] APP_URL and CF_WORKER_URL updated to custom domains
-- [ ] Pricing updated in landing page and Stripe
-- [ ] Email templates updated with brand voice
-- [ ] Unwanted industry niches removed from sidebar
+- [ ] Enterprise pricing/licensing updated in landing page and Stripe
+- [ ] Email templates updated with enterprise brand voice
+- [ ] Unused industry niches removed from sidebar
 - [ ] Compliance/legal pages added (Terms of Service, Privacy Policy)
 - [ ] Footer links updated
+
+*Confidential & Proprietary. Created by Rick Jefferson, RJ Business Solutions.*

@@ -8,15 +8,13 @@
 A production-grade, multi-tenant SaaS communications platform built on Twilio. It gives businesses in 20 different industries a single dashboard to manage SMS, calls, voicemails, AI agents, appointments, and client records — all branded and compliant for their specific industry.
 
 ### Who is this platform built for?
-Two audiences:
-1. **Buyers/Resellers** — People who purchase the platform and sell it as a subscription service to businesses in specific niches (dental offices, real estate agencies, credit repair firms, etc.)
-2. **End Users** — The businesses that subscribe to use the platform for their daily client communications
+**End Users & Enterprise Clients** — Businesses that subscribe to use the platform for their daily client communications, from single-location dental offices to national real estate franchises.
 
 ### What industries does it cover?
 20 industries: Healthcare/Telehealth, Credit Repair, Real Estate, Insurance, Dental, Legal, Auto Dealerships, Home Services, Fitness Studios, Restaurants, Mortgage Lending, Chiropractic, Veterinary, Education, Nonprofit, Staffing/Recruiting, Medical Spas, Property Management, E-Commerce, and Financial Advisory.
 
 ### Is this a white-label platform?
-Yes. You can change the logo, company name, color scheme, and domain. The entire platform runs under your brand. See `docs/WHITE_LABEL_GUIDE.md`.
+The Omni-Agent platform is a proprietary product of RJ Business Solutions. We do offer dedicated enterprise licensing options for large organizations that require custom branding and custom domain deployments.
 
 ---
 
@@ -74,8 +72,8 @@ Currently, each Clerk user account has one set of Twilio credentials. Multi-loca
 
 ## Billing & Revenue Questions
 
-### How does billing work for my customers?
-Stripe Checkout handles all payments. When a customer selects a plan, they're redirected to Stripe's hosted checkout page to enter their card. You receive the subscription revenue automatically. They can manage/cancel via the Stripe Billing Portal at any time.
+### How does billing work?
+Stripe Checkout handles all payments natively. When a client selects a plan, they're redirected to Stripe's hosted checkout page to enter their card. Subscriptions are managed automatically, and clients can manage/cancel via the Stripe Billing Portal at any time.
 
 ### What are the subscription tiers?
 | Plan | Price | Target |
@@ -86,18 +84,15 @@ Stripe Checkout handles all payments. When a customer selects a plan, they're re
 | Enterprise | Custom | Large orgs |
 
 ### Do I pay per-message fees?
-No. Tenants pay Twilio directly for their SMS/call usage via their own Twilio account. You only collect the platform subscription fee. This means no markup, no hidden costs, and no surprise bills for you.
+No. Clients connect their own Twilio account directly to the platform. They pay Twilio directly for their SMS/call usage at cost, and pay RJ Business Solutions the monthly software subscription fee.
 
-### What does it cost me to run the platform?
-- **Cloudflare Workers:** Free tier handles 100,000 requests/day. Paid plan is $5/month for 10M requests.
-- **Cloudflare Pages:** Free
-- **Cloudflare D1:** Free for up to 5M rows. $0.75/million rows after.
-- **Clerk:** Free up to 10,000 monthly active users. Then $0.02/user/month.
-- **Stripe:** 2.9% + $0.30 per transaction (standard rate)
-- **Resend (email):** Free for 3,000 emails/month. Then $20/month for 50k.
-
-### How do I seed the Stripe products?
-See Step 6 in `docs/DEPLOYMENT.md`. The seed script creates all 4 plans in your Stripe account idempotently (safe to run multiple times).
+### What does it cost RJ Business Solutions to run the platform?
+Our infrastructure is highly optimized for scale and profitability:
+- **Cloudflare Workers:** Near-zero cost at massive scale.
+- **Cloudflare D1:** Serverless SQLite at the edge.
+- **Clerk:** Enterprise-grade authentication.
+- **Stripe:** Standard transaction fees.
+- **Resend:** Transactional email delivery.
 
 ---
 
@@ -146,13 +141,8 @@ Note: The admin panel is accessible to signed-in users. For production, add role
 
 ---
 
-## White-Label Questions
-
-### Can I resell this to my clients?
-Yes. You can purchase this platform, white-label it under your brand, and resell it to any number of businesses. There are no royalties or revenue shares.
-
-### Can I change the pricing tiers?
-Yes. Update the Stripe products and the pricing display in the landing page (`/src/pages/landing.tsx`). The Stripe products are seeded via a script you can modify.
+### Is there an enterprise option?
+Yes. Large organizations and franchises can license the platform. This includes custom branding, custom domains, and dedicated deployment architectures handled by the RJ Business Solutions team.
 
 ### Can I add new industries?
 Yes. Adding a new niche requires:
@@ -175,10 +165,7 @@ Yes — just remove the entries from the sidebar and data files. The router igno
 4. Check Stripe Dashboard → Events for payment issues
 5. Check Twilio Console → Monitor for SMS/call issues
 
-### How do I update the platform after purchase?
-Since you own the full source code, you update by:
-1. Making changes in the codebase
-2. Rebuilding the frontend: `pnpm --filter @workspace/twilio-platform run build`
-3. Redeploying: `wrangler pages deploy dist/public` and/or `wrangler deploy`
+### How does RJ Business Solutions deploy updates?
+Because of our Cloudflare Workers edge architecture, updates are pushed globally with zero downtime. Clients always have access to the latest features, AI models, and security patches without lifting a finger.
 
-No downtime required — Cloudflare's zero-downtime deployments handle it.
+*Confidential & Proprietary. Created by Rick Jefferson, RJ Business Solutions.*

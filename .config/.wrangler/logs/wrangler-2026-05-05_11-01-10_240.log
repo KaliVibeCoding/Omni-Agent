@@ -1,0 +1,78 @@
+
+--- 2026-05-05T11:01:10.463Z debug
+🪵  Writing logs to "/home/runner/workspace/.config/.wrangler/logs/wrangler-2026-05-05_11-01-10_240.log"
+---
+
+--- 2026-05-05T11:01:10.463Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T11:01:10.469Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T11:01:10.479Z log
+
+ ⛅️ wrangler 4.87.0
+───────────────────
+---
+
+--- 2026-05-05T11:01:10.491Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command started","timestamp":1777978870491,"properties":{"amplitude_session_id":1777978870486,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"secret put","sanitizedArgs":{}}}
+---
+
+--- 2026-05-05T11:01:10.539Z debug
+Saving to cache: {"account":{"id":"58250b56ae5b45d940cd6e4b64314c01","name":""}}
+---
+
+--- 2026-05-05T11:01:10.543Z log
+🌀 Creating the secret for the Worker "twilio-platform-api" 
+---
+
+--- 2026-05-05T11:01:10.544Z debug
+-- START CF API REQUEST: PUT https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/secrets
+---
+
+--- 2026-05-05T11:01:10.544Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T11:01:10.545Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T11:01:10.545Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T11:01:10.545Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T11:01:11.189Z debug
+-- START CF API RESPONSE: Created 201
+---
+
+--- 2026-05-05T11:01:11.190Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T11:01:11.190Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T11:01:11.190Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T11:01:11.192Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"create encrypted variable","timestamp":1777978871192,"properties":{"amplitude_session_id":1777978871191,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","category":"Workers","os":"linux:x64","secretOperation":"single","secretSource":"stdin","hasEnvironment":false}}
+---
+
+--- 2026-05-05T11:01:11.193Z log
+✨ Success! Uploaded secret DISPUTEFOX_API_KEY
+---
+
+--- 2026-05-05T11:01:11.195Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command completed","timestamp":1777978871195,"properties":{"amplitude_session_id":1777978870486,"amplitude_event_id":1,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"secret put","sanitizedArgs":{},"durationMs":723}}
+---

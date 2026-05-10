@@ -2,7 +2,7 @@
 
 ## Overview
 
-RJ Business Solutions is a production-grade multi-tenant SaaS communications platform built on top of the Twilio API. It provides 20 industry-specific communication hubs, AI-powered automation, and Stripe subscription billing — all delivered through a white-label-ready web application.
+RJ Business Solutions is a production-grade multi-tenant SaaS communications platform built on top of the Twilio API. It provides 20 industry-specific communication hubs, AI-powered automation, and Stripe subscription billing — all delivered through an enterprise-ready web application.
 
 ---
 

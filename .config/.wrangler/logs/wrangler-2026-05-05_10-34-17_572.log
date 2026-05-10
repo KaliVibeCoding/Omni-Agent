@@ -1,0 +1,18 @@
+
+--- 2026-05-05T10:34:17.769Z debug
+🪵  Writing logs to "/home/runner/workspace/.config/.wrangler/logs/wrangler-2026-05-05_10-34-17_572.log"
+---
+
+--- 2026-05-05T10:34:17.769Z debug
+.env file not found at "/home/runner/workspace/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:34:17.775Z debug
+.env file not found at "/home/runner/workspace/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:34:17.878Z log
+
+ ⛅️ wrangler 4.87.0
+───────────────────
+---

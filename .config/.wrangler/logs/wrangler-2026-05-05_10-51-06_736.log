@@ -1,0 +1,430 @@
+
+--- 2026-05-05T10:51:06.944Z debug
+🪵  Writing logs to "/home/runner/workspace/.config/.wrangler/logs/wrangler-2026-05-05_10-51-06_736.log"
+---
+
+--- 2026-05-05T10:51:06.944Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:51:06.949Z debug
+.env file not found at "/home/runner/workspace/artifacts/cf-worker/.env.local". Continuing... For more details, refer to https://developers.cloudflare.com/workers/wrangler/system-environment-variables/
+---
+
+--- 2026-05-05T10:51:06.965Z log
+
+ ⛅️ wrangler 4.87.0
+───────────────────
+---
+
+--- 2026-05-05T10:51:06.978Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command started","timestamp":1777978266978,"properties":{"amplitude_session_id":1777978266972,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"deploy","sanitizedArgs":{}}}
+---
+
+--- 2026-05-05T10:51:06.996Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"autoconfig_process_started","timestamp":1777978266996,"properties":{"amplitude_session_id":1777978266995,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","category":"Workers","os":"linux:x64","autoConfigId":"29b6a254-98b9-443e-b00c-ee0b11433d8f","command":"wrangler deploy","dryRun":false}}
+---
+
+--- 2026-05-05T10:51:06.997Z debug
+Running autoconfig detection in /home/runner/workspace/artifacts/cf-worker...
+---
+
+--- 2026-05-05T10:51:06.998Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"autoconfig_detection_started","timestamp":1777978266998,"properties":{"amplitude_session_id":1777978266997,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","category":"Workers","os":"linux:x64","autoConfigId":"29b6a254-98b9-443e-b00c-ee0b11433d8f","command":"wrangler deploy"}}
+---
+
+--- 2026-05-05T10:51:07.032Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"autoconfig_process_ended","timestamp":1777978267032,"properties":{"amplitude_session_id":1777978267031,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","category":"Workers","os":"linux:x64","autoConfigId":"29b6a254-98b9-443e-b00c-ee0b11433d8f","command":"wrangler deploy","dryRun":false,"success":true}}
+---
+
+--- 2026-05-05T10:51:07.136Z debug
+Saving to cache: {"account":{"id":"58250b56ae5b45d940cd6e4b64314c01","name":""}}
+---
+
+--- 2026-05-05T10:51:07.138Z debug
+Starting verifyWorkerMatchesCITag() with tag: undefined, name: twilio-platform-api
+---
+
+--- 2026-05-05T10:51:07.138Z debug
+No WRANGLER_CI_MATCH_TAG variable provided, aborting verifyWorkerMatchesCITag()
+---
+
+--- 2026-05-05T10:51:07.139Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/services/twilio-platform-api
+---
+
+--- 2026-05-05T10:51:07.140Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.140Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.140Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.140Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:07.464Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:07.465Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.465Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.465Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:07.469Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/deployments
+---
+
+--- 2026-05-05T10:51:07.469Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.469Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.469Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.469Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:07.633Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:07.633Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.633Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:07.633Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:09.240Z log
+Total Upload: 8456.13 KiB / gzip: 615.56 KiB
+---
+
+--- 2026-05-05T10:51:09.241Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/settings
+---
+
+--- 2026-05-05T10:51:09.241Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.241Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.241Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.241Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:09.815Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:09.815Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.815Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.815Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:09.842Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/versions
+---
+
+--- 2026-05-05T10:51:09.842Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.842Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.842Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.875Z debug
+BODY: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:09.875Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:13.290Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:13.291Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.291Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.291Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:13.292Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/deployments
+---
+
+--- 2026-05-05T10:51:13.292Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.292Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.292Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.292Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:13.819Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:13.820Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.820Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.820Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:13.821Z debug
+-- START CF API REQUEST: PATCH https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/script-settings
+---
+
+--- 2026-05-05T10:51:13.821Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.821Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.821Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:13.821Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:14.205Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:14.206Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.206Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.206Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:14.206Z log
+Worker Startup Time: 59 ms
+---
+
+--- 2026-05-05T10:51:14.207Z log
+Your Worker has access to the following bindings:
+---
+
+--- 2026-05-05T10:51:14.207Z log
+Binding                                                  Resource                  
+---
+
+--- 2026-05-05T10:51:14.207Z log
+env.DB (twilio-platform)                                 D1 Database               
+---
+
+--- 2026-05-05T10:51:14.208Z log
+env.APP_URL ("https://rj-agent-frontend.pages.dev")      Environment Variable      
+---
+
+--- 2026-05-05T10:51:14.208Z log
+
+---
+
+--- 2026-05-05T10:51:14.215Z log
+Uploaded twilio-platform-api (6.75 sec)
+---
+
+--- 2026-05-05T10:51:14.216Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/subdomain
+---
+
+--- 2026-05-05T10:51:14.216Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.216Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.216Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.216Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+-- START CF API REQUEST: GET https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/subdomain
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.562Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:14.726Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:14.726Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.726Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.726Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:14.727Z debug
+-- START CF API REQUEST: POST https://api.cloudflare.com/client/v4/accounts/58250b56ae5b45d940cd6e4b64314c01/workers/scripts/twilio-platform-api/subdomain
+---
+
+--- 2026-05-05T10:51:14.727Z debug
+QUERY STRING: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.727Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.727Z debug
+INIT: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:14.727Z debug
+-- END CF API REQUEST
+---
+
+--- 2026-05-05T10:51:15.202Z debug
+-- START CF API RESPONSE: OK 200
+---
+
+--- 2026-05-05T10:51:15.202Z debug
+HEADERS: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:15.202Z debug
+RESPONSE: omitted; set WRANGLER_LOG_SANITIZE=false to include sanitized data
+---
+
+--- 2026-05-05T10:51:15.202Z debug
+-- END CF API RESPONSE
+---
+
+--- 2026-05-05T10:51:15.203Z log
+Deployed twilio-platform-api triggers (0.99 sec)
+---
+
+--- 2026-05-05T10:51:15.203Z log
+  https://twilio-platform-api.rickjefferson.workers.dev
+---
+
+--- 2026-05-05T10:51:15.203Z log
+Current Version ID: 6bd0049e-e3ae-4ae1-a742-390781dece26
+---
+
+--- 2026-05-05T10:51:15.204Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"deploy worker script","timestamp":1777978275204,"properties":{"amplitude_session_id":1777978275203,"amplitude_event_id":0,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"none","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","category":"Workers","os":"linux:x64","usesTypeScript":true,"durationMs":8066}}
+---
+
+--- 2026-05-05T10:51:15.208Z debug
+Metrics dispatcher: Posting data {"deviceId":"657cad81-0739-42e7-9803-7b30e1e4c610","event":"wrangler command completed","timestamp":1777978275208,"properties":{"amplitude_session_id":1777978266972,"amplitude_event_id":1,"wranglerVersion":"4.87.0","wranglerMajorVersion":4,"wranglerMinorVersion":87,"wranglerPatchVersion":0,"osPlatform":"Linux","osVersion":"#1-NixOS SMP PREEMPT_DYNAMIC Tue Jan  1 00:00:00 UTC 1980","nodeVersion":24,"isFirstUsage":false,"configFileType":"toml","isCI":false,"isPagesCI":false,"isWorkersCI":false,"isInteractive":false,"hasAssets":false,"agent":"replit","argsUsed":[],"argsCombination":"","sanitizedCommand":"deploy","sanitizedArgs":{},"durationMs":8256}}
+---
