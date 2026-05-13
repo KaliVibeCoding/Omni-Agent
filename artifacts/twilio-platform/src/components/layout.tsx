@@ -48,6 +48,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useClerk, useUser } from "@clerk/react";
+import { useMasterAdmin } from "@/hooks/use-api";
 
 const NAV_SECTIONS = [
   {
@@ -124,10 +125,13 @@ const NAV_SECTIONS = [
       { name: "Usage & Stats", href: "/usage", icon: Activity },
       { name: "Alerts", href: "/alerts", icon: Bell },
       { name: "Settings", href: "/settings", icon: Settings },
-      { name: "Admin", href: "/admin", icon: Shield },
+      { name: "Admin", href: "/admin", icon: Shield, adminOnly: true },
     ],
   },
-];
+] as Array<{
+  label: string;
+  items: Array<{ name: string; href: string; icon: any; adminOnly?: boolean }>;
+}>;
 
 function UserMenu() {
   const { user } = useUser();
@@ -193,11 +197,18 @@ function UserMenu() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { isMasterAdmin } = useMasterAdmin();
 
   const isActive = (href: string) =>
     href === "/dashboard" ? location === "/dashboard" || location === "/" : location.startsWith(href);
 
-  const currentPage = NAV_SECTIONS.flatMap(s => s.items).find(i => isActive(i.href))?.name ?? "Dashboard";
+  // Filter out admin-only items for non-admins
+  const visibleSections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.adminOnly || isMasterAdmin),
+  })).filter((section) => section.items.length > 0);
+
+  const currentPage = visibleSections.flatMap((s) => s.items).find((i) => isActive(i.href))?.name ?? "Dashboard";
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground dark">
@@ -221,7 +232,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <ScrollArea className="flex-1">
           <div className="p-3 space-y-5">
-            {NAV_SECTIONS.map((section) => (
+            {visibleSections.map((section) => (
               <div key={section.label}>
                 <p className="text-[10px] font-semibold tracking-widest text-muted-foreground px-2 mb-1.5">
                   {section.label}

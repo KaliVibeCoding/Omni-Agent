@@ -5,9 +5,8 @@ import { Check, Zap, ArrowRight, CreditCard, ExternalLink, Loader2, Star, Shield
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const BASE_URL = import.meta.env.BASE_URL ?? "/";
-const API = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+import { useApi } from "@/hooks/use-api";
+import { apiFetch } from "@/lib/api";
 
 const PLAN_META: Record<string, { color: string; badge?: string; icon: React.ReactNode }> = {
   Starter: { color: "hsl(210 40% 50%)", icon: <Zap className="size-4" /> },
@@ -72,6 +71,7 @@ interface Product {
 export default function BillingPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
+  const api = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [subscription, setSubscription] = useState<any>(null);
   const [currentPlan, setCurrentPlan] = useState<string>("free");
@@ -101,12 +101,10 @@ export default function BillingPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [prodRes, subRes] = await Promise.all([
-          fetch(`${API}/api/stripe/products`),
-          fetch(`${API}/api/stripe/subscription`, { credentials: "include" }),
+        const [prodData, subData] = await Promise.all([
+          apiFetch<{ data: Product[] }>("/api/stripe/products"),
+          api<{ subscription: any; plan: string }>("/api/stripe/subscription").catch(() => ({ subscription: null, plan: "free" })),
         ]);
-        const prodData = await prodRes.json();
-        const subData = await subRes.json();
 
         // Sort products by price
         const sorted = (prodData.data || []).sort((a: Product, b: Product) => {
@@ -124,25 +122,22 @@ export default function BillingPage() {
       }
     }
     load();
-  }, []);
+  }, [api]);
 
   async function handleCheckout(priceId: string) {
     setCheckoutLoading(priceId);
     try {
-      const res = await fetch(`${API}/api/stripe/checkout`, {
+      const data = await api<{ url?: string; error?: string }>("/api/stripe/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ priceId }),
       });
-      const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
         showToast(data.error || "Failed to start checkout", "error");
       }
-    } catch {
-      showToast("Network error — please try again", "error");
+    } catch (err: any) {
+      showToast(err?.body?.error || "Network error — please try again", "error");
     } finally {
       setCheckoutLoading(null);
     }
@@ -151,18 +146,16 @@ export default function BillingPage() {
   async function handlePortal() {
     setPortalLoading(true);
     try {
-      const res = await fetch(`${API}/api/stripe/portal`, {
+      const data = await api<{ url?: string; error?: string }>("/api/stripe/portal", {
         method: "POST",
-        credentials: "include",
       });
-      const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
       } else {
         showToast(data.error || "No billing account found. Subscribe to a plan first.", "error");
       }
-    } catch {
-      showToast("Network error — please try again", "error");
+    } catch (err: any) {
+      showToast(err?.body?.error || "Network error — please try again", "error");
     } finally {
       setPortalLoading(false);
     }

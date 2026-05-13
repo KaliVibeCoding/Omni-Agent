@@ -16,6 +16,8 @@ import searchRoutes from "./routes/search";
 import paymentsRoutes from "./routes/payments";
 import dataApisRoutes from "./routes/data-apis";
 import creditRoutes from "./routes/credit";
+import meRoutes from "./routes/me";
+import adminRoutes from "./routes/admin";
 
 export interface Env {
   DB: D1Database;
@@ -127,6 +129,8 @@ app.route("/api/webhook-tester", webhookTesterRoutes);
 app.route("/api/tenant", tenantRoutes);
 app.route("/api/stripe", stripeRoutes);
 app.route("/api/niche", nicheRoutes);
+app.route("/api/me", meRoutes);
+app.route("/api/admin", adminRoutes);
 
 // ── Integrations status ───────────────────────────────────────────────────────
 app.get("/api/integrations", (c) => {

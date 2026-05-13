@@ -1,13 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useUser } from "@clerk/react";
+import { useApi, useMasterAdmin } from "@/hooks/use-api";
+import { ApiHttpError } from "@/lib/api";
 
 const BASE = import.meta.env.BASE_URL ?? "/";
-const API = BASE.endsWith("/") ? BASE.slice(0, -1) : BASE;
 
 export default function ConnectPage() {
   const { user } = useUser();
   const [, setLocation] = useLocation();
+  const api = useApi();
+  const { isMasterAdmin } = useMasterAdmin();
   const [accountSid, setAccountSid] = useState("");
   const [authToken, setAuthToken] = useState("");
   const [apiKeySid, setApiKeySid] = useState("");
@@ -16,15 +19,18 @@ export default function ConnectPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Master admin can skip the connect screen entirely
+  useEffect(() => {
+    if (isMasterAdmin) setLocation("/dashboard");
+  }, [isMasterAdmin, setLocation]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API}/api/tenant/credentials`, {
+      await api("/api/tenant/credentials", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           accountSid: accountSid.trim(),
           authToken: authToken.trim(),
@@ -32,14 +38,13 @@ export default function ConnectPage() {
           apiKeySecret: apiKeySecret.trim() || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Failed to connect Twilio account.");
+      setLocation("/dashboard");
+    } catch (err) {
+      if (err instanceof ApiHttpError) {
+        setError(err.body?.error ?? `Failed (${err.status})`);
       } else {
-        setLocation("/dashboard");
+        setError("Network error. Please try again.");
       }
-    } catch {
-      setError("Network error. Please try again.");
     } finally {
       setLoading(false);
     }

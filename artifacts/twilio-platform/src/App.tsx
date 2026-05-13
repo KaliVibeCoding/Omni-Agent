@@ -3,10 +3,13 @@ import { Switch, Route, Router as WouterRouter, Redirect, useLocation } from "wo
 import { QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, Show, useClerk, useAuth } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
+import { setAuthTokenGetter } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
+import { apiFetch } from "@/lib/api";
+import { useMasterAdmin } from "@/hooks/use-api";
 
 import { Layout } from "@/components/layout";
 import Landing from "@/pages/landing";
@@ -169,26 +172,67 @@ function HomeRedirect() {
   );
 }
 
-const BASE_URL = import.meta.env.BASE_URL ?? "/";
-const API_BASE = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
-
 function useHasTwilioCredentials() {
+  const { getToken, isSignedIn } = useAuth();
   const [status, setStatus] = React.useState<"loading" | "connected" | "missing">("loading");
   React.useEffect(() => {
-    fetch(`${API_BASE}/api/tenant/credentials`, { credentials: "include" })
-      .then((r) => r.json())
-      .then((d: any) => setStatus(d.connected ? "connected" : "missing"))
+    if (!isSignedIn) {
+      setStatus("missing");
+      return;
+    }
+    apiFetch<{ connected: boolean }>("/api/tenant/credentials", { getToken: () => getToken() })
+      .then((d) => setStatus(d.connected ? "connected" : "missing"))
       .catch(() => setStatus("missing"));
-  }, []);
+  }, [getToken, isSignedIn]);
   return status;
 }
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+/**
+ * Bridges Clerk's getToken() into the generated workspace API client.
+ * Mounted once inside ClerkProvider so every useGetX() hook automatically
+ * sends `Authorization: Bearer <session-token>`.
+ */
+function ApiAuthBridge() {
+  const { getToken, isSignedIn } = useAuth();
+  React.useEffect(() => {
+    if (isSignedIn) {
+      setAuthTokenGetter(async () => {
+        try { return await getToken(); } catch { return null; }
+      });
+    } else {
+      setAuthTokenGetter(null);
+    }
+    return () => setAuthTokenGetter(null);
+  }, [getToken, isSignedIn]);
+  return null;
+}
+
+function ProtectedRoute({
+  component: Component,
+  requireAdmin = false,
+}: {
+  component: React.ComponentType;
+  requireAdmin?: boolean;
+}) {
   const credStatus = useHasTwilioCredentials();
+  const { isMasterAdmin, loading: adminLoading } = useMasterAdmin();
+
+  // Master admin always bypasses the Twilio "connect" gate
+  const effectiveStatus = isMasterAdmin ? "connected" : credStatus;
+
   return (
     <>
       <Show when="signed-in">
-        {credStatus === "loading" ? null : credStatus === "missing" ? (
+        {adminLoading || effectiveStatus === "loading" ? null : requireAdmin && !isMasterAdmin ? (
+          <Layout>
+            <div className="max-w-2xl mx-auto py-16 text-center space-y-3">
+              <h2 className="text-2xl font-bold text-foreground">Admin Access Required</h2>
+              <p className="text-muted-foreground text-sm">
+                This area is restricted to platform administrators.
+              </p>
+            </div>
+          </Layout>
+        ) : effectiveStatus === "missing" ? (
           <Redirect to="/connect" />
         ) : (
           <Layout>
@@ -236,7 +280,7 @@ function Router() {
       <Route path="/billing" component={() => <ProtectedRoute component={BillingPage} />} />
       <Route path="/email-campaigns" component={() => <ProtectedRoute component={EmailCampaigns} />} />
       <Route path="/agi-framework" component={() => <ProtectedRoute component={AGIFramework} />} />
-      <Route path="/admin" component={() => <ProtectedRoute component={AdminPanel} />} />
+      <Route path="/admin" component={() => <ProtectedRoute component={AdminPanel} requireAdmin />} />
       <Route path="/integrations" component={() => <ProtectedRoute component={Integrations} />} />
       <Route path="/niches" component={NichesHub} />
       <Route path="/niches/:slug" component={NicheLanding} />
@@ -275,6 +319,7 @@ function ClerkProviderWithRoutes() {
     >
       <QueryClientProvider client={queryClient}>
         <ClerkQueryClientCacheInvalidator />
+        <ApiAuthBridge />
         <TooltipProvider>
           <Router />
           <Toaster />
