@@ -3,9 +3,7 @@ import { Plug, CheckCircle2, XCircle, Loader2, RefreshCw, ExternalLink, Brain, S
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
-const BASE_URL = import.meta.env.BASE_URL ?? "/";
-const API = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+import { apiFetch } from "@/lib/api";
 
 interface IntegrationStatus {
   ai: Record<string, boolean>;
@@ -97,8 +95,8 @@ export default function Integrations() {
   async function fetchStatus() {
     setLoading(true);
     try {
-      const resp = await fetch(`${API}/api/integrations`);
-      if (resp.ok) setStatus(await resp.json() as IntegrationStatus);
+      const data = await apiFetch<IntegrationStatus>("/api/integrations");
+      setStatus(data);
     } catch {}
     setLoading(false);
   }
@@ -107,7 +105,7 @@ export default function Integrations() {
 
   const isConnected = (sectionKey: string, providerKey: string): boolean => {
     if (!status) return false;
-    const section = (status as Record<string, Record<string, boolean>>)[sectionKey];
+    const section = (status as unknown as Record<string, Record<string, boolean>>)[sectionKey];
     return section?.[providerKey] ?? false;
   };
 

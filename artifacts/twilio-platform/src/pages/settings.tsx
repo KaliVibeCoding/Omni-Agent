@@ -9,37 +9,30 @@ import { Button } from "@/components/ui/button";
 import { Copy, CheckCircle, Unplug, RefreshCw, Key } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "wouter";
+import { useApi } from "@/hooks/use-api";
 
 const BASE = import.meta.env.BASE_URL ?? "/";
-const API = BASE.endsWith("/") ? BASE.slice(0, -1) : BASE;
-
-function useNavigateHook() {
-  const [, setLocation] = React.useState("");
-  return setLocation;
-}
 
 function useTenantCredentials() {
+  const api = useApi();
   return useQuery({
     queryKey: ["tenant-credentials"],
-    queryFn: async () => {
-      const res = await fetch(`${API}/api/tenant/credentials`, { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch credentials");
-      return res.json() as Promise<{
+    queryFn: () =>
+      api<{
         connected: boolean;
         accountSid?: string;
         accountName?: string;
         plan?: string;
         hasApiKey?: boolean;
         createdAt?: string;
-      }>;
-    },
+      }>("/api/tenant/credentials"),
   });
 }
 
 export default function Settings() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const api = useApi();
   const { data: account, isLoading: accountLoading } = useGetTwilioAccount();
   const { data: phoneNumbers, isLoading: numbersLoading } = useListTwilioPhoneNumbers();
   const { data: tenantCreds, isLoading: credsLoading } = useTenantCredentials();
@@ -61,14 +54,7 @@ export default function Settings() {
   };
 
   const disconnectMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch(`${API}/api/tenant/credentials`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to disconnect");
-      return res.json();
-    },
+    mutationFn: () => api("/api/tenant/credentials", { method: "DELETE" }),
     onSuccess: () => {
       toast({ title: "Twilio account disconnected" });
       qc.invalidateQueries({ queryKey: ["tenant-credentials"] });
@@ -82,10 +68,8 @@ export default function Settings() {
     e.preventDefault();
     setReconnecting(true);
     try {
-      const res = await fetch(`${API}/api/tenant/credentials`, {
+      const data = await api<{ accountName: string }>("/api/tenant/credentials", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           accountSid: newSid.trim(),
           authToken: newToken.trim(),
@@ -93,18 +77,13 @@ export default function Settings() {
           apiKeySecret: newApiKeySecret.trim() || undefined,
         }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        toast({ title: data.error ?? "Failed to update credentials", variant: "destructive" });
-      } else {
-        toast({ title: `Connected to ${data.accountName}` });
-        qc.invalidateQueries({ queryKey: ["tenant-credentials"] });
-        qc.invalidateQueries({ queryKey: ["twilio-account"] });
-        setShowReconnect(false);
-        setNewSid(""); setNewToken(""); setNewApiKeySid(""); setNewApiKeySecret("");
-      }
-    } catch {
-      toast({ title: "Network error", variant: "destructive" });
+      toast({ title: `Connected to ${data.accountName}` });
+      qc.invalidateQueries({ queryKey: ["tenant-credentials"] });
+      qc.invalidateQueries({ queryKey: ["twilio-account"] });
+      setShowReconnect(false);
+      setNewSid(""); setNewToken(""); setNewApiKeySid(""); setNewApiKeySecret("");
+    } catch (err: any) {
+      toast({ title: err?.body?.error ?? err?.message ?? "Failed to update credentials", variant: "destructive" });
     } finally {
       setReconnecting(false);
     }
